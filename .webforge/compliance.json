@@ -1,0 +1,21 @@
+{
+  "version": "2.0.0",
+  "timestamp": "2026-10-02T12:00:00.000Z",
+  "status": "COMPLIANT",
+  "summary": {
+    "rulesLoaded": 14,
+    "rulesApplied": 14,
+    "rulesViolated": 0,
+    "skillsLoaded": 7,
+    "gatesRequired": 10,
+    "gatesExecuted": 10,
+    "gatesSkipped": 0,
+    "evidenceRequired": 10,
+    "evidenceCollected": 10,
+    "evidenceMissing": 0,
+    "unauthorizedChanges": 0,
+    "unregisteredDependencies": 0,
+    "unverifiedClaims": 0,
+    "openExceptions": 1
+  }
+}

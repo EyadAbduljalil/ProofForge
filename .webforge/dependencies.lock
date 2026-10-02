@@ -1,0 +1,8 @@
+# WebForge Approved Dependencies Lock
+# Strictly verified against registry/dependencies.json
+argon2: "v0.41.1" (approved)
+jsonwebtoken: "v9.0.2" (approved)
+framer-motion: "v11.0.0" (approved)
+gsap: "v3.12.5" (approved)
+lenis: "v1.1.0" (approved)
+three: "v0.165.0" (approved)

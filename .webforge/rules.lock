@@ -1,0 +1,12 @@
+# WebForge Locked Rules Matrix
+# Generated automatically by WebForge Manifest Manager
+SEC-AUTH-01: locked (packages/security/token-manager.js)
+SEC-AUTHZ-01: locked (packages/security/ownership-guard.js)
+SEC-TENANT-01: locked (packages/security/ownership-guard.js)
+SEC-SSRF-01: locked (packages/security/ssrf-guard.js)
+SEC-FILE-01: locked (packages/security/file-security.js)
+SEC-AI-01: locked (packages/security/ai-security-guard.js)
+SEC-HOOK-01: locked (packages/security/webhook-verifier.js)
+SEC-GQL-01: locked (packages/security/graphql-security.js)
+SEC-PRIV-01: locked (packages/security-governance/privacy-data-flow.js)
+SEC-CONT-01: locked (packages/infrastructure/Dockerfile.hardened)

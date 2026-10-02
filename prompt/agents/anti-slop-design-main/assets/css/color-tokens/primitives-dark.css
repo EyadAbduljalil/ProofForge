@@ -1,0 +1,59 @@
+/* === primitives-dark.css ===
+ * Dark mode color primitives (Tier 1)
+ * Applied via [data-theme="dark"] or @media (prefers-color-scheme: dark)
+ * NOT pure black. Ever. OLED halation is real and it looks like garbage.
+ */
+
+[data-theme="dark"] {
+  /* Backgrounds — dark but not void */
+  --primitive-bg-0:    oklch(0.13 0.008 250);    /* Page background */
+  --primitive-bg-1:    oklch(0.17 0.01 250);     /* Card/surface */
+  --primitive-bg-2:    oklch(0.22 0.012 250);    /* Elevated */
+  --primitive-bg-3:    oklch(0.10 0.005 250);    /* Muted/inset */
+
+  /* Text — back off from pure white, your retinas will thank you */
+  --primitive-text-0:  oklch(0.92 0.005 250);    /* Primary text */
+  --primitive-text-1:  oklch(0.65 0.005 250);    /* Secondary text */
+  --primitive-text-2:  oklch(0.48 0.005 250);    /* Tertiary/disabled */
+
+  /* Accents — lighter and less saturated than light mode */
+  --primitive-accent-0: oklch(0.68 0.18 250);    /* Primary accent */
+  --primitive-accent-1: oklch(0.72 0.16 250);    /* Accent hover */
+  --primitive-accent-2: oklch(0.60 0.20 250);    /* Accent active */
+  --primitive-accent-bg: oklch(0.18 0.04 250);   /* Accent background tint */
+
+  /* Borders — visible but not aggressive */
+  --primitive-border-0: oklch(0.28 0.008 250);   /* Default border */
+  --primitive-border-1: oklch(0.35 0.01 250);    /* Strong border */
+  --primitive-border-2: oklch(0.22 0.005 250);   /* Subtle border */
+
+  /* State colors — reduced saturation for dark backgrounds */
+  --primitive-error:   oklch(0.65 0.20 25);
+  --primitive-success: oklch(0.65 0.15 155);
+  --primitive-warning: oklch(0.75 0.13 80);
+  --primitive-info:    oklch(0.68 0.13 250);
+}
+
+/* Auto-detection fallback for when no explicit data-theme is set */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --primitive-bg-0:    oklch(0.13 0.008 250);
+    --primitive-bg-1:    oklch(0.17 0.01 250);
+    --primitive-bg-2:    oklch(0.22 0.012 250);
+    --primitive-bg-3:    oklch(0.10 0.005 250);
+    --primitive-text-0:  oklch(0.92 0.005 250);
+    --primitive-text-1:  oklch(0.65 0.005 250);
+    --primitive-text-2:  oklch(0.48 0.005 250);
+    --primitive-accent-0: oklch(0.68 0.18 250);
+    --primitive-accent-1: oklch(0.72 0.16 250);
+    --primitive-accent-2: oklch(0.60 0.20 250);
+    --primitive-accent-bg: oklch(0.18 0.04 250);
+    --primitive-border-0: oklch(0.28 0.008 250);
+    --primitive-border-1: oklch(0.35 0.01 250);
+    --primitive-border-2: oklch(0.22 0.005 250);
+    --primitive-error:   oklch(0.65 0.20 25);
+    --primitive-success: oklch(0.65 0.15 155);
+    --primitive-warning: oklch(0.75 0.13 80);
+    --primitive-info:    oklch(0.68 0.13 250);
+  }
+}

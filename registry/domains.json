@@ -1,0 +1,45 @@
+{
+  "version": "1.0.0",
+  "domains": [
+    {
+      "id": "ecommerce",
+      "path": "domains/ecommerce/rules.md",
+      "description": "التجارة الإلكترونية، الدفع، والمخزون"
+    },
+    {
+      "id": "saas",
+      "path": "domains/saas/rules.md",
+      "description": "البرمجيات كخدمة وتعدد المستأجرين والاشتراكات"
+    },
+    {
+      "id": "lms",
+      "path": "domains/lms/rules.md",
+      "description": "إدارة التعلم، المساقات، والاختبارات"
+    },
+    {
+      "id": "dashboard",
+      "path": "domains/dashboard/rules.md",
+      "description": "لوحات التحكم، الجداول، والتحليلات"
+    },
+    {
+      "id": "marketplace",
+      "path": "domains/marketplace/rules.md",
+      "description": "الأسواق التشاركية والضمان المالي"
+    },
+    {
+      "id": "corporate",
+      "path": "domains/corporate/rules.md",
+      "description": "المواقع التعريفية وجلب العملاء المحتملين"
+    },
+    {
+      "id": "fintech",
+      "path": "domains/fintech/rules.md",
+      "description": "الأنظمة المالية والمحاسبية وامتثال PCI-DSS"
+    },
+    {
+      "id": "healthcare",
+      "path": "domains/healthcare/rules.md",
+      "description": "الأنظمة الصحية والسرية الطبية وامتثال HIPAA"
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+/* WebForge OS - Semantic Color Tokens */
+:root {
+  --bg-app: var(--color-neutral-50);
+  --bg-surface: #ffffff;
+  --bg-surface-elevated: #ffffff;
+  --border-subtle: var(--color-neutral-200);
+  --border-strong: var(--color-neutral-300);
+  --text-primary: var(--color-neutral-950);
+  --text-secondary: var(--color-neutral-600);
+  --text-muted: var(--color-neutral-400);
+  --text-inverse: #ffffff;
+}
+
+[data-theme="dark"], .dark {
+  --bg-app: var(--color-neutral-950);
+  --bg-surface: var(--color-neutral-900);
+  --bg-surface-elevated: var(--color-neutral-800);
+  --border-subtle: var(--color-neutral-800);
+  --border-strong: var(--color-neutral-700);
+  --text-primary: var(--color-neutral-50);
+  --text-secondary: var(--color-neutral-400);
+  --text-muted: var(--color-neutral-500);
+  --text-inverse: var(--color-neutral-950);
+}

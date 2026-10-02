@@ -1,0 +1,65 @@
+{
+  "version": "1.0.0",
+  "sources_analyzed": [
+    {
+      "name": "Antigravity_Prompts",
+      "files_count": 90,
+      "status": "canonicalized",
+      "category": "Fullstack Architecture & Security"
+    },
+    {
+      "name": "anti-slop-main",
+      "files_count": 38,
+      "status": "canonicalized",
+      "category": "Anti-Slop UI & Layout"
+    },
+    {
+      "name": "anti-slop-design-main",
+      "files_count": 72,
+      "status": "canonicalized",
+      "category": "Domain Tokens & Fluid Scale"
+    },
+    {
+      "name": "impeccable-main",
+      "files_count": 3379,
+      "status": "canonicalized & deduplicated",
+      "category": "Design Craft & Multi-platform Adapters"
+    },
+    {
+      "name": "skills-main",
+      "files_count": 26,
+      "status": "canonicalized",
+      "category": "Animation & UI Craft"
+    },
+    {
+      "name": "taste-skill-main",
+      "files_count": 64,
+      "status": "canonicalized",
+      "category": "Taste Engineering & Anti-Laziness"
+    },
+    {
+      "name": "awesome-design-md-main",
+      "files_count": 153,
+      "status": "indexed_reference",
+      "category": "World-Class Brand Design Systems"
+    },
+    {
+      "name": "system-prompts-and-models-of-ai-tools-main",
+      "files_count": 107,
+      "status": "indexed_reference",
+      "category": "AI Tool Capabilities & Protocols"
+    },
+    {
+      "name": "API-mega-list-main",
+      "files_count": 23,
+      "status": "indexed_reference",
+      "category": "Public APIs Catalog"
+    },
+    {
+      "name": "public-apis-master",
+      "files_count": 12,
+      "status": "indexed_reference",
+      "category": "Public APIs Repository"
+    }
+  ]
+}

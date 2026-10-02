@@ -1,0 +1,32 @@
+rules:
+  - id: webforge-no-raw-sql-concat
+    patterns:
+      - pattern-either:
+          - pattern: $DB.query(`...${$VAR}...`)
+          - pattern: $DB.execute(`...${$VAR}...`)
+    message: "اكتشاف استعلام SQL مجمع نصياً غير آمن (CWE-89). يجب استخدام Parameterized Queries حصراً."
+    languages: [javascript, typescript]
+    severity: ERROR
+
+  - id: webforge-no-eval-code-injection
+    patterns:
+      - pattern-either:
+          - pattern: eval(...)
+          - pattern: Function(...)
+    message: "اكتشاف تنفيذ كود ديناميكي خطر eval / Function (CWE-94). محظور تماماً."
+    languages: [javascript, typescript]
+    severity: ERROR
+
+  - id: webforge-no-child-process-shell
+    patterns:
+      - pattern: child_process.exec(...)
+    message: "اكتشاف تنفيذ أمر عبر الصدفة exec (CWE-78). يفضل استخدام execFile مع مصفوفة معزولة."
+    languages: [javascript, typescript]
+    severity: ERROR
+
+  - id: webforge-no-client-side-idor
+    patterns:
+      - pattern: $REPO.findOne({ where: { id: req.params.id } })
+    message: "اكتشاف استعلام بدون فحص ملكية المستخدم user_id أو tenant_id (خطر ثغرة IDOR)."
+    languages: [javascript, typescript]
+    severity: WARNING

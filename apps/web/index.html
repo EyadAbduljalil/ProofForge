@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebForge OS — لوحة التحكم المتكاملة للإنتاج</title>
+    <link rel="stylesheet" href="/design-system/index.css">
+    <style>
+        :root {
+            --bg-canvas: #090d16;
+            --bg-surface: #111827;
+            --bg-elevated: #1f2937;
+            --border-subtle: #374151;
+            --text-primary: #f9fafb;
+            --text-muted: #9ca3af;
+            --accent-primary: #3b82f6;
+            --accent-hover: #2563eb;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+            --warning-color: #f59e0b;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+        }
+
+        body {
+            background-color: var(--bg-canvas);
+            color: var(--text-primary);
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: var(--bg-surface);
+            border-bottom: 1px solid var(--border-subtle);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #60a5fa;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        main {
+            flex: 1;
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            main {
+                grid-template-columns: 1fr;
+                padding: 1rem;
+                gap: 1rem;
+            }
+            header {
+                padding: 1rem;
+                flex-direction: column;
+                gap: 0.5rem;
+                align-items: flex-start;
+            }
+        }
+
+        .card {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .card h2 {
+            margin-top: 0;
+            font-size: 1.1rem;
+            border-bottom: 1px solid var(--border-subtle);
+            padding-bottom: 0.5rem;
+            color: #93c5fd;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        label {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        input, select, button {
+            padding: 0.6rem 0.8rem;
+            border-radius: 6px;
+            border: 1px solid var(--border-subtle);
+            background-color: var(--bg-elevated);
+            color: var(--text-primary);
+            font-size: 0.95rem;
+        }
+
+        input:focus, select:focus {
+            outline: 2px solid var(--accent-primary);
+            border-color: var(--accent-primary);
+        }
+
+        button {
+            background-color: var(--accent-primary);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: background-color 0.2s, opacity 0.2s;
+        }
+
+        button:hover:not(:disabled) {
+            background-color: var(--accent-hover);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        button.btn-secondary {
+            background-color: var(--bg-elevated);
+            border: 1px solid var(--border-subtle);
+        }
+
+        button.btn-secondary:hover:not(:disabled) {
+            background-color: #374151;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-success { background: #064e3b; color: #34d399; }
+        .badge-error { background: #7f1d1d; color: #f87171; }
+        .badge-warning { background: #78350f; color: #fbbf24; }
+
+        .spinner {
+            display: inline-block;
+            width: 1rem;
+            height: 1rem;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-inline-end: 0.5rem;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        #log-output {
+            background-color: #030712;
+            border: 1px solid #1f2937;
+            border-radius: 6px;
+            padding: 1rem;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 0.8rem;
+            max-height: 220px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            color: #10b981;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        .alert-box {
+            padding: 0.75rem;
+            border-radius: 6px;
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+            display: none;
+        }
+
+        .alert-box.visible {
+            display: block;
+        }
+
+        .alert-error {
+            background: #450a0a;
+            border: 1px solid #7f1d1d;
+            color: #fca5a5;
+        }
+
+        .alert-success {
+            background: #064e3b;
+            border: 1px solid #047857;
+            color: #a7f3d0;
+        }
+    </style>
+</head>
+<body>
+    <header role="banner">
+        <div class="brand-title">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+            <h1>WebForge OS — لوحة التحكم المتكاملة للإنتاج</h1>
+        </div>
+        <div class="header-controls">
+            <span id="system-status" class="status-badge badge-warning" role="status" aria-live="polite">جاري الفحص...</span>
+            <button id="toggle-dir-btn" class="btn-secondary" aria-label="تبديل اتجاه الواجهة LTR و RTL" style="font-size: 0.8rem;">LTR / RTL</button>
+        </div>
+    </header>
+
+    <main role="main">
+        <!-- بوابة المصادقة والمستأجرين -->
+        <section class="card" aria-labelledby="auth-heading">
+            <h2 id="auth-heading">1. المصادقة وعزل المستأجرين (Tenant Context)</h2>
+            <div class="form-group">
+                <label for="auth-tenant">معرف المستأجر (Tenant ID):</label>
+                <input type="text" id="auth-tenant" value="tenant_alpha" autocomplete="organization" required>
+            </div>
+            <div class="form-group">
+                <label for="auth-email">البريد الإلكتروني:</label>
+                <input type="email" id="auth-email" value="admin@alpha.corp" autocomplete="email" required>
+            </div>
+            <div class="form-group">
+                <label for="auth-password">كلمة المرور (مشددة السياسة):</label>
+                <input type="password" id="auth-password" value="P@ssw0rdSecure!2026" autocomplete="current-password" required>
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+                <button id="register-btn" style="flex: 1;">إنشاء حساب</button>
+                <button id="login-btn" style="flex: 1;">تسجيل الدخول</button>
+            </div>
+            <div id="auth-alert" class="alert-box" role="alert" aria-live="polite"></div>
+            <div style="margin-top: 1rem;">
+                <label>حالة الجلسة الموثقة:</label>
+                <div id="session-info" style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem;">غير مسجل</div>
+            </div>
+        </section>
+
+        <!-- إدارة المنتجات والتجارة الإلكترونية المحصنة -->
+        <section class="card" aria-labelledby="commerce-heading">
+            <h2 id="commerce-heading">2. المنتجات والدفع الذري مع مفتاح عدم التكرار (Idempotency)</h2>
+            <div class="form-group">
+                <label for="product-select">المنتج المتاح:</label>
+                <select id="product-select" aria-label="اختر المنتج المطلوب">
+                    <option value="">-- اضغط لتحديث المنتجات --</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="checkout-qty">الكمية المطلوبة:</label>
+                <input type="number" id="checkout-qty" value="1" min="1" max="10" aria-label="الكمية المطلوبة">
+            </div>
+            <div class="form-group">
+                <label for="idempotency-key">مفتاح عدم التكرار (Idempotency Key):</label>
+                <input type="text" id="idempotency-key" readonly aria-label="مفتاح عدم التكرار المولد آلياً">
+            </div>
+            <button id="checkout-btn" style="width: 100%;">تنفيذ أمر شراء ذري محمي</button>
+            <div id="checkout-alert" class="alert-box" role="alert" aria-live="polite"></div>
+        </section>
+
+        <!-- مصفوفة المراقبة وفحص الصحة الحي -->
+        <section class="card full-width" aria-labelledby="audit-heading">
+            <h2 id="audit-heading">3. لوحة المراقبة وسجلات التدقيق الحية (Audit & Telemetry Log)</h2>
+            <div style="display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap;">
+                <button id="fetch-metrics-btn" class="btn-secondary">فحص مقاييس الأداء (/metrics)</button>
+                <button id="fetch-health-btn" class="btn-secondary">فحص الصحة والجاهزية (/healthz)</button>
+                <button id="clear-logs-btn" class="btn-secondary">مسح السجل</button>
+            </div>
+            <div id="log-output" role="region" aria-live="polite" aria-label="سجل العمليات المباشر">جاهز للاستخدام...</div>
+        </section>
+    </main>
+
+    <script src="/api-client/api-client.js"></script>
+    <script src="/web/app.js"></script>
+</body>
+</html>

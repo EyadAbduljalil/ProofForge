@@ -1,0 +1,188 @@
+{
+  "version": "1.0.0",
+  "description": "سجل المهارات الهندسية المعتمدة في WebForge OS",
+  "skills": [
+    {
+      "id": "architecture",
+      "name": "Architecture",
+      "priority": "P1",
+      "path": "skills/architecture/SKILL.md",
+      "scope": "system"
+    },
+    {
+      "id": "frontend",
+      "name": "Frontend",
+      "priority": "P2",
+      "path": "skills/frontend/SKILL.md",
+      "scope": "ui"
+    },
+    {
+      "id": "backend",
+      "name": "Backend",
+      "priority": "P0",
+      "path": "skills/backend/SKILL.md",
+      "scope": "server"
+    },
+    {
+      "id": "database",
+      "name": "Database",
+      "priority": "P0",
+      "path": "skills/database/SKILL.md",
+      "scope": "data"
+    },
+    {
+      "id": "api",
+      "name": "API",
+      "priority": "P0",
+      "path": "skills/api/SKILL.md",
+      "scope": "network"
+    },
+    {
+      "id": "security",
+      "name": "Security",
+      "priority": "P0",
+      "path": "skills/security/SKILL.md",
+      "scope": "security"
+    },
+    {
+      "id": "ui-ux",
+      "name": "UI/UX",
+      "priority": "P4",
+      "path": "skills/ui-ux/SKILL.md",
+      "scope": "design"
+    },
+    {
+      "id": "design-system",
+      "name": "Design System",
+      "priority": "P4",
+      "path": "skills/design-system/SKILL.md",
+      "scope": "design"
+    },
+    {
+      "id": "responsive",
+      "name": "Responsive",
+      "priority": "P2",
+      "path": "skills/responsive/SKILL.md",
+      "scope": "layout"
+    },
+    {
+      "id": "accessibility",
+      "name": "Accessibility",
+      "priority": "P0",
+      "path": "skills/accessibility/SKILL.md",
+      "scope": "a11y"
+    },
+    {
+      "id": "rtl",
+      "name": "RTL",
+      "priority": "P2",
+      "path": "skills/rtl/SKILL.md",
+      "scope": "i18n"
+    },
+    {
+      "id": "motion",
+      "name": "Motion",
+      "priority": "P4",
+      "path": "skills/motion/SKILL.md",
+      "scope": "animation"
+    },
+    {
+      "id": "forms",
+      "name": "Forms",
+      "priority": "P1",
+      "path": "skills/forms/SKILL.md",
+      "scope": "interaction"
+    },
+    {
+      "id": "dashboards",
+      "name": "Dashboards",
+      "priority": "P3",
+      "path": "skills/dashboards/SKILL.md",
+      "scope": "domain"
+    },
+    {
+      "id": "ecommerce",
+      "name": "Ecommerce",
+      "priority": "P3",
+      "path": "skills/ecommerce/SKILL.md",
+      "scope": "domain"
+    },
+    {
+      "id": "testing",
+      "name": "Testing",
+      "priority": "P0",
+      "path": "skills/testing/SKILL.md",
+      "scope": "qa"
+    },
+    {
+      "id": "performance",
+      "name": "Performance",
+      "priority": "P2",
+      "path": "skills/performance/SKILL.md",
+      "scope": "perf"
+    },
+    {
+      "id": "seo",
+      "name": "SEO",
+      "priority": "P2",
+      "path": "skills/seo/SKILL.md",
+      "scope": "marketing"
+    },
+    {
+      "id": "deployment",
+      "name": "Deployment",
+      "priority": "P1",
+      "path": "skills/deployment/SKILL.md",
+      "scope": "ops"
+    },
+    {
+      "id": "anti-slop",
+      "name": "Anti-Slop",
+      "priority": "P2",
+      "path": "skills/anti-slop/SKILL.md",
+      "scope": "craft"
+    },
+    {
+      "id": "code-review",
+      "name": "Code Review",
+      "priority": "P1",
+      "path": "skills/code-review/SKILL.md",
+      "scope": "qa"
+    },
+    {
+      "id": "production-readiness",
+      "name": "Production Readiness",
+      "priority": "P0",
+      "path": "skills/production-readiness/SKILL.md",
+      "scope": "ops"
+    },
+    {
+      "id": "project-audit",
+      "name": "Project Audit",
+      "priority": "P1",
+      "path": "skills/project-audit/SKILL.md",
+      "scope": "audit"
+    },
+    {
+      "id": "taste-craft",
+      "name": "Taste & Craft",
+      "priority": "P4",
+      "path": "skills/taste-craft/SKILL.md",
+      "scope": "craft"
+    },
+    {
+      "id": "image-to-code",
+      "name": "Image to Code",
+      "priority": "P3",
+      "path": "skills/image-to-code/SKILL.md",
+      "scope": "craft"
+    },
+    {
+      "id": "anti-laziness",
+      "name": "Anti-Laziness",
+      "priority": "P0",
+      "path": "skills/anti-laziness/SKILL.md",
+      "scope": "enforcement"
+    }
+  ]
+}

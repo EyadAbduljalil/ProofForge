@@ -1,0 +1,36 @@
+/* === fluid-space-scale.css ===
+ * Fluid spacing scale — anti-slop-design foundation
+ * Generated from Utopia.fyi matching the type scale (320px→1240px, 16px→18px)
+ * Usage: padding: var(--space-m); gap: var(--space-s);
+ *
+ * Spacing and type share the same base, so they scale in harmony.
+ * One-up pairs let spacing jump a full step for responsive breathing room.
+ */
+
+:root {
+  /* Single steps */
+  --space-3xs: clamp(0.25rem, 0.23rem + 0.11vw, 0.31rem);
+  --space-2xs: clamp(0.50rem, 0.46rem + 0.22vw, 0.63rem);
+  --space-xs:  clamp(0.75rem, 0.69rem + 0.33vw, 0.94rem);
+  --space-s:   clamp(1.00rem, 0.93rem + 0.33vw, 1.13rem);
+  --space-m:   clamp(1.50rem, 1.39rem + 0.54vw, 1.69rem);
+  --space-l:   clamp(2.00rem, 1.85rem + 0.76vw, 2.25rem);
+  --space-xl:  clamp(3.00rem, 2.78rem + 1.09vw, 3.38rem);
+  --space-2xl: clamp(4.00rem, 3.70rem + 1.52vw, 4.50rem);
+  --space-3xl: clamp(6.00rem, 5.57rem + 2.17vw, 6.75rem);
+
+  /* One-up pairs (spacing that jumps a step between viewports) */
+  --space-s-m:   clamp(1.00rem, 0.76rem + 1.20vw, 1.69rem);
+  --space-m-l:   clamp(1.50rem, 1.15rem + 1.74vw, 2.25rem);
+  --space-l-xl:  clamp(2.00rem, 1.46rem + 2.72vw, 3.38rem);
+  --space-xl-2xl: clamp(3.00rem, 2.17rem + 4.13vw, 4.50rem);
+}
+
+/* Usage guide:
+ * --space-3xs to --space-xs: tight gaps, icon padding, inline spacing
+ * --space-s to --space-m: component padding, card gaps, form spacing
+ * --space-l to --space-xl: section spacing, large padding
+ * --space-2xl to --space-3xl: hero sections, page-level spacing
+ * One-up pairs: for spacing that needs to grow faster than single steps
+ *   e.g., margin-block: var(--space-l-xl) → 2rem on mobile, 3.38rem on desktop
+ */

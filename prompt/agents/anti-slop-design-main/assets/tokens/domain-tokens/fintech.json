@@ -1,0 +1,60 @@
+{
+  "domain": "fintech",
+  "aesthetic_label": "minimal-trust",
+  "colors": {
+    "light": {
+      "--color-bg-primary": "oklch(0.985 0.003 250)",
+      "--color-bg-secondary": "oklch(0.97 0.005 250)",
+      "--color-bg-elevated": "oklch(1.0 0 0)",
+      "--color-text-primary": "oklch(0.20 0.02 260)",
+      "--color-text-secondary": "oklch(0.45 0.015 260)",
+      "--color-text-heading": "oklch(0.15 0.03 260)",
+      "--color-accent-primary": "oklch(0.50 0.18 260)",
+      "--color-accent-secondary": "oklch(0.60 0.10 170)",
+      "--color-border": "oklch(0.88 0.01 250)",
+      "--color-error": "oklch(0.55 0.22 25)",
+      "--color-success": "oklch(0.60 0.17 155)",
+      "--color-warning": "oklch(0.70 0.15 80)"
+    },
+    "dark": {
+      "--color-bg-primary": "oklch(0.13 0.015 260)",
+      "--color-bg-secondary": "oklch(0.17 0.015 260)",
+      "--color-bg-elevated": "oklch(0.22 0.015 260)",
+      "--color-text-primary": "oklch(0.92 0.005 250)",
+      "--color-text-secondary": "oklch(0.65 0.01 250)",
+      "--color-text-heading": "oklch(0.95 0.003 250)",
+      "--color-accent-primary": "oklch(0.65 0.18 260)",
+      "--color-accent-secondary": "oklch(0.70 0.10 170)",
+      "--color-border": "oklch(0.28 0.015 260)",
+      "--color-error": "oklch(0.65 0.20 25)",
+      "--color-success": "oklch(0.70 0.17 155)",
+      "--color-warning": "oklch(0.78 0.15 80)"
+    }
+  },
+  "typography": {
+    "--font-heading": "'Plus Jakarta Sans', 'Inter', system-ui, sans-serif",
+    "--font-body": "'Inter', 'Helvetica Neue', system-ui, sans-serif",
+    "--font-mono": "'JetBrains Mono', 'SF Mono', 'Cascadia Code', monospace",
+    "--font-weight-heading": "700",
+    "--font-weight-body": "400",
+    "--letter-spacing-heading": "-0.02em",
+    "--line-height-body": "1.6",
+    "--line-height-heading": "1.15"
+  },
+  "shape": {
+    "--radius-sm": "6px",
+    "--radius-md": "8px",
+    "--radius-lg": "12px",
+    "--radius-pill": "9999px"
+  },
+  "motion": {
+    "--motion-intensity": "minimal",
+    "--motion-duration-base": "150ms",
+    "--motion-ease-default": "cubic-bezier(0.2, 0, 0, 1)"
+  },
+  "shadows": {
+    "--shadow-sm": "0 1px 2px oklch(0.3 0.02 260 / 0.06)",
+    "--shadow-md": "0 2px 8px oklch(0.3 0.02 260 / 0.08)",
+    "--shadow-lg": "0 8px 24px oklch(0.3 0.02 260 / 0.12)"
+  }
+}

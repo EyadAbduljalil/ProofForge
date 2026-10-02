@@ -1,0 +1,48 @@
+{
+  "version": "2.0.0",
+  "policy": "Research & Inspiration Only — Never Direct Layout Cloning",
+  "sources": [
+    {
+      "name": "21st.dev",
+      "url": "https://21st.dev/",
+      "purpose": "Component architecture & interaction research",
+      "trust_level": "T4"
+    },
+    {
+      "name": "Refero",
+      "url": "https://styles.refero.design/",
+      "purpose": "Design systems & visual direction benchmarks",
+      "trust_level": "T4"
+    },
+    {
+      "name": "SiteInspire",
+      "url": "https://www.siteinspire.com/",
+      "purpose": "Full website layout inspiration & creative typography",
+      "trust_level": "T4"
+    },
+    {
+      "name": "Mobbin",
+      "url": "https://mobbin.com/",
+      "purpose": "Product UX patterns, onboarding & checkout user flows",
+      "trust_level": "T4"
+    },
+    {
+      "name": "Godly",
+      "url": "https://godly.design/",
+      "purpose": "Experimental typography, micro-interactions & WebGL showcases",
+      "trust_level": "T4"
+    },
+    {
+      "name": "Coolors",
+      "url": "https://coolors.co/",
+      "purpose": "Harmonious chromatic palette generation & contrast verification",
+      "trust_level": "T4"
+    },
+    {
+      "name": "Motion.dev",
+      "url": "https://motion.dev/",
+      "purpose": "Declarative motion timing, spring physics & gesture patterns",
+      "trust_level": "T2"
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+/* === primitives-light.css ===
+ * Light mode color primitives (Tier 1)
+ * These provide sensible defaults; domain token overlays customize them.
+ * Palette: warm neutral with blue accent — NOT pure white, never pure white.
+ */
+
+:root {
+  /* Backgrounds — warm off-whites, because pure #FFF is a crime against eyes */
+  --primitive-bg-0:    oklch(0.985 0.003 90);    /* Page background */
+  --primitive-bg-1:    oklch(0.97 0.005 90);     /* Card/surface */
+  --primitive-bg-2:    oklch(1.0 0 0);           /* Elevated (modal/popover) */
+  --primitive-bg-3:    oklch(0.94 0.008 90);     /* Muted/inset */
+
+  /* Text — layered hierarchy, not just "black" */
+  --primitive-text-0:  oklch(0.18 0.01 250);     /* Primary text */
+  --primitive-text-1:  oklch(0.45 0.008 250);    /* Secondary text */
+  --primitive-text-2:  oklch(0.60 0.005 250);    /* Tertiary/disabled */
+
+  /* Accents */
+  --primitive-accent-0: oklch(0.55 0.20 250);    /* Primary accent */
+  --primitive-accent-1: oklch(0.48 0.22 250);    /* Accent hover */
+  --primitive-accent-2: oklch(0.42 0.24 250);    /* Accent active */
+  --primitive-accent-bg: oklch(0.95 0.03 250);   /* Accent background tint */
+
+  /* Borders — subtle is the word */
+  --primitive-border-0: oklch(0.88 0.005 250);   /* Default border */
+  --primitive-border-1: oklch(0.80 0.008 250);   /* Strong border */
+  --primitive-border-2: oklch(0.93 0.003 250);   /* Subtle border */
+
+  /* State colors */
+  --primitive-error:   oklch(0.55 0.22 25);
+  --primitive-success: oklch(0.55 0.17 155);
+  --primitive-warning: oklch(0.70 0.15 80);
+  --primitive-info:    oklch(0.60 0.15 250);
+}

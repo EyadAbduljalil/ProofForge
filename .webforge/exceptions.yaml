@@ -1,0 +1,12 @@
+exceptions:
+  - id: "EXC-001"
+    rule: "SEC-DISTRIBUTED-CACHE"
+    scope: "Local Development & Testing Environment"
+    reason: "Current environment is single-process local runtime without external Redis server"
+    risk: "LOW in local environment"
+    mitigation: "In-memory sliding window rate limiter and nonce cache with local TTL"
+    owner: "Platform Security"
+    created: "2026-10-02"
+    expires: "2027-01-01"
+    approval: "APPROVED_BY_SECURITY_ARCHITECT"
+    verification: "VERIFIED_IN_MEMORY"

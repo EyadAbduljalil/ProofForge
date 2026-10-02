@@ -1,0 +1,29 @@
+{
+  "version": "1.0.0",
+  "categories": [
+    {
+      "category": "design",
+      "path": "references/design/curated_design_systems.md"
+    },
+    {
+      "category": "animation",
+      "path": "references/animation/motion_tokens.md"
+    },
+    {
+      "category": "accessibility",
+      "path": "references/accessibility/aria_patterns.md"
+    },
+    {
+      "category": "apis",
+      "path": "references/APIs/public_apis_catalog.md"
+    },
+    {
+      "category": "platforms",
+      "path": "references/platforms/ai_tool_capabilities.md"
+    },
+    {
+      "category": "inspiration",
+      "path": "references/inspiration/brand_references_index.md"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+/* WebForge OS - Accessibility Utilities */
+:focus-visible {
+  outline: 2px solid var(--color-brand-primary);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.skip-to-content {
+  position: absolute;
+  inset-inline-start: var(--space-md);
+  top: -100px;
+  z-index: 9999;
+  background: var(--bg-surface-elevated);
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--border-strong);
+  transition: top var(--duration-fast) var(--ease-standard);
+}
+
+.skip-to-content:focus {
+  top: var(--space-md);
+}

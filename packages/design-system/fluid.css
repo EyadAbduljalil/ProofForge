@@ -1,0 +1,21 @@
+/* WebForge OS - Fluid Typography & Spacing Scales */
+:root {
+  /* Fluid Type Scale */
+  --font-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+  --font-sm: clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
+  --font-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+  --font-lg: clamp(1.125rem, 1.05rem + 0.35vw, 1.25rem);
+  --font-xl: clamp(1.25rem, 1.15rem + 0.5vw, 1.5rem);
+  --font-2xl: clamp(1.5rem, 1.35rem + 0.75vw, 2rem);
+  --font-3xl: clamp(1.875rem, 1.65rem + 1.1vw, 2.5rem);
+  --font-4xl: clamp(2.25rem, 1.95rem + 1.5vw, 3.25rem);
+
+  /* Fluid Spacing Scale */
+  --space-2xs: clamp(0.25rem, 0.2rem + 0.2vw, 0.375rem);
+  --space-xs: clamp(0.5rem, 0.45rem + 0.25vw, 0.625rem);
+  --space-sm: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+  --space-md: clamp(1rem, 0.9rem + 0.5vw, 1.25rem);
+  --space-lg: clamp(1.5rem, 1.35rem + 0.75vw, 2rem);
+  --space-xl: clamp(2rem, 1.75rem + 1.25vw, 3rem);
+  --space-2xl: clamp(3rem, 2.5rem + 2.5vw, 4.5rem);
+}

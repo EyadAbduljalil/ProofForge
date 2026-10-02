@@ -1,0 +1,125 @@
+{
+  "version": "1.0.0",
+  "description": "سجل الأدوات والمحركات المعتمدة للتحقق والتصميم في WebForge OS",
+  "tools": [
+    {
+      "id": "playwright",
+      "name": "Playwright",
+      "category": "browser-e2e-testing",
+      "purpose": "التشغيل والتحقق الفعلي عبر المتصفحات الحقيقية والتقاط الشاشات والآثار (Traces)",
+      "official_url": "https://playwright.dev/",
+      "when_to_use": "في كافة تطبيقات ومواقع الويب لفحص تدفقات المستخدم والتجاوب والتفاعل",
+      "required": true,
+      "supports": [
+        "chromium",
+        "firefox",
+        "webkit",
+        "mobile-emulation",
+        "traces",
+        "visual-snapshots"
+      ],
+      "outputs": [
+        "test-results",
+        "html-report",
+        "traces.zip",
+        "screenshots"
+      ]
+    },
+    {
+      "id": "lighthouse",
+      "name": "Google Lighthouse",
+      "category": "performance-seo-audit",
+      "purpose": "فحص الأداء، مؤشرات الويب الحيوية، أفضل الممارسات، وإمكانية الوصول وSEO",
+      "official_url": "https://developer.chrome.com/docs/lighthouse/",
+      "when_to_use": "للمواقع العامة والتطبيقات لفحص مؤشرات السرعة وتجربة المستخدم",
+      "required": true,
+      "supports": [
+        "performance",
+        "accessibility",
+        "best-practices",
+        "seo",
+        "core-web-vitals"
+      ],
+      "outputs": [
+        "lighthouse-report.json",
+        "lighthouse-report.html"
+      ]
+    },
+    {
+      "id": "owasp-asvs",
+      "name": "OWASP ASVS",
+      "category": "security-verification-standard",
+      "purpose": "معيار التحقق من الضوابط الأمنية التقنية ومتطلبات التطوير الآمن للتطبيقات",
+      "official_url": "https://owasp.org/www-project-application-security-verification-standard/",
+      "when_to_use": "كمرجع إلزامي لتأصيل كافة الفحوصات الأمنية والصلاحيات وإدارة الجلسات",
+      "required": true,
+      "supports": [
+        "V1-Architecture",
+        "V2-Authentication",
+        "V3-Session",
+        "V4-Access-Control",
+        "V5-Validation"
+      ],
+      "outputs": [
+        "asvs-compliance-matrix.md"
+      ]
+    },
+    {
+      "id": "owasp-zap",
+      "name": "OWASP ZAP",
+      "category": "dast-security-scanner",
+      "purpose": "الفحص الأمني الديناميكي الآلي واكتشاف الثغرات عبر سطر الأوامر وخطة الأتمتة",
+      "official_url": "https://www.zaproxy.org/",
+      "when_to_use": "في بيئات التطوير والتجربة لفحص مسارات الـ API واكتشاف الثغرات النشطة",
+      "required": false,
+      "supports": [
+        "spidering",
+        "ajax-spider",
+        "passive-scan",
+        "active-scan",
+        "openapi-import"
+      ],
+      "outputs": [
+        "zap-report.json",
+        "zap-report.html"
+      ]
+    },
+    {
+      "id": "semgrep",
+      "name": "Semgrep",
+      "category": "sast-static-security",
+      "purpose": "الفحص الأمني الساكن للكود واكتشاف الأنماط البرمجية الخطرة وحقن الاستعلامات",
+      "official_url": "https://semgrep.dev/",
+      "when_to_use": "أثناء البناء والتدقيق البرمجي لفحص شفرة المصدر قبل الإطلاق",
+      "required": true,
+      "supports": [
+        "custom-rules",
+        "owasp-top-10",
+        "cwe-coverage",
+        "multi-language"
+      ],
+      "outputs": [
+        "semgrep-findings.json"
+      ]
+    },
+    {
+      "id": "sentry",
+      "name": "Sentry",
+      "category": "observability-monitoring",
+      "purpose": "مراقبة الأخطاء والاستثناءات وتتبع الأداء في بيئة الإنتاج دون تسريب بيانات حساسة",
+      "official_url": "https://sentry.io/",
+      "when_to_use": "في مرحلة الإنتاج لتشخيص الأخطاء الحية وتتبع زمن الاستجابة",
+      "required": false,
+      "supports": [
+        "error-tracking",
+        "performance-tracing",
+        "breadcrumbs",
+        "release-health"
+      ],
+      "outputs": [
+        "sentry-issue-alerts",
+        "performance-traces"
+      ]
+    }
+  ]
+}

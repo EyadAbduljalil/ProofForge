@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Anti-Slop Tauri App</title>
+  <style>
+    /* ==========================================================================
+       CSS Custom Properties — Domain Token System (Tauri)
+       OKLCH-derived colors, lightweight CSS for Tauri's smaller footprint
+       ========================================================================== */
+    :root {
+      /* THEME: replace colors */
+      --bg-primary: #faf8f5;
+      --bg-secondary: #ede9e5;
+      --bg-elevated: #ffffff;
+      --bg-titlebar: #f0ece8;       /* THEME: titlebar background */
+      --accent: #3d5cb8;            /* oklch(0.50 0.15 265) */
+      --accent-hover: #4d6bc5;
+      --text-primary: #1f1f21;
+      --text-secondary: #6b6b70;
+      --text-on-accent: #fafafc;
+      --border: #d9d4d0;
+      --titlebar-h: 36px;
+      --sidebar-w: 220px;
+
+      /* THEME: replace fonts — no banned fonts */
+      --font-display: 'Source Serif 4', Georgia, serif;
+      --font-body: 'IBM Plex Sans', system-ui, sans-serif;
+      --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+      --space-sm: 8px;
+      --space-md: 12px;
+      --space-lg: 16px;
+      --space-xl: 24px;
+      --radius: 8px;
+    }
+
+    /* THEME: dark mode */
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg-primary: #1a1a1f;
+        --bg-secondary: #26262b;
+        --bg-elevated: #2e2e36;
+        --bg-titlebar: #16161a;
+        --text-primary: #ebe8e6;
+        --text-secondary: #9e9c99;
+        --border: #42424a;
+        --accent-hover: #7b9cda;
+      }
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ==========================================================================
+       Custom Title Bar — Tauri uses data-tauri-drag-region
+       Note: In tauri.conf.json set "decorations": false for custom titlebar
+       ========================================================================== */
+    .titlebar {
+      height: var(--titlebar-h);
+      background: var(--bg-titlebar);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 var(--space-lg);
+      user-select: none;
+      flex-shrink: 0;
+    }
+
+    /* data-tauri-drag-region: Tauri recognizes this attribute for window dragging
+       — no -webkit-app-region needed unlike Electron */
+    .titlebar__drag {
+      flex: 1;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .titlebar__title {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+
+    .titlebar__controls { display: flex; gap: 2px; }
+
+    .titlebar__btn {
+      width: 36px;
+      height: var(--titlebar-h);
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .titlebar__btn:hover { background: var(--border); }
+    .titlebar__btn--close:hover { background: #e04040; color: #fff; }
+
+    /* ==========================================================================
+       Layout
+       ========================================================================== */
+    .app-body { display: flex; flex: 1; overflow: hidden; }
+
+    /* THEME: sidebar */
+    .sidebar {
+      width: var(--sidebar-w);
+      background: var(--bg-secondary);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      transition: width 0.2s ease;
+    }
+
+    .sidebar--collapsed { width: 48px; }
+
+    .sidebar__toggle {
+      margin: var(--space-sm);
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-size: 16px;
+      padding: var(--space-sm);
+      border-radius: var(--radius);
+    }
+
+    .sidebar__toggle:hover { background: var(--border); }
+
+    .sidebar__nav { list-style: none; padding: var(--space-sm); }
+
+    .sidebar__item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      padding: var(--space-sm) var(--space-md);
+      border-radius: 6px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-size: 14px;
+      white-space: nowrap;
+      transition: background 0.12s;
+    }
+
+    .sidebar__item:hover { background: var(--border); color: var(--text-primary); }
+    .sidebar__item--active { background: var(--accent); color: var(--text-on-accent); }
+
+    .sidebar__icon { width: 18px; text-align: center; flex-shrink: 0; }
+    .sidebar--collapsed .sidebar__label { display: none; }
+
+    /* Content */
+    .content {
+      flex: 1;
+      overflow-y: auto;
+      padding: var(--space-xl);
+    }
+
+    .content h1 {
+      font-family: var(--font-display);
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: var(--space-lg);
+    }
+
+    .content p {
+      color: var(--text-secondary);
+      font-size: 14px;
+      line-height: 1.6;
+      max-width: 64ch;
+    }
+  </style>
+</head>
+<body>
+  <!-- Title Bar — data-tauri-drag-region for Tauri window dragging -->
+  <div class="titlebar">
+    <div class="titlebar__drag" data-tauri-drag-region>
+      <span class="titlebar__title">Anti-Slop App</span>
+    </div>
+    <div class="titlebar__controls">
+      <button class="titlebar__btn" id="btn-minimize" aria-label="Minimize">&#x2013;</button>
+      <button class="titlebar__btn" id="btn-maximize" aria-label="Maximize">&#x25A1;</button>
+      <button class="titlebar__btn titlebar__btn--close" id="btn-close" aria-label="Close">&#x2715;</button>
+    </div>
+  </div>
+
+  <div class="app-body">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <button class="sidebar__toggle" id="sidebar-toggle" aria-label="Toggle sidebar">&#x2630;</button>
+      <ul class="sidebar__nav">
+        <li class="sidebar__item sidebar__item--active">
+          <span class="sidebar__icon">&#x2302;</span>
+          <span class="sidebar__label">Dashboard</span>
+        </li>
+        <li class="sidebar__item">
+          <span class="sidebar__icon">&#x2709;</span>
+          <span class="sidebar__label">Messages</span>
+        </li>
+        <li class="sidebar__item">
+          <span class="sidebar__icon">&#x2699;</span>
+          <span class="sidebar__label">Settings</span>
+        </li>
+      </ul>
+    </aside>
+
+    <main class="content">
+      <h1>Dashboard</h1>
+      <p>
+        Tauri app template with domain-driven theming. Lighter than Electron with
+        native system webview. Use <code>@tauri-apps/api</code> for filesystem,
+        dialog, notification, and other system integrations.
+      </p>
+    </main>
+  </div>
+
+  <script type="module">
+    // =========================================================================
+    // Tauri API Integration
+    // Import from @tauri-apps/api in your bundled app:
+    //   import { appWindow } from '@tauri-apps/api/window';
+    //   import { invoke } from '@tauri-apps/api/core';
+    //
+    // Window controls use appWindow methods:
+    //   appWindow.minimize(), appWindow.toggleMaximize(), appWindow.close()
+    //
+    // For Tauri v2, use @tauri-apps/api/window:
+    //   import { getCurrentWindow } from '@tauri-apps/api/window';
+    //   const win = getCurrentWindow();
+    //   win.minimize(); win.toggleMaximize(); win.close();
+    // =========================================================================
+
+    document.getElementById('btn-minimize')?.addEventListener('click', async () => {
+      // await appWindow.minimize();
+      console.log('minimize — wire to @tauri-apps/api');
+    });
+
+    document.getElementById('btn-maximize')?.addEventListener('click', async () => {
+      // await appWindow.toggleMaximize();
+      console.log('maximize — wire to @tauri-apps/api');
+    });
+
+    document.getElementById('btn-close')?.addEventListener('click', async () => {
+      // await appWindow.close();
+      console.log('close — wire to @tauri-apps/api');
+    });
+
+    // Sidebar toggle
+    document.getElementById('sidebar-toggle')?.addEventListener('click', () => {
+      document.getElementById('sidebar')?.classList.toggle('sidebar--collapsed');
+    });
+
+    // Sidebar nav
+    document.querySelectorAll('.sidebar__item').forEach((item) => {
+      item.addEventListener('click', () => {
+        document.querySelector('.sidebar__item--active')?.classList.remove('sidebar__item--active');
+        item.classList.add('sidebar__item--active');
+      });
+    });
+  </script>
+</body>
+</html>

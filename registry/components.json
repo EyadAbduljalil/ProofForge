@@ -1,0 +1,41 @@
+{
+  "version": "2.0.0",
+  "components": [
+    {
+      "name": "AccessibleDialog",
+      "category": "Overlays",
+      "implementation": "packages/components/AccessibleDialog.js",
+      "accessibility": "WCAG 2.2 AA (ARIA modal, Focus Trapping, Esc key listener)",
+      "responsive": "Adaptive mobile bottom-sheet vs desktop centered modal",
+      "tests": "packages/components/tests/components.test.js",
+      "status": "VERIFIED"
+    },
+    {
+      "name": "ValidatedForm",
+      "category": "Forms",
+      "implementation": "packages/components/ValidatedForm.js",
+      "accessibility": "ARIA live error announcements, aria-invalid attributes",
+      "responsive": "Fluid grid and dynamic stack layout",
+      "tests": "packages/components/tests/components.test.js",
+      "status": "VERIFIED"
+    },
+    {
+      "name": "DataTable",
+      "category": "Data Display",
+      "implementation": "packages/components/DataTable.js",
+      "accessibility": "ARIA sortable headers, accessible pagination controls",
+      "responsive": "Horizontal scroll container with sticky header and card fallback",
+      "tests": "packages/components/tests/components.test.js",
+      "status": "VERIFIED"
+    },
+    {
+      "name": "ToastAlert",
+      "category": "Feedback",
+      "implementation": "packages/components/ToastAlert.js",
+      "accessibility": "role='status' / role='alert' with aria-live='polite' regions",
+      "responsive": "Top-right desktop stack, bottom-full mobile banner",
+      "tests": "packages/components/tests/components.test.js",
+      "status": "VERIFIED"
+    }
+  ]
+}

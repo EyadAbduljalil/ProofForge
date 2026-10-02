@@ -1,0 +1,31 @@
+name: WebForge OS — Master Continuous Verification & Quality CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  verify:
+    name: Execute Verification & Security Benchmark
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x]
+
+    steps:
+    - name: Checkout Source Code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - name: Run Master Quality & Security Test Suites
+      run: npm test
+
+    - name: Run Multi-Stack Adaptive Benchmarks
+      run: node -e "const Benchmark = require('./packages/orchestration/benchmark-framework'); const res = Benchmark.runMultiStackBenchmark(); if (res.detectionAccuracy < 100) process.exit(1);"

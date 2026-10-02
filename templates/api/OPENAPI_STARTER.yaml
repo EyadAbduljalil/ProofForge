@@ -1,0 +1,20 @@
+openapi: 3.1.0
+info:
+  title: WebForge OS Unified API Specification
+  version: 1.0.0
+  description: المواصفة المرجعية الموحدة لواجهات برمجة التطبيقات الآمنة.
+paths:
+  /healthz:
+    get:
+      summary: فحص صحة وجاهزية النظام
+      responses:
+        '200':
+          description: النظام يعمل بكفاءة
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok

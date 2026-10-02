@@ -1,0 +1,81 @@
+{
+  "banned_primary": [
+    "Inter",
+    "Roboto",
+    "Open Sans",
+    "Lato",
+    "Arial",
+    "Helvetica",
+    "Montserrat",
+    "Poppins",
+    "Raleway"
+  ],
+  "stacks": {
+    "fintech": {
+      "heading": "'Plus Jakarta Sans', 'Inter', system-ui, sans-serif",
+      "body": "'Inter', 'Helvetica Neue', system-ui, sans-serif",
+      "mono": "'JetBrains Mono', 'SF Mono', 'Cascadia Code', monospace",
+      "google_fonts_url": "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap",
+      "notes": "Inter permitted as BODY ONLY in fintech for data legibility. Heading font provides distinctiveness."
+    },
+    "healthcare": {
+      "heading": "'Outfit', 'DM Sans', system-ui, sans-serif",
+      "body": "'DM Sans', 'Source Sans 3', system-ui, sans-serif",
+      "mono": "'IBM Plex Mono', 'Consolas', monospace",
+      "google_fonts_url": "https://fonts.googleapis.com/css2?family=Outfit:wght@400;600&family=DM+Sans:wght@400&family=Source+Sans+3:wght@400&family=IBM+Plex+Mono:wght@400;500&display=swap",
+      "notes": "Soothing, readable sans-serif pairing optimized for accessibility."
+    },
+    "devtools": {
+      "heading": "'Geist Sans', 'Cabinet Grotesk', system-ui, sans-serif",
+      "body": "'Geist Sans', 'General Sans', system-ui, sans-serif",
+      "mono": "'Geist Mono', 'JetBrains Mono', 'Fira Code', monospace",
+      "google_fonts_url": "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Fira+Code:wght@400;500&display=swap",
+      "notes": "Geist Sans/Mono are self-hosted or Vercel CDN. Cabinet Grotesk and General Sans available via Fontshare."
+    },
+    "ecommerce": {
+      "heading": "'Cormorant Garamond', 'Playfair Display', 'Georgia', serif",
+      "body": "'Lato', 'Proza Libre', system-ui, sans-serif",
+      "mono": "'IBM Plex Mono', monospace",
+      "google_fonts_url": "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=Playfair+Display:wght@400;500&family=Lato:wght@400&family=IBM+Plex+Mono:wght@400&display=swap",
+      "notes": "Editorial serif heading + clean sans body. Lato permitted here as workhorse body only."
+    },
+    "education": {
+      "heading": "'Nunito', 'Baloo 2', 'Poppins', sans-serif",
+      "body": "'Nunito', 'DM Sans', system-ui, sans-serif",
+      "mono": "'Fira Code', monospace",
+      "google_fonts_url": "https://fonts.googleapis.com/css2?family=Nunito:wght@400;800&family=Baloo+2:wght@400;800&family=Poppins:wght@400;800&family=DM+Sans:wght@400&family=Fira+Code:wght@400;500&display=swap",
+      "notes": "Playful, rounded sans-serif. Poppins permitted as fallback only in education domain."
+    },
+    "media": {
+      "heading": "'Playfair Display', 'Libre Baskerville', 'Georgia', serif",
+      "body": "'Source Serif 4', 'Lora', 'Charter', serif",
+      "mono": "'Fira Code', 'Source Code Pro', monospace",
+      "google_fonts_url": "https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Libre+Baskerville:wght@400;700&family=Source+Serif+4:wght@400&family=Lora:wght@400&family=Fira+Code:wght@400&family=Source+Code+Pro:wght@400&display=swap",
+      "notes": "Editorial serif pairing. Both heading and body are serif for traditional publishing aesthetic."
+    },
+    "government": {
+      "heading": "'GDS Transport', 'Noto Sans', 'Arial', sans-serif",
+      "body": "'Noto Sans', 'Arial', sans-serif",
+      "mono": "'Noto Sans Mono', 'Consolas', monospace",
+      "google_fonts_url": "https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;700&family=Noto+Sans+Mono:wght@400&display=swap",
+      "notes": "GDS Transport is UK Government's proprietary font (self-hosted). Noto Sans provides universal language coverage. System fonts preferred for reliability."
+    },
+    "creative": {
+      "heading": "'Clash Display', 'Bricolage Grotesque', 'Anton', sans-serif",
+      "body": "'Satoshi', 'General Sans', system-ui, sans-serif",
+      "mono": "'Recursive', 'Fira Code', monospace",
+      "google_fonts_url": "https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;700&family=Anton&family=Fira+Code:wght@400;500&display=swap",
+      "notes": "Clash Display and Satoshi are foundry fonts (Fontshare or self-hosted). Recursive is a variable font with casual/linear axis."
+    }
+  },
+  "pairing_rules": [
+    "Contrast families: pair serif heading with sans body, or vice versa",
+    "Match x-heights between heading and body fonts for optical harmony",
+    "One display font + one workhorse font per domain",
+    "Variable fonts preferred (fewer network requests, more axes to play with)",
+    "Always include system-ui fallback in the stack",
+    "Never use banned fonts as primary — only as fallbacks in specific domains",
+    "Self-hosted fonts should include woff2 format minimum (best compression)",
+    "Mono fonts should have clear glyph differentiation (0 vs O, 1 vs l vs I)"
+  ]
+}

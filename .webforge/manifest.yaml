@@ -1,0 +1,36 @@
+webforge:
+  version: "2.0.0"
+  mode: "STRICT"
+  constitution: "WEBFORGE_CONSTITUTION.md"
+
+project:
+  name: "webforge-os"
+  type: "operating-system"
+  architecture: "layered-security-governance"
+  language: "javascript"
+  runtime: "nodejs"
+  package_manager: "npm"
+
+domains:
+  primary: "core-engineering"
+  active:
+    - "ecommerce"
+    - "saas"
+    - "dashboard"
+
+risk:
+  level: "CONTROLLED"
+  security: "HARDENED"
+  privacy: "ENFORCED"
+  operational: "LOW"
+
+capabilities:
+  authentication: true
+  authorization: true
+  multi_tenant: true
+  file_uploads: true
+  ai_governance: true
+  webhooks: true
+  graphql: true
+  containers: true
+  strict_compliance: true

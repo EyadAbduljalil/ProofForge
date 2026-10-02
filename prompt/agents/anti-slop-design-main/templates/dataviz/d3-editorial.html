@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Editorial Data Visualization — Scrollytelling Template</title>
+  <!--
+    D3 Editorial / Scrollytelling Template
+    Narrative-driven visualization: sticky chart + scrolling prose steps.
+    Two scroll-triggered transitions: data highlight + annotation reveal.
+    Customization points marked with THEME comments. OKLCH colors throughout.
+  -->
+  <style>
+    /* THEME: Domain color tokens — swap for any domain palette */
+    :root {
+      --ed-bg: oklch(98% 0.005 70); --ed-surface: oklch(100% 0 0);
+      --ed-border: oklch(90% 0.01 70);
+      --ed-text: oklch(22% 0.02 70); --ed-text-2: oklch(45% 0.02 70);
+      --ed-text-m: oklch(62% 0.015 70);
+      /* THEME: chart-colors */
+      --ed-accent-1: oklch(55% 0.18 260); --ed-accent-3: oklch(65% 0.16 45);
+      --ed-highlight: oklch(70% 0.22 55); --ed-annotation: oklch(45% 0.12 25);
+      /* THEME: typography */
+      --ed-font-h: 'Fraunces', 'Libre Baskerville', Georgia, serif;
+      --ed-font: 'Source Sans 3', 'Noto Sans', system-ui, sans-serif;
+      --ed-radius: 0.5rem;
+    }
+    [data-theme="dark"] {
+      --ed-bg: oklch(14% 0.01 70); --ed-surface: oklch(18% 0.01 70);
+      --ed-border: oklch(26% 0.02 70); --ed-text: oklch(92% 0.01 70);
+      --ed-text-2: oklch(70% 0.02 70); --ed-text-m: oklch(52% 0.015 70);
+      --ed-accent-1: oklch(65% 0.18 260); --ed-highlight: oklch(75% 0.20 55);
+      --ed-annotation: oklch(65% 0.12 25);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--ed-font); background: var(--ed-bg);
+      color: var(--ed-text); line-height: 1.65; }
+
+    .ed-header { max-width: 42rem; margin: 4rem auto 2rem; padding: 0 1.5rem; }
+    .ed-header h1 { font-family: var(--ed-font-h); font-size: clamp(1.75rem, 4vw, 2.5rem);
+      font-weight: 700; line-height: 1.2; margin-bottom: 0.75rem; }
+    .ed-header .byline { font-size: 0.9375rem; color: var(--ed-text-m); }
+
+    .scrolly { position: relative; display: grid; grid-template-columns: 1fr 1fr;
+      gap: 2rem; max-width: 72rem; margin: 0 auto; padding: 0 1.5rem; }
+    @media (max-width: 768px) {
+      .scrolly { grid-template-columns: 1fr; }
+      .chart-sticky { position: relative; top: 0; height: 50vh; margin-bottom: 1rem; }
+    }
+    .chart-sticky { position: sticky; top: 4rem; height: calc(100vh - 8rem);
+      display: flex; align-items: center; justify-content: center; }
+    .chart-sticky svg { width: 100%; max-height: 100%; overflow: visible; }
+
+    .steps { display: flex; flex-direction: column; gap: 60vh; padding: 30vh 0 60vh; }
+    .step { background: var(--ed-surface); border: 1px solid var(--ed-border);
+      border-radius: var(--ed-radius); padding: 1.5rem 1.75rem;
+      max-width: 28rem; opacity: 0.3; transition: opacity 0.4s ease; }
+    .step.is-active { opacity: 1; }
+    .step h2 { font-family: var(--ed-font-h); font-size: 1.25rem; font-weight: 650;
+      margin-bottom: 0.5rem; }
+    .step p { font-size: 0.9375rem; color: var(--ed-text-2); }
+
+    .annotation-line { stroke: var(--ed-annotation); stroke-width: 1;
+      stroke-dasharray: 4 3; opacity: 0; transition: opacity 0.5s ease; }
+    .annotation-label { font-family: var(--ed-font); font-size: 12px;
+      fill: var(--ed-annotation); opacity: 0; transition: opacity 0.5s ease; }
+    .annotation-visible .annotation-line,
+    .annotation-visible .annotation-label { opacity: 1; }
+
+    .ed-footer { max-width: 42rem; margin: 4rem auto; padding: 2rem 1.5rem 0;
+      border-top: 1px solid var(--ed-border); font-size: 0.8125rem; color: var(--ed-text-m); }
+  </style>
+</head>
+<body>
+  <header class="ed-header">
+    <h1>Renewable energy outpaced fossil fuels for the first time in 2024</h1>
+    <p class="byline">A visual essay on the global energy transition</p>
+  </header>
+
+  <section class="scrolly" aria-label="Scrollytelling visualization">
+    <div class="chart-sticky">
+      <svg id="chart" viewBox="0 0 560 400" role="img"
+        aria-label="Line chart showing energy production by source from 2018 to 2024">
+        <title>Energy production by source, 2018-2024</title>
+      </svg>
+    </div>
+    <div class="steps">
+      <div class="step" data-step="0">
+        <h2>Both sources grew through 2021</h2>
+        <p>Fossil fuel and renewable energy production both climbed steadily
+        through the pandemic recovery, with fossil fuels maintaining a comfortable lead.</p>
+      </div>
+      <div class="step" data-step="1">
+        <h2>Renewables accelerated in 2022</h2>
+        <p>Investment surges in solar and wind pushed renewable output sharply
+        higher while fossil fuel growth plateaued. The gap narrowed from 40% to under 15%.</p>
+      </div>
+      <div class="step" data-step="2">
+        <h2>The crossover happened in late 2024</h2>
+        <p>For the first time, monthly renewable generation exceeded fossil fuel output
+        globally. This single data point marks a structural shift decades in the making.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer class="ed-footer">
+    <p>Data: International Energy Agency (IEA), 2024 World Energy Outlook.</p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+  <script>
+    const data = [
+      { year: 2018, fossil: 310, renewable: 180 },
+      { year: 2019, fossil: 325, renewable: 200 },
+      { year: 2020, fossil: 305, renewable: 210 },
+      { year: 2021, fossil: 340, renewable: 240 },
+      { year: 2022, fossil: 345, renewable: 310 },
+      { year: 2023, fossil: 348, renewable: 355 },
+      { year: 2024, fossil: 342, renewable: 390 },
+    ];
+
+    // Chart setup
+    const svg = d3.select('#chart');
+    const margin = { top: 30, right: 80, bottom: 40, left: 50 };
+    const width = 560 - margin.left - margin.right;
+    const height = 400 - margin.top - margin.bottom;
+    const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
+
+    /* THEME: read CSS custom properties for chart colors */
+    const cs = getComputedStyle(document.documentElement);
+    const cFossil = cs.getPropertyValue('--ed-accent-3').trim();
+    const cRenew = cs.getPropertyValue('--ed-accent-1').trim();
+    const cHigh = cs.getPropertyValue('--ed-highlight').trim();
+    const cAnnot = cs.getPropertyValue('--ed-annotation').trim();
+    const cMuted = cs.getPropertyValue('--ed-text-m').trim();
+    const font = cs.getPropertyValue('--ed-font').trim();
+
+    // Scales
+    const x = d3.scaleLinear().domain(d3.extent(data, d => d.year)).range([0, width]);
+    const y = d3.scaleLinear().domain([0, 450]).range([height, 0]);
+
+    // Axes (minimal — no domain lines, light gridlines)
+    g.append('g').attr('transform', `translate(0,${height})`)
+      .call(d3.axisBottom(x).ticks(7).tickFormat(d3.format('d')).tickSize(0).tickPadding(10))
+      .call(g => g.select('.domain').remove())
+      .selectAll('text').attr('fill', cMuted).attr('font-family', font).attr('font-size', '12px');
+
+    g.append('g')
+      .call(d3.axisLeft(y).ticks(5).tickSize(-width).tickPadding(8))
+      .call(g => g.select('.domain').remove())
+      .call(g => g.selectAll('.tick line').attr('stroke', 'var(--ed-border)').attr('stroke-dasharray', '2 3'))
+      .selectAll('text').attr('fill', cMuted).attr('font-family', font).attr('font-size', '12px');
+
+    // Lines
+    const mkLine = key => d3.line().x(d => x(d.year)).y(d => y(d[key])).curve(d3.curveMonotoneX);
+    const pathF = g.append('path').datum(data).attr('d', mkLine('fossil'))
+      .attr('fill', 'none').attr('stroke', cFossil).attr('stroke-width', 2.5);
+    const pathR = g.append('path').datum(data).attr('d', mkLine('renewable'))
+      .attr('fill', 'none').attr('stroke', cRenew).attr('stroke-width', 2.5);
+
+    // Direct labels (not a legend box)
+    [[2024, 342, 'Fossil', cFossil], [2024, 390, 'Renewable', cRenew]].forEach(([yr, val, txt, c]) => {
+      g.append('text').attr('x', x(yr) + 8).attr('y', y(val)).text(txt)
+        .attr('fill', c).attr('font-family', font).attr('font-size', '13px')
+        .attr('font-weight', 600).attr('dominant-baseline', 'middle');
+    });
+
+    // Highlight dot (hidden initially)
+    const dot = g.append('circle').attr('r', 6).attr('fill', cHigh).attr('opacity', 0);
+
+    // Annotation group (hidden initially)
+    const annG = g.append('g').classed('annotation-group', true);
+    const crossX = x(2023.4), crossY = y(350);
+    annG.append('line').classed('annotation-line', true)
+      .attr('x1', crossX).attr('y1', crossY - 40).attr('x2', crossX).attr('y2', crossY);
+    annG.append('text').classed('annotation-label', true)
+      .attr('x', crossX).attr('y', crossY - 48).attr('text-anchor', 'middle')
+      .attr('font-family', font).text('Crossover point');
+
+    // --- Scroll-triggered transitions ---
+    const steps = document.querySelectorAll('.step');
+
+    function onStep(idx) {
+      steps.forEach((el, i) => el.classList.toggle('is-active', i === idx));
+      // Reset
+      pathF.attr('stroke-width', 2.5).attr('opacity', 1);
+      pathR.attr('stroke-width', 2.5).attr('opacity', 1);
+      dot.attr('opacity', 0);
+      annG.classed('annotation-visible', false);
+
+      if (idx === 1) {
+        // Transition 1: highlight renewable, dim fossil
+        pathF.attr('opacity', 0.25).attr('stroke-width', 1.5);
+        pathR.attr('stroke-width', 3.5);
+        dot.attr('cx', x(2022)).attr('cy', y(310)).attr('fill', cHigh).attr('opacity', 1);
+      }
+      if (idx === 2) {
+        // Transition 2: annotation reveal at crossover
+        pathF.attr('stroke-width', 2);
+        pathR.attr('stroke-width', 3);
+        annG.classed('annotation-visible', true);
+        dot.attr('cx', crossX).attr('cy', crossY).attr('fill', cAnnot).attr('opacity', 1);
+      }
+    }
+
+    // IntersectionObserver scrollytelling (no external dependency)
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) onStep(parseInt(e.target.dataset.step, 10));
+      });
+    }, { rootMargin: '-40% 0px -40% 0px', threshold: 0.1 });
+
+    steps.forEach(s => observer.observe(s));
+    onStep(0);
+  </script>
+</body>
+</html>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- STRATEGY 1: Preconnect to Google Fonts origins (DNS + TLS handshake) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <!-- STRATEGY 2: Preload most critical font (first heading font weight) -->
+  <!-- Only preload 1-2 fonts max — the ones needed above-the-fold -->
+  <link rel="preload"
+        href="https://fonts.gstatic.com/s/plusjakartasans/v8/LDI2apCSOBg7S-QT7q4AOeekWPrP5hKQ.woff2"
+        as="font"
+        type="font/woff2"
+        crossorigin>
+
+  <!-- STRATEGY 3: Load Google Fonts stylesheet with display=swap -->
+  <!-- display=swap ensures text is visible immediately with fallback font -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+
+  <!-- STRATEGY 4: Self-hosted fonts with @font-face -->
+  <style>
+    /* Use font-display: swap for instant text visibility */
+    @font-face {
+      font-family: 'Geist Sans';
+      src: url('/fonts/GeistSans-Variable.woff2') format('woff2-variations');
+      font-weight: 100 900; /* Variable font weight range */
+      font-display: swap;
+      font-style: normal;
+    }
+
+    @font-face {
+      font-family: 'Geist Mono';
+      src: url('/fonts/GeistMono-Variable.woff2') format('woff2-variations');
+      font-weight: 100 900;
+      font-display: swap;
+      font-style: normal;
+    }
+
+    /* Optional: Define fallback font metrics to reduce layout shift */
+    @font-face {
+      font-family: 'Geist Sans Fallback';
+      src: local('Arial');
+      ascent-override: 95%;
+      descent-override: 25%;
+      line-gap-override: 0%;
+      size-adjust: 105%;
+    }
+
+    body {
+      font-family: 'Geist Sans', 'Geist Sans Fallback', system-ui, sans-serif;
+    }
+  </style>
+</head>
+<body>
+  <h1>Font Loading Strategies</h1>
+
+  <!-- STRATEGY 5: Font Loading API for progressive enhancement -->
+  <script>
+    // Wait for all fonts to load, then add class for custom animations
+    document.fonts.ready.then(() => {
+      document.documentElement.classList.add('fonts-loaded');
+      console.log('All fonts loaded successfully');
+    });
+
+    // Optional: Load specific font and measure when it's ready
+    const font = new FontFace(
+      'Plus Jakarta Sans',
+      'url(https://fonts.gstatic.com/s/plusjakartasans/v8/LDI2apCSOBg7S-QT7q4AOeekWPrP5hKQ.woff2)',
+      { weight: '700' }
+    );
+
+    font.load().then((loadedFont) => {
+      document.fonts.add(loadedFont);
+      console.log('Critical font loaded');
+    }).catch((error) => {
+      console.error('Font loading failed:', error);
+    });
+  </script>
+
+  <!--
+  WHEN TO USE WHICH STRATEGY:
+
+  - Preconnect: Always use for Google Fonts (or any external font CDN)
+  - Preload: Only for 1-2 critical fonts needed above-the-fold (heading font)
+  - font-display: swap: Always use to prevent invisible text (FOIT)
+  - Self-hosted: For custom/foundry fonts or to avoid Google CDN
+  - Font Loading API: For progressive enhancement or critical font detection
+  - Fallback metrics: To minimize Cumulative Layout Shift (CLS)
+
+  PERFORMANCE TIPS:
+  - Variable fonts > multiple font files (fewer requests)
+  - woff2 format only (best compression, 95%+ browser support)
+  - Subset fonts to needed glyphs/languages (use Google Fonts &text= param)
+  - Avoid loading too many weights (400 + 700 usually sufficient)
+  -->
+</body>
+</html>

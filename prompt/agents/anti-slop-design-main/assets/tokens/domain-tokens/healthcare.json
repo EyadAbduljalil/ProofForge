@@ -1,0 +1,60 @@
+{
+  "domain": "healthcare",
+  "aesthetic_label": "calm-reassuring",
+  "colors": {
+    "light": {
+      "--color-bg-primary": "oklch(0.98 0.004 160)",
+      "--color-bg-secondary": "oklch(0.96 0.01 170)",
+      "--color-bg-elevated": "oklch(0.995 0.002 90)",
+      "--color-text-primary": "oklch(0.22 0.02 200)",
+      "--color-text-secondary": "oklch(0.48 0.015 200)",
+      "--color-text-heading": "oklch(0.18 0.025 200)",
+      "--color-accent-primary": "oklch(0.55 0.14 190)",
+      "--color-accent-secondary": "oklch(0.60 0.12 250)",
+      "--color-border": "oklch(0.88 0.015 170)",
+      "--color-error": "oklch(0.55 0.18 25)",
+      "--color-success": "oklch(0.58 0.15 160)",
+      "--color-warning": "oklch(0.72 0.12 80)"
+    },
+    "dark": {
+      "--color-bg-primary": "oklch(0.14 0.01 200)",
+      "--color-bg-secondary": "oklch(0.18 0.015 200)",
+      "--color-bg-elevated": "oklch(0.23 0.015 200)",
+      "--color-text-primary": "oklch(0.90 0.008 170)",
+      "--color-text-secondary": "oklch(0.65 0.01 180)",
+      "--color-text-heading": "oklch(0.93 0.005 170)",
+      "--color-accent-primary": "oklch(0.65 0.12 190)",
+      "--color-accent-secondary": "oklch(0.70 0.12 250)",
+      "--color-border": "oklch(0.30 0.015 200)",
+      "--color-error": "oklch(0.65 0.18 25)",
+      "--color-success": "oklch(0.68 0.15 160)",
+      "--color-warning": "oklch(0.78 0.12 80)"
+    }
+  },
+  "typography": {
+    "--font-heading": "'Outfit', 'DM Sans', system-ui, sans-serif",
+    "--font-body": "'DM Sans', 'Source Sans 3', system-ui, sans-serif",
+    "--font-mono": "'IBM Plex Mono', 'Consolas', monospace",
+    "--font-weight-heading": "600",
+    "--font-weight-body": "400",
+    "--letter-spacing-heading": "-0.01em",
+    "--line-height-body": "1.7",
+    "--line-height-heading": "1.2"
+  },
+  "shape": {
+    "--radius-sm": "8px",
+    "--radius-md": "12px",
+    "--radius-lg": "16px",
+    "--radius-pill": "9999px"
+  },
+  "motion": {
+    "--motion-intensity": "minimal",
+    "--motion-duration-base": "150ms",
+    "--motion-ease-default": "cubic-bezier(0.4, 0, 0.2, 1)"
+  },
+  "shadows": {
+    "--shadow-sm": "0 1px 2px oklch(0.3 0.02 190 / 0.06)",
+    "--shadow-md": "0 2px 8px oklch(0.3 0.02 190 / 0.08)",
+    "--shadow-lg": "0 8px 24px oklch(0.3 0.02 190 / 0.12)"
+  }
+}

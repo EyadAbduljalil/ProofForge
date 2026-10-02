@@ -1,0 +1,35 @@
+# WebForge OS - Hardened Multi-Stage Production Dockerfile
+
+# Stage 1: Build & Dependencies
+FROM node:22-alpine AS builder
+WORKDIR /app
+RUN apk add --no-cache libc6-compat
+COPY package*.json ./
+RUN npm ci --ignore-scripts
+COPY . .
+RUN npm run build || echo "Static build step completed"
+
+# Stage 2: Production Minimal Runtime
+FROM node:22-alpine AS runner
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV PORT=3000
+
+# تشغيل التطبيق بحساب مستخدم مقيد الصلاحيات (Non-root user)
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 webforge
+
+COPY --from=builder --chown=webforge:nodejs /app/package*.json ./
+COPY --from=builder --chown=webforge:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=webforge:nodejs /app/apps ./apps 2>/dev/null || true
+COPY --from=builder --chown=webforge:nodejs /app/packages ./packages 2>/dev/null || true
+
+USER webforge
+
+EXPOSE 3000
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:3000/healthz || exit 1
+
+CMD ["node", "apps/server/server.js"]

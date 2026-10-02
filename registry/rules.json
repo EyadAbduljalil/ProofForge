@@ -1,0 +1,66 @@
+{
+  "version": "1.0.0",
+  "description": "سجل القواعد الهندسية الأساسية",
+  "rules": [
+    {
+      "id": "sec.zero-trust",
+      "priority": "P0",
+      "path": "core/policies/zero_trust_policy.md",
+      "mandatory": true
+    },
+    {
+      "id": "sec.authorization-ownership",
+      "priority": "P0",
+      "path": "core/policies/authorization_policy.md",
+      "mandatory": true
+    },
+    {
+      "id": "sec.secrets-management",
+      "priority": "P0",
+      "path": "core/policies/secret_management_policy.md",
+      "mandatory": true
+    },
+    {
+      "id": "backend.schema-validation",
+      "priority": "P0",
+      "path": "core/rules/backend_rules.md",
+      "mandatory": true
+    },
+    {
+      "id": "backend.database-transactions",
+      "priority": "P0",
+      "path": "core/rules/backend_rules.md",
+      "mandatory": true
+    },
+    {
+      "id": "frontend.state-completeness",
+      "priority": "P1",
+      "path": "core/rules/frontend_rules.md",
+      "mandatory": true
+    },
+    {
+      "id": "ui.responsive-mobile-first",
+      "priority": "P2",
+      "path": "core/rules/responsive_rules.md",
+      "mandatory": true
+    },
+    {
+      "id": "ui.rtl-logical-properties",
+      "priority": "P2",
+      "path": "core/rules/rtl_ltr_rules.md",
+      "mandatory": true
+    },
+    {
+      "id": "ui.wcag-accessibility",
+      "priority": "P0",
+      "path": "core/rules/accessibility_rules.md",
+      "mandatory": true
+    },
+    {
+      "id": "qa.evidence-verification",
+      "priority": "P0",
+      "path": "core/standards/evidence_verification_standard.md",
+      "mandatory": true
+    }
+  ]
+}

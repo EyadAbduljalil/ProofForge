@@ -1,0 +1,14 @@
+{
+  "id": "ADR-001",
+  "timestamp": "2026-10-02T14:29:12.031Z",
+  "title": "Adoption of Zero-Trust Security Middleware Architecture",
+  "context": "Need strict server-side authorization across all API layers",
+  "options_considered": [],
+  "constraints": [],
+  "selected_option": "Custom Zero-Trust Micro-Guards",
+  "rationale": "Eliminates third-party supply-chain bloat while ensuring 100% testable invariants",
+  "tradeoffs": [],
+  "risks_and_mitigations": [],
+  "rollback_plan": "Revert to classic monolithic middleware",
+  "status": "ACCEPTED_AND_ENFORCED"
+}

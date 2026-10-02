@@ -1,0 +1,46 @@
+/* === semantic.css ===
+ * Semantic color tokens (Tier 2)
+ * Maps meaningful names to primitive values.
+ * Domain token overlays replace these via :root overrides.
+ * This is where "what color is a button" becomes a real question with a real answer.
+ */
+
+:root {
+  /* Backgrounds */
+  --color-bg-primary:     var(--primitive-bg-0);
+  --color-bg-secondary:   var(--primitive-bg-1);
+  --color-bg-elevated:    var(--primitive-bg-2);
+  --color-bg-muted:       var(--primitive-bg-3);
+
+  /* Text */
+  --color-text-primary:   var(--primitive-text-0);
+  --color-text-secondary: var(--primitive-text-1);
+  --color-text-tertiary:  var(--primitive-text-2);
+  --color-text-heading:   var(--primitive-text-0);
+  --color-text-inverse:   var(--primitive-bg-0);
+
+  /* Interactive — buttons, links, anything you can poke */
+  --color-interactive:         var(--primitive-accent-0);
+  --color-interactive-hover:   var(--primitive-accent-1);
+  --color-interactive-active:  var(--primitive-accent-2);
+  --color-interactive-bg:      var(--primitive-accent-bg);
+
+  /* Borders */
+  --color-border:         var(--primitive-border-0);
+  --color-border-strong:  var(--primitive-border-1);
+  --color-border-subtle:  var(--primitive-border-2);
+
+  /* State */
+  --color-error:          var(--primitive-error);
+  --color-success:        var(--primitive-success);
+  --color-warning:        var(--primitive-warning);
+  --color-info:           var(--primitive-info);
+
+  /* Surfaces — cards, modals, panels */
+  --color-surface:        var(--primitive-bg-1);
+  --color-surface-hover:  var(--primitive-bg-3);
+  --color-overlay:        oklch(0 0 0 / 0.5);
+
+  /* Focus ring — accessibility baseline */
+  --color-focus-ring:     var(--primitive-accent-0);
+}

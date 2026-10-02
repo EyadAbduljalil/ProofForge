@@ -1,0 +1,60 @@
+{
+  "domain": "government",
+  "aesthetic_label": "functional-accessible",
+  "colors": {
+    "light": {
+      "--color-bg-primary": "oklch(1.0 0 0)",
+      "--color-bg-secondary": "oklch(0.97 0.003 240)",
+      "--color-bg-elevated": "oklch(1.0 0 0)",
+      "--color-text-primary": "oklch(0.15 0.01 260)",
+      "--color-text-secondary": "oklch(0.40 0.01 260)",
+      "--color-text-heading": "oklch(0.10 0.01 260)",
+      "--color-accent-primary": "oklch(0.47 0.18 250)",
+      "--color-accent-secondary": "oklch(0.40 0.15 250)",
+      "--color-border": "oklch(0.75 0.005 260)",
+      "--color-error": "oklch(0.50 0.22 25)",
+      "--color-success": "oklch(0.52 0.16 160)",
+      "--color-warning": "oklch(0.78 0.16 80)"
+    },
+    "dark": {
+      "--color-bg-primary": "oklch(0.15 0.005 260)",
+      "--color-bg-secondary": "oklch(0.19 0.005 260)",
+      "--color-bg-elevated": "oklch(0.23 0.005 260)",
+      "--color-text-primary": "oklch(0.92 0.003 260)",
+      "--color-text-secondary": "oklch(0.65 0.005 260)",
+      "--color-text-heading": "oklch(0.95 0.003 260)",
+      "--color-accent-primary": "oklch(0.62 0.18 250)",
+      "--color-accent-secondary": "oklch(0.55 0.15 250)",
+      "--color-border": "oklch(0.35 0.005 260)",
+      "--color-error": "oklch(0.60 0.22 25)",
+      "--color-success": "oklch(0.62 0.16 160)",
+      "--color-warning": "oklch(0.82 0.16 80)"
+    }
+  },
+  "typography": {
+    "--font-heading": "'GDS Transport', 'Noto Sans', 'Arial', sans-serif",
+    "--font-body": "'Noto Sans', 'Arial', sans-serif",
+    "--font-mono": "'Noto Sans Mono', 'Consolas', monospace",
+    "--font-weight-heading": "700",
+    "--font-weight-body": "400",
+    "--letter-spacing-heading": "0",
+    "--line-height-body": "1.6",
+    "--line-height-heading": "1.2"
+  },
+  "shape": {
+    "--radius-sm": "0px",
+    "--radius-md": "0px",
+    "--radius-lg": "0px",
+    "--radius-pill": "0px"
+  },
+  "motion": {
+    "--motion-intensity": "none",
+    "--motion-duration-base": "0ms",
+    "--motion-ease-default": "cubic-bezier(0.2, 0, 0, 1)"
+  },
+  "shadows": {
+    "--shadow-sm": "none",
+    "--shadow-md": "none",
+    "--shadow-lg": "none"
+  }
+}

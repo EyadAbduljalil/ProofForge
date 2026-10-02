@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Landing Page Template</title>
+  <!--
+    Landing Page Template — Vanilla HTML + CSS
+
+    Anti-slop approach: Asymmetric hero, bento feature grid, scroll-driven reveals.
+    NOT doing the tired "centered hero → 3 equal columns → CTA" pattern.
+
+    Uses fluid type scale, CSS custom properties for all colors, container queries
+    for responsive cards. Scroll animations via animation-timeline (progressive enhancement).
+
+    {{THEME_MARKER}} — Domain tokens get injected in the :root variables below.
+  -->
+  <style>
+    /* THEME: Domain color tokens */
+    :root {
+      --color-bg-base: oklch(98.5% 0.005 280);
+      --color-bg-surface: oklch(100% 0 0);
+      --color-bg-accent: oklch(96% 0.03 260);
+      --color-border: oklch(88% 0.01 280);
+      --color-text-primary: oklch(22% 0.02 280);
+      --color-text-secondary: oklch(48% 0.02 280);
+      --color-accent: oklch(55% 0.18 260);
+      --color-accent-hover: oklch(50% 0.20 260);
+
+      /* THEME: Typography from domain tokens */
+      --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+      --font-display: 'Bricolage Grotesque', system-ui, sans-serif;
+
+      /* THEME: Fluid type scale */
+      --step--1: clamp(0.875rem, 0.85rem + 0.125vw, 1rem);
+      --step-0: clamp(1rem, 0.95rem + 0.25vw, 1.25rem);
+      --step-1: clamp(1.25rem, 1.15rem + 0.5vw, 1.75rem);
+      --step-2: clamp(1.75rem, 1.55rem + 1vw, 2.75rem);
+      --step-3: clamp(2.25rem, 1.85rem + 2vw, 4.25rem);
+
+      /* THEME: Fluid space scale */
+      --space-xs: clamp(0.75rem, 0.7rem + 0.25vw, 1rem);
+      --space-sm: clamp(1rem, 0.9rem + 0.5vw, 1.5rem);
+      --space-md: clamp(1.5rem, 1.3rem + 1vw, 2.5rem);
+      --space-lg: clamp(2rem, 1.6rem + 2vw, 4rem);
+      --space-xl: clamp(3rem, 2.4rem + 3vw, 6rem);
+
+      /* THEME: Shape tokens */
+      --radius-sm: 0.375rem;
+      --radius-md: 0.5rem;
+      --radius-lg: 1rem;
+
+      /* THEME: Motion tokens */
+      --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+      --duration-normal: 300ms;
+    }
+
+    @supports (animation-timeline: view()) {
+      @keyframes reveal {
+        from { opacity: 0; transform: translateY(2rem); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      .reveal {
+        animation: reveal linear both;
+        animation-timeline: view();
+        animation-range: entry 0% cover 30%;
+      }
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--color-bg-base);
+      color: var(--color-text-primary);
+      line-height: 1.6;
+      font-size: var(--step-0);
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding-inline: var(--space-md);
+    }
+
+    /* THEME: Hero layout — asymmetric split, not centered */
+    .hero {
+      min-height: 90vh;
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: var(--space-lg);
+      align-items: center;
+      padding-block: var(--space-xl);
+    }
+
+    @media (max-width: 900px) {
+      .hero { grid-template-columns: 1fr; }
+    }
+
+    .hero-content h1 {
+      font-family: var(--font-display);
+      font-size: var(--step-3);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      margin-bottom: var(--space-sm);
+      /* THEME: Gradient text from domain accent colors */
+      background: linear-gradient(135deg, var(--color-accent), oklch(60% 0.18 280));
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-content p {
+      font-size: var(--step-1);
+      color: var(--color-text-secondary);
+      margin-bottom: var(--space-md);
+      max-width: 32rem;
+    }
+
+    .hero-visual {
+      background: var(--color-bg-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      aspect-ratio: 4 / 3;
+      display: grid;
+      place-items: center;
+      /* THEME: Noise texture overlay */
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.9' numOctaves='4'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    }
+
+    /* THEME: CTA button styling */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.875rem 1.75rem;
+      background: var(--color-accent);
+      color: white;
+      font-weight: 600;
+      border: none;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      text-decoration: none;
+      transition: all var(--duration-normal) var(--ease-smooth);
+    }
+
+    .btn:hover {
+      background: var(--color-accent-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--color-text-primary);
+      border: 1px solid var(--color-border);
+    }
+
+    .btn-secondary:hover {
+      background: var(--color-bg-surface);
+      border-color: var(--color-accent);
+      color: var(--color-accent);
+    }
+
+    /* THEME: Bento grid features — NOT 3 equal columns */
+    .features-section {
+      padding-block: var(--space-xl);
+    }
+
+    .section-header {
+      text-align: center;
+      margin-bottom: var(--space-lg);
+    }
+
+    .section-header h2 {
+      font-family: var(--font-display);
+      font-size: var(--step-2);
+      font-weight: 700;
+      margin-bottom: var(--space-xs);
+    }
+
+    .bento-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-md);
+      container-type: inline-size;
+    }
+
+    .bento-item {
+      background: var(--color-bg-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-md);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-sm);
+    }
+
+    /* Asymmetric bento layout */
+    .bento-item:nth-child(1) { grid-column: span 2; grid-row: span 2; }
+    .bento-item:nth-child(2) { grid-column: span 2; }
+    .bento-item:nth-child(3) { grid-column: span 2; }
+    .bento-item:nth-child(4) { grid-column: span 2; }
+    .bento-item:nth-child(5) { grid-column: span 2; }
+
+    @container (max-width: 800px) {
+      .bento-grid { grid-template-columns: 1fr; }
+      .bento-item { grid-column: span 1 !important; grid-row: span 1 !important; }
+    }
+
+    .bento-icon {
+      width: 3rem;
+      height: 3rem;
+      background: var(--color-bg-accent);
+      border-radius: var(--radius-md);
+      display: grid;
+      place-items: center;
+      font-size: 1.5rem;
+    }
+
+    .bento-item h3 {
+      font-size: var(--step-1);
+      font-weight: 700;
+    }
+
+    .bento-item p {
+      color: var(--color-text-secondary);
+      font-size: var(--step--1);
+    }
+
+    /* THEME: Social proof section */
+    .social-proof {
+      padding-block: var(--space-xl);
+      background: var(--color-bg-surface);
+    }
+
+    .logo-cloud {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: var(--space-lg);
+      opacity: 0.6;
+      filter: grayscale(100%);
+    }
+
+    .logo-cloud div {
+      font-weight: 700;
+      font-size: var(--step-1);
+      color: var(--color-text-secondary);
+    }
+
+    /* THEME: Final CTA section */
+    .cta-section {
+      padding-block: var(--space-xl);
+      text-align: center;
+    }
+
+    .cta-section h2 {
+      font-family: var(--font-display);
+      font-size: var(--step-2);
+      font-weight: 700;
+      margin-bottom: var(--space-md);
+    }
+
+    .cta-buttons {
+      display: flex;
+      justify-content: center;
+      gap: var(--space-sm);
+      flex-wrap: wrap;
+    }
+
+    /* Skip nav for accessibility */
+    .skip-nav {
+      position: absolute;
+      top: -100px;
+      left: 0;
+      background: var(--color-accent);
+      color: white;
+      padding: 0.5rem 1rem;
+      z-index: 100;
+    }
+
+    .skip-nav:focus {
+      top: 0;
+    }
+  </style>
+</head>
+<body>
+  <a href="#main" class="skip-nav">Skip to main content</a>
+
+  <main id="main">
+    <section class="hero container">
+      <div class="hero-content">
+        <!-- THEME: Hero copy should match domain voice -->
+        <h1>Build things that don't look like everyone else's things</h1>
+        <p>
+          A design system that actually has opinions. No more default blues,
+          no more "modern" gradients that scream 2019. Just tools that help you
+          make something that feels right for what you're building.
+        </p>
+        <div style="display: flex; gap: var(--space-sm); flex-wrap: wrap;">
+          <button class="btn">Get Started</button>
+          <button class="btn btn-secondary">View Examples</button>
+        </div>
+      </div>
+      <div class="hero-visual reveal">
+        <!-- THEME: Replace with domain-specific visual -->
+        <div style="font-size: 4rem; opacity: 0.1;">✺</div>
+      </div>
+    </section>
+
+    <section class="features-section container reveal">
+      <div class="section-header">
+        <h2>Opinionated defaults that actually make sense</h2>
+        <p style="color: var(--color-text-secondary); max-width: 40rem; margin: 0 auto;">
+          Not trying to be everything to everyone. Just focused on what works.
+        </p>
+      </div>
+
+      <!-- THEME: Bento grid layout — customize card content per domain -->
+      <div class="bento-grid">
+        <div class="bento-item">
+          <div class="bento-icon">🎨</div>
+          <h3>Domain-aware color palettes</h3>
+          <p>
+            Fintech gets trustworthy navy, healthcare gets calm teal, creative
+            gets vibrant energy. Not one-size-fits-all, not random either.
+          </p>
+        </div>
+
+        <div class="bento-item">
+          <div class="bento-icon">📏</div>
+          <h3>Fluid scales that just work</h3>
+          <p>No breakpoint hell. Type and space scale smoothly across viewports.</p>
+        </div>
+
+        <div class="bento-item">
+          <div class="bento-icon">⚡</div>
+          <h3>Performance baked in</h3>
+          <p>System font stacks, minimal custom properties, no runtime overhead.</p>
+        </div>
+
+        <div class="bento-item">
+          <div class="bento-icon">♿</div>
+          <h3>Accessible by default</h3>
+          <p>WCAG AA contrast guaranteed, keyboard nav handled, screen readers happy.</p>
+        </div>
+
+        <div class="bento-item">
+          <div class="bento-icon">🌙</div>
+          <h3>Dark mode that doesn't suck</h3>
+          <p>Not just inverted colors. Proper OKLCH tokens that respect perception.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="social-proof reveal">
+      <div class="container">
+        <div class="section-header">
+          <p style="font-size: var(--step--1); text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-text-secondary); margin-bottom: var(--space-md);">
+            Trusted by teams who care about design
+          </p>
+        </div>
+        <!-- THEME: Replace with actual logos or testimonials -->
+        <div class="logo-cloud">
+          <div>ACME Corp</div>
+          <div>TechStart</div>
+          <div>DesignCo</div>
+          <div>BuildLab</div>
+          <div>ShipFast</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta-section container reveal">
+      <h2>Ready to build something that doesn't look generic?</h2>
+      <p style="color: var(--color-text-secondary); margin-bottom: var(--space-md); font-size: var(--step-1);">
+        Get started in under 5 minutes. No npm install hell, just copy what you need.
+      </p>
+      <div class="cta-buttons">
+        <button class="btn">Start Building</button>
+        <button class="btn btn-secondary">Read the Docs</button>
+      </div>
+    </section>
+  </main>
+
+  <noscript>
+    <p style="text-align: center; padding: 2rem; background: var(--color-bg-accent);">
+      This site works fine without JavaScript, but scroll animations require it.
+    </p>
+  </noscript>
+</body>
+</html>

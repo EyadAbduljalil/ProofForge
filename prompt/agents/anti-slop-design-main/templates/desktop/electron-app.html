@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Anti-Slop Electron App</title>
+  <style>
+    /* ==========================================================================
+       CSS Custom Properties — Domain Token System
+       OKLCH-derived colors, no banned fonts
+       ========================================================================== */
+    :root {
+      /* THEME: replace colors — convert OKLCH domain tokens to hex */
+      --bg-primary: #faf8f5;          /* oklch(0.97 0.01 80) */
+      --bg-secondary: #ede9e5;        /* oklch(0.93 0.02 80) */
+      --bg-elevated: #ffffff;
+      --bg-titlebar: #f0ece8;         /* THEME: titlebar background */
+      --accent-primary: #3d5cb8;      /* oklch(0.50 0.15 265) */
+      --accent-hover: #4d6bc5;
+      --text-primary: #1f1f21;        /* oklch(0.22 0.01 260) */
+      --text-secondary: #6b6b70;      /* oklch(0.52 0.01 260) */
+      --text-on-accent: #fafafc;
+      --border: #d9d4d0;              /* oklch(0.87 0.01 80) */
+      --sidebar-width: 240px;
+      --titlebar-height: 38px;
+
+      /* THEME: replace fonts — no Inter, Roboto, Open Sans, Lato, Arial,
+         Helvetica, Montserrat, Poppins, Raleway */
+      --font-display: 'Source Serif 4', Georgia, serif;
+      --font-body: 'IBM Plex Sans', system-ui, sans-serif;
+      --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+      /* THEME: spacing scale */
+      --space-xs: 4px;
+      --space-sm: 8px;
+      --space-md: 12px;
+      --space-lg: 16px;
+      --space-xl: 24px;
+      --radius-sm: 6px;
+      --radius-md: 10px;
+    }
+
+    /* THEME: dark mode colors */
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg-primary: #1a1a1f;
+        --bg-secondary: #26262b;
+        --bg-elevated: #2e2e36;
+        --bg-titlebar: #16161a;
+        --text-primary: #ebe8e6;
+        --text-secondary: #9e9c99;
+        --border: #42424a;
+        --accent-hover: #7b9cda;
+      }
+    }
+
+    /* ==========================================================================
+       Reset & Base
+       ========================================================================== */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      overflow: hidden;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ==========================================================================
+       Custom Title Bar
+       - Uses -webkit-app-region: drag for window dragging
+       - macOS traffic light inset: padding-left accounts for window controls
+       ========================================================================== */
+    /* THEME: titlebar background */
+    .titlebar {
+      -webkit-app-region: drag;
+      height: var(--titlebar-height);
+      background: var(--bg-titlebar);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      /* macOS: inset for traffic light buttons (stoplight controls) */
+      padding-left: env(titlebar-area-x, 78px);
+      padding-right: var(--space-lg);
+      user-select: none;
+    }
+
+    .titlebar__title {
+      font-family: var(--font-body);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      letter-spacing: 0.01em;
+    }
+
+    /* Window control buttons (Windows/Linux — macOS uses native) */
+    .titlebar__controls {
+      -webkit-app-region: no-drag;
+      display: flex;
+      margin-left: auto;
+      gap: 2px;
+    }
+
+    .titlebar__btn {
+      width: 46px;
+      height: var(--titlebar-height);
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .titlebar__btn:hover { background: var(--border); }
+    .titlebar__btn--close:hover { background: #e04040; color: #fff; }
+
+    /* ==========================================================================
+       Layout — Sidebar + Multi-Pane Content
+       ========================================================================== */
+    .app-body {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* THEME: sidebar styling */
+    .sidebar {
+      width: var(--sidebar-width);
+      background: var(--bg-secondary);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      transition: width 0.2s ease;
+      overflow: hidden;
+    }
+
+    .sidebar--collapsed { width: 52px; }
+
+    .sidebar__header {
+      padding: var(--space-lg);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .sidebar__toggle {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-size: 18px;
+      padding: var(--space-xs);
+      border-radius: var(--radius-sm);
+    }
+
+    .sidebar__toggle:hover { background: var(--border); }
+
+    .sidebar__nav { list-style: none; padding: var(--space-sm); flex: 1; }
+
+    .sidebar__item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      padding: var(--space-sm) var(--space-md);
+      border-radius: var(--radius-sm);
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 450;
+      white-space: nowrap;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .sidebar__item:hover { background: var(--border); color: var(--text-primary); }
+    .sidebar__item--active {
+      background: var(--accent-primary);
+      color: var(--text-on-accent);
+    }
+
+    .sidebar__icon { width: 20px; text-align: center; flex-shrink: 0; }
+    .sidebar--collapsed .sidebar__label { display: none; }
+
+    /* ==========================================================================
+       Content Area — Multi-Pane
+       ========================================================================== */
+    .content { flex: 1; display: flex; overflow: hidden; }
+
+    .content__main {
+      flex: 1;
+      overflow-y: auto;
+      padding: var(--space-xl);
+    }
+
+    .content__main h1 {
+      font-family: var(--font-display);
+      font-size: 26px;
+      font-weight: 600;
+      margin-bottom: var(--space-lg);
+      color: var(--text-primary);
+    }
+
+    .content__detail {
+      width: 320px;
+      border-left: 1px solid var(--border);
+      background: var(--bg-elevated);
+      padding: var(--space-xl);
+      overflow-y: auto;
+      flex-shrink: 0;
+    }
+
+    /* ==========================================================================
+       Command Palette Trigger (Cmd+K / Ctrl+K)
+       Placeholder — wire to your command palette implementation
+       ========================================================================== */
+    .cmd-palette-hint {
+      margin-top: auto;
+      padding: var(--space-lg);
+      border-top: 1px solid var(--border);
+    }
+
+    .cmd-palette-trigger {
+      width: 100%;
+      padding: var(--space-sm) var(--space-md);
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-secondary);
+      font-family: var(--font-body);
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      transition: border-color 0.15s;
+    }
+
+    .cmd-palette-trigger:hover { border-color: var(--accent-primary); }
+
+    .cmd-palette-trigger kbd {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      background: var(--bg-secondary);
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      margin-left: auto;
+    }
+  </style>
+</head>
+<body>
+  <!-- Custom Title Bar -->
+  <div class="titlebar">
+    <span class="titlebar__title">Anti-Slop App</span>
+    <!-- Windows/Linux window controls — hide on macOS via main process -->
+    <div class="titlebar__controls" id="window-controls">
+      <button class="titlebar__btn" id="btn-minimize" aria-label="Minimize">&#x2013;</button>
+      <button class="titlebar__btn" id="btn-maximize" aria-label="Maximize">&#x25A1;</button>
+      <button class="titlebar__btn titlebar__btn--close" id="btn-close" aria-label="Close">&#x2715;</button>
+    </div>
+  </div>
+
+  <!-- App Body -->
+  <div class="app-body">
+    <!-- Sidebar Navigation (collapsible) -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar__header">
+        <button class="sidebar__toggle" id="sidebar-toggle" aria-label="Toggle sidebar">&#x2630;</button>
+      </div>
+      <ul class="sidebar__nav">
+        <li class="sidebar__item sidebar__item--active">
+          <span class="sidebar__icon">&#x2302;</span>
+          <span class="sidebar__label">Dashboard</span>
+        </li>
+        <li class="sidebar__item">
+          <span class="sidebar__icon">&#x2709;</span>
+          <span class="sidebar__label">Messages</span>
+        </li>
+        <li class="sidebar__item">
+          <span class="sidebar__icon">&#x2261;</span>
+          <span class="sidebar__label">Analytics</span>
+        </li>
+        <li class="sidebar__item">
+          <span class="sidebar__icon">&#x2699;</span>
+          <span class="sidebar__label">Settings</span>
+        </li>
+      </ul>
+      <!-- Command Palette -->
+      <div class="cmd-palette-hint">
+        <button class="cmd-palette-trigger" id="cmd-palette" aria-label="Open command palette">
+          <span>Search commands...</span>
+          <kbd id="cmd-shortcut">Ctrl+K</kbd>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Content Area -->
+    <div class="content">
+      <main class="content__main">
+        <h1>Dashboard</h1>
+        <p style="color: var(--text-secondary); font-size: 15px; line-height: 1.6;">
+          Your workspace content renders here. This template uses CSS custom properties
+          from the domain token system for consistent theming across the application.
+        </p>
+      </main>
+      <aside class="content__detail">
+        <h2 style="font-family: var(--font-display); font-size: 18px; margin-bottom: var(--space-md);">
+          Detail Panel
+        </h2>
+        <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.5;">
+          Secondary pane for inspectors, properties, or contextual information.
+        </p>
+      </aside>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // IPC Patterns (Electron preload bridge)
+    // In your preload.js, expose these via contextBridge:
+    //   contextBridge.exposeInMainWorld('electronAPI', {
+    //     minimize: () => ipcRenderer.send('window-minimize'),
+    //     maximize: () => ipcRenderer.send('window-maximize'),
+    //     close: () => ipcRenderer.send('window-close'),
+    //   });
+    // =========================================================================
+
+    // Window controls — IPC to main process
+    document.getElementById('btn-minimize')?.addEventListener('click', () => {
+      window.electronAPI?.minimize();
+    });
+    document.getElementById('btn-maximize')?.addEventListener('click', () => {
+      window.electronAPI?.maximize();
+    });
+    document.getElementById('btn-close')?.addEventListener('click', () => {
+      window.electronAPI?.close();
+    });
+
+    // Sidebar toggle
+    document.getElementById('sidebar-toggle')?.addEventListener('click', () => {
+      document.getElementById('sidebar')?.classList.toggle('sidebar--collapsed');
+    });
+
+    // Command palette shortcut detection
+    const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+    if (isMac) {
+      document.getElementById('cmd-shortcut').textContent = '⌘K';
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        // TODO: open command palette modal
+        console.log('Command palette triggered');
+      }
+    });
+
+    // Sidebar nav active state
+    document.querySelectorAll('.sidebar__item').forEach((item) => {
+      item.addEventListener('click', () => {
+        document.querySelector('.sidebar__item--active')?.classList.remove('sidebar__item--active');
+        item.classList.add('sidebar__item--active');
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+# WebForge OS - Cursor Agent Rules
+
+You are operating under WebForge OS (The Web Engineering Operating System).
+
+MANDATORY RULES:
+1. Language: All communications, plans, summaries, and code reviews MUST be in Arabic.
+2. Source of Truth: Follow the canonical rules in `core/`, `skills/`, and `domains/`. Do not apply default AI assumptions.
+3. Security-First: Zero Trust, Server-side validation, IDOR prevention, Parameterized queries, Default Deny.
+4. Anti-Slop: No generic purple/blue gradients, no random cards, no fake content. Craft authentic, high-contrast, accessible UI.
+5. Verification: Every completed feature must be verified. No "done" without evidence.

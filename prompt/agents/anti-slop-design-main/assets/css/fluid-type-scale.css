@@ -1,0 +1,30 @@
+/* === fluid-type-scale.css ===
+ * Fluid typography scale — anti-slop-design foundation
+ * Generated from Utopia.fyi: 320px→1240px, 16px→18px, 1.2→1.25 scale
+ * Usage: font-size: var(--step-0) for body, var(--step-3) for h1, etc.
+ *
+ * The clamp() function interpolates smoothly between min and max viewport.
+ * No breakpoints. No media queries. Just math that works.
+ */
+
+:root {
+  --step--2: clamp(0.69rem, 0.66rem + 0.18vw, 0.80rem);
+  --step--1: clamp(0.83rem, 0.78rem + 0.25vw, 1.00rem);
+  --step-0:  clamp(1.00rem, 0.93rem + 0.33vw, 1.13rem);   /* Body text */
+  --step-1:  clamp(1.20rem, 1.10rem + 0.45vw, 1.41rem);   /* h4 / large body */
+  --step-2:  clamp(1.44rem, 1.30rem + 0.63vw, 1.76rem);   /* h3 */
+  --step-3:  clamp(1.73rem, 1.54rem + 0.88vw, 2.20rem);   /* h2 */
+  --step-4:  clamp(2.07rem, 1.81rem + 1.23vw, 2.75rem);   /* h1 */
+  --step-5:  clamp(2.49rem, 2.13rem + 1.69vw, 3.43rem);   /* Display / hero */
+}
+
+/* Usage guide:
+ * --step--2: captions, footnotes, metadata
+ * --step--1: small text, labels, helper text
+ * --step-0:  body text (default paragraph size)
+ * --step-1:  large body, h4, emphasized text
+ * --step-2:  h3, section headings
+ * --step-3:  h2, major headings
+ * --step-4:  h1, page titles
+ * --step-5:  display text, hero headings
+ */
