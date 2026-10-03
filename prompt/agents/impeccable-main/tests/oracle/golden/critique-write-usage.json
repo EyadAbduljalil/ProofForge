@@ -1,7 +1,0 @@
-{
-  "stdout": "",
-  "stderr": "usage: write <slug-or-target> <body-file>\n",
-  "exit": 1,
-  "signal": null,
-  "files": {}
-}

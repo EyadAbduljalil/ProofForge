@@ -1,10 +1,13 @@
 {
   "name": "webforge-os",
   "version": "1.0.0",
-  "description": "Autonomous Build, Verification & Quality Operating System for Web Engineering",
+  "description": "AI Engineering Rulebook & Quality Framework for Web Engineering - Stack-Agnostic, Rule-Driven, Verification-Oriented",
   "main": "bin/webforge.js",
   "bin": {
     "webforge": "./bin/webforge.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   },
   "scripts": {
     "test": "node bin/webforge.js test",
@@ -19,17 +22,18 @@
     "migrate": "node bin/webforge.js migrate",
     "verify": "node bin/webforge.js verify",
     "security": "node bin/webforge.js security",
-    "integrity": "node tests/integrity_test.js",
-    "build:all": "node build_tools/executable_core/run_executable_build.js"
+    "integrity": "node tests/integrity_test.js"
   },
   "keywords": [
     "webforge",
+    "ai-engineering",
+    "rulebook",
+    "quality-framework",
     "security",
     "verification",
     "asvs",
     "playwright",
-    "anti-slop",
-    "autonomous-engineering"
+    "anti-slop"
   ],
   "author": "WebForge OS Architecture Team",
   "license": "MIT"

@@ -1,8 +1,0 @@
-node_modules/
-dist/
-.vite/
-.nitro/
-.tanstack/
-.output/
-src/routeTree.gen.ts
-package-lock.json

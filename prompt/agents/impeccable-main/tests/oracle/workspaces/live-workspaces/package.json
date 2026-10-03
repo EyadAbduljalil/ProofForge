@@ -1,5 +1,0 @@
-{
-  "name": "oracle-live-workspaces",
-  "private": true,
-  "workspaces": ["apps/*"]
-}

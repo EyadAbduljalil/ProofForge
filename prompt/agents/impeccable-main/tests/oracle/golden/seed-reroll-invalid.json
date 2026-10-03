@@ -1,7 +1,0 @@
-{
-  "stdout": "",
-  "stderr": "concept-seed: --reroll must be a non-negative integer\n",
-  "exit": 1,
-  "signal": null,
-  "files": {}
-}

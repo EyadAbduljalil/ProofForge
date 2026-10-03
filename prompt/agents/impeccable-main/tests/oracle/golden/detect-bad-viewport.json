@@ -1,7 +1,0 @@
-{
-  "stdout": "",
-  "stderr": "Error: --viewport requires a WxH value, e.g. --viewport 390x844\n",
-  "exit": 1,
-  "signal": null,
-  "files": {}
-}

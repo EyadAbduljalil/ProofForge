@@ -1,7 +1,0 @@
-{
-  "stdout": "",
-  "stderr": "serve-question: payload needs an options array\n",
-  "exit": 1,
-  "signal": null,
-  "files": {}
-}

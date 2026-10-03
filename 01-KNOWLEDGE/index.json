@@ -1,0 +1,469 @@
+{
+  "$schema": "https://webforge.dev/schemas/knowledge-index.json",
+  "version": "1.0.0",
+  "generated_at": "2026-10-02T15:54:00.000Z",
+  "knowledge_summary": {
+    "total_rules": 36,
+    "total_principles": 2,
+    "total_standards": 3,
+    "total_policies": 3,
+    "total_patterns": 4,
+    "total_anti_patterns": 4
+  },
+  "principles": [
+    {
+      "id": "PRIN-CORE-001",
+      "title": "المبادئ الهندسية الأساسية لنظام WebForge OS",
+      "path": "principles/CORE_PRINCIPLES.md"
+    },
+    {
+      "id": "PRIN-SEC-001",
+      "title": "المبادئ الأمنية الحاكمة وسياسات الحظر الافتراضي",
+      "path": "principles/SECURITY_PRINCIPLES.md"
+    }
+  ],
+  "standards": [
+    {
+      "id": "STD-API-CONTRACT-001",
+      "title": "معيار عقد واجهات برمجة التطبيقات",
+      "path": "standards/API_CONTRACT_STANDARD.md"
+    },
+    {
+      "id": "STD-DESIGN-SYSTEM-001",
+      "title": "معيار منظومة التصميم المعمارية",
+      "path": "standards/DESIGN_SYSTEM_STANDARD.md"
+    },
+    {
+      "id": "STD-SEVERITY-TAXONOMY-001",
+      "title": "معيار تصنيف درجات الخطورة والأثر",
+      "path": "standards/SEVERITY_TAXONOMY_STANDARD.md"
+    }
+  ],
+  "policies": [
+    {
+      "id": "POL-SECURITY-GOVERNANCE-001",
+      "title": "سياسة الحوكمة والرقابة الأمنية",
+      "path": "policies/SECURITY_GOVERNANCE_POLICY.md"
+    },
+    {
+      "id": "POL-SECRETS-HANDLING-001",
+      "title": "سياسة إدارة وحماية الأسرار والمفاتيح",
+      "path": "policies/SECRETS_HANDLING_POLICY.md"
+    },
+    {
+      "id": "POL-AI-AGENT-BEHAVIOR-001",
+      "title": "سياسة سلوك وانضباط الوكلاء الأذكياء",
+      "path": "policies/AI_AGENT_BEHAVIOR_POLICY.md"
+    }
+  ],
+  "patterns": [
+    {
+      "id": "PAT-AUTH-BOUNDARY-001",
+      "title": "نمط الحدود الأمنية للمصادقة والتفويض",
+      "path": "patterns/AUTH_BOUNDARY_PATTERN.md"
+    },
+    {
+      "id": "PAT-IDEMPOTENT-OP-001",
+      "title": "نمط العمليات المتكررة الآمنة",
+      "path": "patterns/IDEMPOTENT_OPERATION_PATTERN.md"
+    },
+    {
+      "id": "PAT-TENANT-ISOLATION-001",
+      "title": "نمط العزل التام للمستأجرين",
+      "path": "patterns/TENANT_ISOLATION_PATTERN.md"
+    },
+    {
+      "id": "PAT-ACCESSIBLE-DIALOG-001",
+      "title": "نمط النوافذ المنبثقة سهلة الوصول",
+      "path": "patterns/ACCESSIBLE_DIALOG_PATTERN.md"
+    }
+  ],
+  "anti_patterns": [
+    {
+      "id": "ANTI-AI-SLOP-001",
+      "title": "النمط المضاد: التوليد البرمجي الرديء والكسول",
+      "severity": "HIGH",
+      "path": "anti-patterns/AI_SLOP_ANTIPATTERN.md"
+    },
+    {
+      "id": "ANTI-INSECURE-AUTHZ-001",
+      "title": "النمط المضاد: آليات التفويض غير الآمنة",
+      "severity": "CRITICAL",
+      "path": "anti-patterns/INSECURE_AUTHORIZATION_ANTIPATTERN.md"
+    },
+    {
+      "id": "ANTI-HARDCODED-SECRETS-001",
+      "title": "النمط المضاد: التضمين المباشر للأسرار",
+      "severity": "CRITICAL",
+      "path": "anti-patterns/HARDCODED_SECRETS_ANTIPATTERN.md"
+    },
+    {
+      "id": "ANTI-UNVALIDATED-INPUT-001",
+      "title": "النمط المضاد: قبول المدخلات دون تحقق صارم",
+      "severity": "HIGH",
+      "path": "anti-patterns/UNVALIDATED_INPUT_ANTIPATTERN.md"
+    }
+  ],
+  "rules": [
+    {
+      "id": "SEC-AUTH-001",
+      "title": "إلزامية تشفير كلمات المرور باستخدام خوارزميات بطيئة ومقاومة للهجمات",
+      "category": "security",
+      "subcategory": "authentication",
+      "severity": "CRITICAL",
+      "cwe": "CWE-916",
+      "status": "ACTIVE",
+      "path": "rules/security/SEC-AUTH-001.md"
+    },
+    {
+      "id": "SEC-AUTH-002",
+      "title": "إدارة رموز الجلسات والتوكنات والتحقق من صلاحيتها وقوة المفتاح السري",
+      "category": "security",
+      "subcategory": "authentication",
+      "severity": "CRITICAL",
+      "cwe": "CWE-347",
+      "status": "ACTIVE",
+      "path": "rules/security/SEC-AUTH-002.md"
+    },
+    {
+      "id": "SEC-AUTHZ-001",
+      "title": "التحقق الإلزامي من ملكية المورد وصلاحيات الوصول على مستوى الخادم",
+      "category": "security",
+      "subcategory": "authorization",
+      "severity": "CRITICAL",
+      "cwe": "CWE-639",
+      "status": "ACTIVE",
+      "path": "rules/security/SEC-AUTHZ-001.md"
+    },
+    {
+      "id": "SEC-INJ-001",
+      "title": "إلزامية استخدام الاستعلامات المجهزة والمعلمة لمنع حقن SQL",
+      "category": "security",
+      "subcategory": "injection",
+      "severity": "CRITICAL",
+      "cwe": "CWE-89",
+      "status": "ACTIVE",
+      "path": "rules/security/SEC-INJ-001.md"
+    },
+    {
+      "id": "SEC-INJ-002",
+      "title": "منع ثغرات البرمجة عبر المواقع بتطهير المخرجات والتشفير الدلالي",
+      "category": "security",
+      "subcategory": "injection",
+      "severity": "HIGH",
+      "cwe": "CWE-79",
+      "status": "ACTIVE",
+      "path": "rules/security/SEC-INJ-002.md"
+    },
+    {
+      "id": "SEC-INJ-003",
+      "title": "منع حقن أوامر النظام وتجاوز مسارات الملفات",
+      "category": "security",
+      "subcategory": "injection",
+      "severity": "CRITICAL",
+      "cwe": "CWE-78",
+      "status": "ACTIVE",
+      "path": "rules/security/SEC-INJ-003.md"
+    },
+    {
+      "id": "SEC-SESS-001",
+      "title": "إدارة الجلسات الآمنة وتأمين ملفات تعريف الارتباط",
+      "category": "security",
+      "subcategory": "sessions",
+      "severity": "HIGH",
+      "cwe": "CWE-614",
+      "status": "ACTIVE",
+      "path": "rules/security/SEC-SESS-001.md"
+    },
+    {
+      "id": "SEC-API-001",
+      "title": "كبح معدل الطلبات وحماية نقاط النهاية من هجمات القوة الغاشمة",
+      "category": "security",
+      "subcategory": "api-security",
+      "severity": "HIGH",
+      "cwe": "CWE-799",
+      "status": "ACTIVE",
+      "path": "rules/security/SEC-API-001.md"
+    },
+    {
+      "id": "SEC-API-002",
+      "title": "الحماية الإلزامية من هجمات تزوير الطلبات عبر المواقع",
+      "category": "security",
+      "subcategory": "api-security",
+      "severity": "HIGH",
+      "cwe": "CWE-352",
+      "status": "ACTIVE",
+      "path": "rules/security/SEC-API-002.md"
+    },
+    {
+      "id": "SEC-API-003",
+      "title": "منع تزوير الطلبات من جانب الخادم والتحقق من الروابط الخارجية",
+      "category": "security",
+      "subcategory": "api-security",
+      "severity": "HIGH",
+      "cwe": "CWE-918",
+      "status": "ACTIVE",
+      "path": "rules/security/SEC-API-003.md"
+    },
+    {
+      "id": "SEC-AI-001",
+      "title": "عزل وتطهير مدخلات التوجيه للذكاء الاصطناعي وحماية الأدوات التنفيذية",
+      "category": "security",
+      "subcategory": "ai-security",
+      "severity": "HIGH",
+      "cwe": "CWE-20",
+      "status": "ACTIVE",
+      "path": "rules/security/SEC-AI-001.md"
+    },
+    {
+      "id": "ENG-CONC-001",
+      "title": "منع ظروف التسابق وتأمين المعالجة المتزامنة للبيانات",
+      "category": "engineering",
+      "subcategory": "concurrency",
+      "severity": "HIGH",
+      "cwe": "CWE-362",
+      "status": "ACTIVE",
+      "path": "rules/engineering/ENG-CONC-001.md"
+    },
+    {
+      "id": "ENG-ERR-001",
+      "title": "المعالجة الهيكلية الموحدة للأخطاء وإخفاء التفاصيل الحساسة",
+      "category": "engineering",
+      "subcategory": "error-handling",
+      "severity": "MEDIUM",
+      "cwe": "CWE-209",
+      "status": "ACTIVE",
+      "path": "rules/engineering/ENG-ERR-001.md"
+    },
+    {
+      "id": "ENG-ARCH-001",
+      "title": "فصل الاهتمامات والالتزام بالحدود المعمارية بين الطبقات",
+      "category": "engineering",
+      "subcategory": "architecture",
+      "severity": "MEDIUM",
+      "cwe": "N/A",
+      "status": "ACTIVE",
+      "path": "rules/engineering/ENG-ARCH-001.md"
+    },
+    {
+      "id": "ENG-MEM-001",
+      "title": "منع تسرب الذاكرة وضمان إغلاق التدفقات والموارد غير المدارة",
+      "category": "engineering",
+      "subcategory": "performance",
+      "severity": "MEDIUM",
+      "cwe": "CWE-775",
+      "status": "ACTIVE",
+      "path": "rules/engineering/ENG-MEM-001.md"
+    },
+    {
+      "id": "UI-TYPE-001",
+      "title": "الاتساق الإلزامي لسلم الطباعة والخطوط الدلالية",
+      "category": "design",
+      "subcategory": "typography",
+      "severity": "LOW",
+      "cwe": "N/A",
+      "status": "ACTIVE",
+      "path": "rules/design/UI-TYPE-001.md"
+    },
+    {
+      "id": "UI-COLOR-001",
+      "title": "استخدام توكنات الألوان الدلالية وحظر قيم Hex المباشرة في المكونات",
+      "category": "design",
+      "subcategory": "colors",
+      "severity": "LOW",
+      "cwe": "N/A",
+      "status": "ACTIVE",
+      "path": "rules/design/UI-COLOR-001.md"
+    },
+    {
+      "id": "UI-SLOP-001",
+      "title": "حظر التوليد البصري الرديء واكتمال الحالات التفاعلية للمكونات",
+      "category": "design",
+      "subcategory": "quality",
+      "severity": "MEDIUM",
+      "cwe": "N/A",
+      "status": "ACTIVE",
+      "path": "rules/design/UI-SLOP-001.md"
+    },
+    {
+      "id": "A11Y-NAME-001",
+      "title": "إلزامية التسمية الدلالية الصريحة وربط الملصقات بكافة العناصر التفاعلية",
+      "category": "accessibility",
+      "subcategory": "screen-readers",
+      "severity": "HIGH",
+      "cwe": "N/A",
+      "status": "ACTIVE",
+      "path": "rules/accessibility/A11Y-NAME-001.md"
+    },
+    {
+      "id": "A11Y-KEYB-001",
+      "title": "إمكانية الملاحة الكاملة عبر لوحة المفاتيح ووضوح مؤشر التركيز",
+      "category": "accessibility",
+      "subcategory": "keyboard",
+      "severity": "HIGH",
+      "cwe": "N/A",
+      "status": "ACTIVE",
+      "path": "rules/accessibility/A11Y-KEYB-001.md"
+    },
+    {
+      "id": "A11Y-CONTRAST-001",
+      "title": "الالتزام الصارم بنسب تباين الألوان وفق معيار WCAG AA",
+      "category": "accessibility",
+      "subcategory": "contrast",
+      "severity": "MEDIUM",
+      "cwe": "N/A",
+      "status": "ACTIVE",
+      "path": "rules/accessibility/A11Y-CONTRAST-001.md"
+    },
+    {
+      "id": "RESP-VIEWPORT-001",
+      "title": "إلزامية وسم إطار العرض والتخطيطات المرنة المتجاوبة",
+      "category": "responsive",
+      "subcategory": "viewport",
+      "severity": "HIGH",
+      "cwe": "N/A",
+      "status": "ACTIVE",
+      "path": "rules/responsive/RESP-VIEWPORT-001.md"
+    },
+    {
+      "id": "RESP-OVERFLOW-001",
+      "title": "منع التمرير والفيضان الأفقي غير المقصود عبر كافة الشاشات",
+      "category": "responsive",
+      "subcategory": "layout",
+      "severity": "MEDIUM",
+      "cwe": "N/A",
+      "status": "ACTIVE",
+      "path": "rules/responsive/RESP-OVERFLOW-001.md"
+    },
+    {
+      "id": "PERF-BUDGET-001",
+      "title": "الالتزام بميزانية أحجام الحزم البرمجية وضغط الموارد",
+      "category": "performance",
+      "subcategory": "bundle-size",
+      "severity": "MEDIUM",
+      "cwe": "N/A",
+      "status": "ACTIVE",
+      "path": "rules/performance/PERF-BUDGET-001.md"
+    },
+    {
+      "id": "PERF-DEBOUNCE-001",
+      "title": "كبح وتأخير معالجة الأحداث عالية التكرار لمنع تجميد واجهة المستخدم",
+      "category": "performance",
+      "subcategory": "runtime",
+      "severity": "MEDIUM",
+      "cwe": "N/A",
+      "status": "ACTIVE",
+      "path": "rules/performance/PERF-DEBOUNCE-001.md"
+    },
+    {
+      "id": "TEST-TRACE-001",
+      "title": "إلزامية تتبع حالات الاختبار وربطها بالمتطلبات والتهديدات الأمنية",
+      "category": "testing",
+      "subcategory": "traceability",
+      "severity": "MEDIUM",
+      "cwe": "N/A",
+      "status": "ACTIVE",
+      "path": "rules/testing/TEST-TRACE-001.md"
+    },
+    {
+      "id": "TEST-REGRESS-001",
+      "title": "إلزامية كتابة اختبار انحدار مرافق لكل إصلاح عيب أو ثغرة",
+      "category": "testing",
+      "subcategory": "regression",
+      "severity": "HIGH",
+      "cwe": "N/A",
+      "status": "ACTIVE",
+      "path": "rules/testing/TEST-REGRESS-001.md"
+    },
+    {
+      "id": "API-ENVELOPE-001",
+      "title": "إلزامية التغليف الهيكلي الموحد لكافة استجابات واجهات برمجة التطبيقات",
+      "category": "api",
+      "subcategory": "design",
+      "severity": "MEDIUM",
+      "cwe": "N/A",
+      "status": "ACTIVE",
+      "path": "rules/api/API-ENVELOPE-001.md"
+    },
+    {
+      "id": "API-VERSION-001",
+      "title": "إلزامية إصدارات واجهات برمجة التطبيقات والتوافقية العكسية",
+      "category": "api",
+      "subcategory": "versioning",
+      "severity": "MEDIUM",
+      "cwe": "N/A",
+      "status": "ACTIVE",
+      "path": "rules/api/API-VERSION-001.md"
+    },
+    {
+      "id": "DB-TENANT-001",
+      "title": "فرض نطاق عزل بيانات المستأجرين في استعلامات قواعد البيانات",
+      "category": "database",
+      "subcategory": "multi-tenancy",
+      "severity": "CRITICAL",
+      "cwe": "CWE-639",
+      "status": "ACTIVE",
+      "path": "rules/database/DB-TENANT-001.md"
+    },
+    {
+      "id": "DB-PARAM-001",
+      "title": "ربط المعاملات الصارم على مستوى مشغلات قواعد البيانات",
+      "category": "database",
+      "subcategory": "query-safety",
+      "severity": "HIGH",
+      "cwe": "CWE-89",
+      "status": "ACTIVE",
+      "path": "rules/database/DB-PARAM-001.md"
+    },
+    {
+      "id": "I18N-EXPAND-001",
+      "title": "مرونة التخطيط واستيعاب تمدد النصوص عبر اللغات المختلفة",
+      "category": "localization",
+      "subcategory": "i18n",
+      "severity": "LOW",
+      "cwe": "N/A",
+      "status": "ACTIVE",
+      "path": "rules/localization/I18N-EXPAND-001.md"
+    },
+    {
+      "id": "RTL-LAYOUT-001",
+      "title": "الدعم الإلزامي للتخطيط ثنائي الاتجاه واستخدام الخصائص المنطقية للـ CSS",
+      "category": "localization",
+      "subcategory": "rtl-ltr",
+      "severity": "MEDIUM",
+      "cwe": "N/A",
+      "status": "ACTIVE",
+      "path": "rules/localization/RTL-LAYOUT-001.md"
+    },
+    {
+      "id": "SEO-SEMANTIC-001",
+      "title": "الهيكلية الدلالية للمستندات ووسوم البيانات الوصفية لتحسين محركات البحث",
+      "category": "seo",
+      "subcategory": "semantics",
+      "severity": "LOW",
+      "cwe": "N/A",
+      "status": "ACTIVE",
+      "path": "rules/seo/SEO-SEMANTIC-001.md"
+    },
+    {
+      "id": "AI-PROMPT-001",
+      "title": "العزل البنيوي لمدخلات المستخدم غير الموثوقة في سياق نماذج الذكاء الاصطناعي",
+      "category": "ai-security",
+      "subcategory": "prompt-defense",
+      "severity": "HIGH",
+      "cwe": "CWE-20",
+      "status": "ACTIVE",
+      "path": "rules/ai-security/AI-PROMPT-001.md"
+    },
+    {
+      "id": "AI-TOOL-001",
+      "title": "تقييد صلاحيات استدعاء الأدوات للوكلاء الأذكياء ومبدأ الصلاحية الأدنى",
+      "category": "ai-security",
+      "subcategory": "tool-execution",
+      "severity": "CRITICAL",
+      "cwe": "CWE-250",
+      "status": "ACTIVE",
+      "path": "rules/ai-security/AI-TOOL-001.md"
+    }
+  ]
+}

@@ -1,7 +1,0 @@
-{
-  "stdout": "",
-  "stderr": "concept-seed: --platform must be one of web, ios, android\n",
-  "exit": 1,
-  "signal": null,
-  "files": {}
-}

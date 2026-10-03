@@ -1,7 +1,0 @@
-{
-  "name": "ctx-adaptive",
-  "private": true,
-  "dependencies": {
-    "react-native": "0.80.0"
-  }
-}

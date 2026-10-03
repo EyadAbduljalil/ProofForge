@@ -1,7 +1,0 @@
-{
-  "stdout": "{\n  \"shape\": \"middleware\",\n  \"signals\": [\n    \"apps/store/proxy.ts\"\n  ]\n}\n",
-  "stderr": "",
-  "exit": 0,
-  "signal": null,
-  "files": {}
-}

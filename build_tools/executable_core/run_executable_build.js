@@ -7,11 +7,15 @@ const buildWebForgeCli = require('./build_webforge_cli');
 const buildRootPackageJson = require('./build_root_package_json');
 
 console.log('================================================================');
-console.log('🚀 EXECUTING WEBFORGE OS EXECUTABLE CORE SYNTHESIS PIPELINE');
+console.log('⚠️ WEBFORGE OS — HISTORICAL SYNTHESIS SCRIPT (DISABLED)');
 console.log('================================================================');
+console.log('>>> [NOTICE] This script is preserved for historical reference only.');
+console.log('>>> Direct execution is safely disabled to prevent overwriting production-hardened');
+console.log('>>> packages, test runners, and bin/webforge.js with legacy templates.');
+console.log('>>> Use "npm test" to run verified test suites.');
+process.exit(0);
 
-try {
-    buildSecurityPackage();
+const buildSecurityPackage = require('./build_security_package');
     buildContractsAndApiClient();
     buildDesignSystemPackage();
     buildComponentsPackage();

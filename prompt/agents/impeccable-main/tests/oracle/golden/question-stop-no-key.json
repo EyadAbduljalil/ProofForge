@@ -1,7 +1,0 @@
-{
-  "stdout": "",
-  "stderr": "serve-question: --stop needs --key\n",
-  "exit": 1,
-  "signal": null,
-  "files": {}
-}

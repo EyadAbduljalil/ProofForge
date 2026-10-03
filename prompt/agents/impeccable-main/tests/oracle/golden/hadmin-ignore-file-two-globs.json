@@ -1,7 +1,0 @@
-{
-  "stdout": "",
-  "stderr": "Error: Pass exactly one glob to ignore-file\n",
-  "exit": 1,
-  "signal": null,
-  "files": {}
-}

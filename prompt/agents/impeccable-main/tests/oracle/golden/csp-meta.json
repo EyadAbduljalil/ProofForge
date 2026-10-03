@@ -1,7 +1,0 @@
-{
-  "stdout": "{\n  \"shape\": \"meta-tag\",\n  \"signals\": [\n    \"public/index.html\",\n    \"src/layouts/Base.astro\"\n  ]\n}\n",
-  "stderr": "",
-  "exit": 0,
-  "signal": null,
-  "files": {}
-}

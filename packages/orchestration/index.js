@@ -25,6 +25,13 @@ const FailureScenarioLibrary = require('./failure-scenario-library');
 const FindingVerifier = require('./finding-verifier');
 const PluginAdapterManager = require('./plugin-adapter-manager');
 const IncidentIntelligence = require('./incident-intelligence');
+const { CapabilityModel, CAPABILITY_STATES, CAPABILITY_DIMENSIONS } = require('./capability-model');
+const CodeIntelligenceEngine = require('./code-intelligence');
+const ProductionReadinessEvaluator = require('./production-readiness');
+const ClaimVerificationEngine = require('./claim-verification-engine');
+const GroundingGate = require('./grounding-gate');
+const OutputVerificationEngine = require('./output-verification-engine');
+const v2 = require('./v2');
 
 module.exports = {
     AuthorityHierarchy,
@@ -47,5 +54,15 @@ module.exports = {
     FailureScenarioLibrary,
     FindingVerifier,
     PluginAdapterManager,
-    IncidentIntelligence
+    IncidentIntelligence,
+    CapabilityModel,
+    CAPABILITY_STATES,
+    CAPABILITY_DIMENSIONS,
+    CodeIntelligenceEngine,
+    ProductionReadinessEvaluator,
+    ClaimVerificationEngine,
+    GroundingGate,
+    OutputVerificationEngine,
+    v2
 };
+

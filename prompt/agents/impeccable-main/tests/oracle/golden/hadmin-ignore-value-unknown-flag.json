@@ -1,7 +1,0 @@
-{
-  "stdout": "",
-  "stderr": "Error: Unknown ignore-value flag: --wat\n",
-  "exit": 1,
-  "signal": null,
-  "files": {}
-}

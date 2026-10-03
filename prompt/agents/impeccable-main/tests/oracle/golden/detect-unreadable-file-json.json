@@ -1,7 +1,0 @@
-{
-  "stdout": "[]\n",
-  "stderr": "Error: cannot scan locked.html: EACCES: permission denied, open '<WS>/locked.html'\n",
-  "exit": 1,
-  "signal": null,
-  "files": {}
-}

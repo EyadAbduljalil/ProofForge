@@ -1,7 +1,0 @@
-{
-  "stdout": "",
-  "stderr": "Error: --file requires a glob\n",
-  "exit": 1,
-  "signal": null,
-  "files": {}
-}
