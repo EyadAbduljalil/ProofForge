@@ -2,8 +2,6 @@
 
 <img src="assets/banner.png" alt="WebForge OS — AI Engineering Rulebook & Quality Framework" width="100%">
 
-<img src="assets/logo.jpg" alt="WebForge OS logo" width="180">
-
 # WebForge OS
 
 ### AI Engineering Rulebook & Quality Framework
