@@ -20,21 +20,21 @@
 [![CVGF C1-C5 Gate](https://img.shields.io/badge/CVGF%20Gate-PASS%20WITH%20LIMITATIONS-orange.svg)](reports/C5_FINAL_GATE_REPORT.md)
 [![Release Readiness Gate](https://img.shields.io/badge/Release%20Gate-RELEASE%20READY%20WITH%20LIMITATIONS-orange.svg)](reports/RELEASE_FINAL_GATE_REPORT.md)
 
-[Overview](#-overview) •
-[Identity](#-what-proofforge-is-and-is-not) •
-[Why ProofForge](#-what-problem-proofforge-solves) •
-[Philosophy](#-core-philosophy--principles) •
-[The Evidence Principle](#-the-evidence-principle) •
-[10-Stage Lifecycle](#-canonical-10-stage-ai-engineering-lifecycle) •
-[AI Adoption](#-how-ai-adopts-proofforge) •
-[Universal Prompt](#-universal-ai-adoption-prompt) •
-[Architecture](#-canonical-repository-architecture) •
-[CVGF Engine](#-cognitive-verification--grounding-framework-cvgf) •
-[Security Model](#-security-model--threat-defense) •
-[Verification Results](#-testing--verification-results) •
-[Limitations](#-known-operational-limitations) •
-[Quick Start](#-quick-start--cli-commands) •
-[Governance](#-repository-governance--policies)
+[Overview](#overview) •
+[Identity](#what-proofforge-is-and-is-not) •
+[Why ProofForge](#what-problem-proofforge-solves) •
+[Philosophy](#core-philosophy--principles) •
+[The Evidence Principle](#the-evidence-principle) •
+[10-Stage Lifecycle](#canonical-10-stage-ai-engineering-lifecycle) •
+[AI Adoption](#how-ai-adopts-proofforge) •
+[Universal Prompt](#universal-ai-adoption-prompt) •
+[Architecture](#canonical-repository-architecture) •
+[CVGF Engine](#cognitive-verification--grounding-framework-cvgf) •
+[Security Model](#security-model--threat-defense) •
+[Verification Results](#testing--verification-results) •
+[Limitations](#known-operational-limitations) •
+[Quick Start](#quick-start--cli-commands) •
+[Governance](#repository-governance--policies)
 
 </div>
 
@@ -85,8 +85,11 @@ Unconstrained AI coding assistance creates four critical systemic hazards in mod
 
 ProofForge establishes an unbroken, bidirectional chain of custody for every engineering change:
 
-```
-Requirement ──► Rule ──► Decision (ADR) ──► Implementation ──► Test ──► Evidence ──► Verification ──► Report
+```text
+Requirement ──► Rule ──► Decision (ADR) ──► Implementation
+                                                  │
+                                                  ▼
+     Report ◄── Verification ◄── Evidence ◄── Test
 ```
 
 ProofForge does not merely tell an AI what to do—**it demands verifiable evidence for claims about what was done.**
@@ -100,7 +103,13 @@ ProofForge operates under strict software engineering and cybersecurity discipli
 ### 1. The Priority Ladder (Hierarchy of Authority)
 When engineering trade-offs occur, ProofForge resolves them through an inviolable priority ladder:
 
-$$\mathbf{P0\ (Security)} \succ \mathbf{P1\ (Reliability\ \&\ Correctness)} \succ \mathbf{P2\ (Performance)} \succ \mathbf{P3\ (Developer\ Experience)} \succ \mathbf{P4\ (Aesthetics)}$$
+```text
+P0 (Security)
+  └──► P1 (Reliability & Correctness)
+         └──► P2 (Performance)
+                └──► P3 (Developer Experience)
+                       └──► P4 (Aesthetics)
+```
 
 *No aesthetic or performance convenience may ever compromise security or correctness.*
 
@@ -301,13 +310,16 @@ ProofForge/
 
 The CVGF is the evidence-aware intelligence core of ProofForge, spanning the C1 through C5 verification path:
 
-```
-C1 (Architecture & Contracts) ──► C2 (Evidence & Claims) ──► C3 (Grounding & Verification) ──► C4 (Adversarial Hardening) ──► C5 (Integration & Determinism)
+```text
+C1 (Architecture & Contracts) ──► C2 (Evidence & Claims) ──► C3 (Grounding & Verification)
+                                                                       │
+                                                                       ▼
+                                 C5 (Integration & Determinism) ◄── C4 (Adversarial Hardening)
 ```
 
 ### Core Verification Engines
 1. **`EvidenceGraph`** (`packages/orchestration/evidence-graph.js`):
-   - Directed acyclic graph linking Requirements $\to$ Tests $\to$ Artifacts $\to$ Verifications.
+   - Directed acyclic graph linking Requirements ──► Tests ──► Artifacts ──► Verifications.
    - Enforces SHA-256 cryptographic hashing of source artifacts and detects code mutations.
    - Triggers automatic **temporal invalidation** of stale evidence and scrubs sensitive secrets.
 2. **`ClaimVerificationEngine`** (`packages/orchestration/claim-verification-engine.js`):

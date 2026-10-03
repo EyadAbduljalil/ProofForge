@@ -284,17 +284,24 @@ When an AI completes an engineering task under ProofForge, it must deliver its f
 
 When an AI agent encounters conflicting requirements or instructions, it must resolve them using this inviolable authority ladder:
 
-$$\mathbf{Level\ 1:\ System\ \&\ Platform\ Safety}\ (Non-negotiable\ platform\ constraints)$$
-$$\downarrow$$
-$$\mathbf{Level\ 2:\ Explicit\ User\ Task\ Requirements}\ (Current\ prompt\ from\ human\ developer)$$
-$$\downarrow$$
-$$\mathbf{Level\ 3:\ Target\ Repository\ Architecture}\ (Actual\ code,\ schemas,\ and\ project\ ADRs)$$
-$$\downarrow$$
-$$\mathbf{Level\ 4:\ ProofForge\ Applicable\ Rules}\ (P0\ Security\ \succ\ P1\ Correctness\ \succ\ P2\ Performance)$$
-$$\downarrow$$
-$$\mathbf{Level\ 5:\ Repository\ Conventions}\ (Existing\ naming\ styles,\ formatting,\ and\ linters)$$
-$$\downarrow$$
-$$\mathbf{Level\ 6:\ AI\ Autonomous\ Suggestions}\ (Lowest\ authority\ -\ requires\ validation)$$
+```text
+Level 1: System & Platform Safety (Non-negotiable platform constraints)
+   │
+   ▼
+Level 2: Explicit User Task Requirements (Current prompt from human developer)
+   │
+   ▼
+Level 3: Target Repository Architecture (Actual code, schemas, and project ADRs)
+   │
+   ▼
+Level 4: ProofForge Applicable Rules (P0 Security > P1 Correctness > P2 Performance)
+   │
+   ▼
+Level 5: Repository Conventions (Existing naming styles, formatting, and linters)
+   │
+   ▼
+Level 6: AI Autonomous Suggestions (Lowest authority - requires validation)
+```
 
 > [!CAUTION]
 > If a human requirement directly conflicts with a ProofForge P0 Security rule, the AI **must surface the conflict immediately** to the developer and explain the risk, rather than silently ignoring the security hazard or silently disobeying the user.
