@@ -1,8 +1,8 @@
-# Contributing to WebForge OS
+# Contributing to ProofForge
 
-Thank you for your interest in contributing to **WebForge OS**!
+Thank you for your interest in contributing to **ProofForge** (formerly WebForge OS)!
 
-WebForge OS is an **AI Engineering Rulebook & Quality Framework** designed to enforce engineering standards, security controls, design discipline, validation gates, and cognitive grounding for AI-assisted and human software engineering.
+ProofForge is an **AI Engineering Verification Framework** designed to enforce evidence-driven engineering rules, security controls, design discipline, validation gates, and cognitive grounding for AI-assisted and human software engineering.
 
 To maintain architectural integrity, determinism, and high security standards, all contributors must adhere to the principles outlined below.
 
@@ -10,13 +10,14 @@ To maintain architectural integrity, determinism, and high security standards, a
 
 ## 1. Authoritative Project Identity
 
-Before contributing, understand what WebForge OS is and what it is not:
+Before contributing, understand what ProofForge is and what it is not:
 
-- **What WebForge OS IS**:
-  - An AI Engineering Rulebook & Quality Framework.
+- **What ProofForge IS**:
+  - An AI Engineering Verification Framework.
   - Stack-agnostic, rule-driven, verification-oriented, and evidence-aware.
   - A systematic repository of rules, instructions, design tokens, security policies, validators, checklists, stack adapters, and cognitive verification mechanisms.
-- **What WebForge OS IS NOT**:
+- **What ProofForge IS NOT**:
+  - It is **NOT** an Operating System.
   - It is **NOT** a Runtime.
   - It is **NOT** a Code Generator.
   - It is **NOT** an Autonomous Coding Engine.
@@ -24,7 +25,7 @@ Before contributing, understand what WebForge OS is and what it is not:
   - It is **NOT** a replacement for human authority in critical engineering decisions.
 
 > [!IMPORTANT]
-> Pull requests that attempt to convert WebForge OS into an autonomous execution runtime, add code-generation servers, or introduce unverified phases (such as C6, V2.9, or Phase 9) will be rejected.
+> Pull requests that attempt to convert ProofForge into an autonomous execution runtime, add code-generation servers, or introduce unverified phases (such as C6, V2.9, or Phase 9) will be rejected.
 
 ---
 

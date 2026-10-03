@@ -1,7 +1,7 @@
 {
   "name": "webforge-os",
   "version": "1.0.0",
-  "description": "AI Engineering Rulebook & Quality Framework for Web Engineering - Stack-Agnostic, Rule-Driven, Verification-Oriented",
+  "description": "ProofForge — AI Engineering Verification Framework. Evidence-driven engineering rules, verification, security, grounding, and quality gates for AI-assisted software development.",
   "main": "bin/webforge.js",
   "bin": {
     "webforge": "./bin/webforge.js"
@@ -25,16 +25,16 @@
     "integrity": "node tests/integrity_test.js"
   },
   "keywords": [
-    "webforge",
+    "proofforge",
     "ai-engineering",
-    "rulebook",
-    "quality-framework",
+    "verification-framework",
+    "evidence-graph",
+    "grounding-gate",
     "security",
-    "verification",
     "asvs",
-    "playwright",
+    "quality-gates",
     "anti-slop"
   ],
-  "author": "WebForge OS Architecture Team",
+  "author": "ProofForge Architecture Team",
   "license": "MIT"
 }

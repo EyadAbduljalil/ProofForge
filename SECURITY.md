@@ -2,9 +2,9 @@
 
 ## Overview
 
-Security is a foundational pillar of **WebForge OS**. As an AI Engineering Rulebook & Quality Framework, WebForge OS enforces zero-trust architecture, strict input validation, fail-closed boundaries, and cognitive verification against adversarial threats, prompt injection, and evidence poisoning.
+Security is a foundational pillar of **ProofForge** (formerly WebForge OS). As an AI Engineering Verification Framework, ProofForge enforces zero-trust architecture, strict input validation, fail-closed boundaries, and cognitive verification against adversarial threats, prompt injection, and evidence poisoning.
 
-We take the security of WebForge OS, its rule definitions, validators, contracts, and core engines seriously.
+We take the security of ProofForge, its verification rules, validators, contracts, and core engines seriously.
 
 ---
 

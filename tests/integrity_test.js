@@ -53,7 +53,7 @@ const requiredFiles = [
     'LICENSE',
     'SECURITY.md',
     'CONTRIBUTING.md',
-    'assets/logo.jpg',
+    'PROOFFORGE_AI_ADOPTION.md',
     'assets/banner.png',
     'MIGRATION_REPORT.md',
     'core/principles/core_principles.md',
