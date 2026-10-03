@@ -452,7 +452,7 @@ node bin/webforge.js trace
 *(The legacy repository URL `WebForge_OS` automatically redirects to the new canonical location).*
 
 ### Authoritative Governance Documents
-- **Universal AI Adoption**: Detailed prompts and integration workflows in [PROOFFORGE_AI_ADOPTION.md](PROOFFORGE_AI_ADOPTION.md) (legacy reference preserved in [WEBFORGE_AI_ADOPTION.md](WEBFORGE_AI_ADOPTION.md)).
+- **Universal AI Adoption**: Detailed prompts and integration workflows in [PROOFFORGE_AI_ADOPTION.md](PROOFFORGE_AI_ADOPTION.md).
 - **AI Agent Protocol**: Operational rules for AI assistants in [AGENT.md](AGENT.md).
 - **Security Policy**: Vulnerability disclosure procedures and threat models in [SECURITY.md](SECURITY.md).
 - **Contributing**: Development standards and PR lifecycle in [CONTRIBUTING.md](CONTRIBUTING.md).
