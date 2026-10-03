@@ -6,8 +6,15 @@ console.log('>>> Running WebForge OS Integrity Checks...');
 
 let errorsCount = 0;
 
+function resolvePath(p) {
+    if (fs.existsSync(p)) return p;
+    if (fs.existsSync(path.join('legacy', p))) return path.join('legacy', p);
+    return p;
+}
+
 function checkFileExists(filePath) {
-    if (!fs.existsSync(filePath)) {
+    const resolved = resolvePath(filePath);
+    if (!fs.existsSync(resolved)) {
         console.error(`[FAIL] Missing required file: ${filePath}`);
         errorsCount++;
         return false;
@@ -60,6 +67,7 @@ const requiredFiles = [
 ];
 
 requiredFiles.forEach(checkFileExists);
+
 
 if (errorsCount === 0) {
     console.log('>>> [PASS] All Integrity Checks Passed Successfully! 100% Validated.');

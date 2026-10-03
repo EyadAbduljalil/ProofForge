@@ -5,7 +5,13 @@
  */
 
 const StackDetector = require('./stack-detector');
-const MultiStackFixtures = require('../../benchmarks/multi-stack-fixtures');
+const fs = require('fs');
+const path = require('path');
+const fixturesPath = fs.existsSync(path.join(__dirname, '../../legacy/benchmarks/multi-stack-fixtures.js'))
+    ? '../../legacy/benchmarks/multi-stack-fixtures'
+    : (fs.existsSync(path.join(__dirname, '../../benchmarks/multi-stack-fixtures.js')) ? '../../benchmarks/multi-stack-fixtures' : null);
+const MultiStackFixtures = fixturesPath ? require(fixturesPath) : [];
+
 
 class BenchmarkFramework {
     static runMultiStackBenchmark(fixtures = MultiStackFixtures) {
