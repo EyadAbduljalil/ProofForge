@@ -107,7 +107,7 @@ Clone ProofForge into a sibling directory so multiple active codebases can consu
 
 ```bash
 # In your workspace directory:
-git clone https://github.com/EyadAbduljalil/WebForge_OS.git ProofForge
+git clone https://github.com/EyadAbduljalil/ProofForge.git
 
 # Directory layout:
 # workspace/
@@ -148,7 +148,7 @@ cp /path/to/ProofForge/PROOFFORGE_AI_ADOPTION.md docs/proofforge/
 Keep your repository completely clean of framework files and instruct your AI coding agent to reference ProofForge via its public repository:
 
 **Instruction to AI Agent:**
-> *"Reference ProofForge at `https://github.com/EyadAbduljalil/WebForge_OS` as our authoritative engineering verification framework and quality standard. Follow the 26 imperatives in the Universal ProofForge AI Adoption Prompt for all modifications."*
+> *"Reference ProofForge at `https://github.com/EyadAbduljalil/ProofForge` as our authoritative engineering verification framework and quality standard. Follow the 26 imperatives in the Universal ProofForge AI Adoption Prompt for all modifications."*
 
 ---
 

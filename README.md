@@ -191,7 +191,7 @@ DELIVER PROOFFORGE REPORT (Transparent pass/fail status & known limitations)
 #### Option A: Clone Beside Your Project (Recommended for Multi-Project Workspaces)
 ```bash
 # In your workspace directory:
-git clone https://github.com/EyadAbduljalil/WebForge_OS.git ProofForge
+git clone https://github.com/EyadAbduljalil/ProofForge.git
 
 # workspace/
 # ├── my-app/             <-- Your target application
@@ -212,7 +212,7 @@ cp /path/to/ProofForge/PROOFFORGE_AI_ADOPTION.md docs/proofforge/
 *Prompt your AI: "Adhere strictly to the ProofForge rules in `docs/proofforge/`."*
 
 #### Option C: Reference as an External Standard (Zero Footprint)
-Instruct your AI agent to reference ProofForge via its public repository: `https://github.com/EyadAbduljalil/WebForge_OS` as its governing quality standard.
+Instruct your AI agent to reference ProofForge via its public repository: `https://github.com/EyadAbduljalil/ProofForge` as its governing quality standard.
 
 ---
 
@@ -405,7 +405,7 @@ In adherence to truthfulness and transparency, ProofForge explicitly documents i
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/EyadAbduljalil/WebForge_OS.git ProofForge
+git clone https://github.com/EyadAbduljalil/ProofForge.git
 cd ProofForge
 ```
 
@@ -446,10 +446,10 @@ node bin/webforge.js trace
 
 ## 📄 Repository Governance & Policies
 
-### Project Name vs. Remote Repository
+### Official Project & Remote Repository
 - **Canonical Project Identity**: **ProofForge** (`AI Engineering Verification Framework`)
-- **Remote GitHub Repository**: `WebForge_OS` (`https://github.com/EyadAbduljalil/WebForge_OS`)
-*(The GitHub repository path retains `WebForge_OS` to prevent breaking existing clone URLs and downstream links).*
+- **Official GitHub Repository**: `ProofForge` (`https://github.com/EyadAbduljalil/ProofForge`)
+*(The legacy repository URL `WebForge_OS` automatically redirects to the new canonical location).*
 
 ### Authoritative Governance Documents
 - **Universal AI Adoption**: Detailed prompts and integration workflows in [PROOFFORGE_AI_ADOPTION.md](PROOFFORGE_AI_ADOPTION.md) (legacy reference preserved in [WEBFORGE_AI_ADOPTION.md](WEBFORGE_AI_ADOPTION.md)).
