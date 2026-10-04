@@ -16,7 +16,7 @@ class WebForgeComplianceEngine {
     static auditCompliance(rootDir = process.cwd()) {
         const report = {
             timestamp: new Date().toISOString(),
-            constitution_verified: fs.existsSync(path.join(rootDir, 'WEBFORGE_CONSTITUTION.md')) || fs.existsSync(path.join(rootDir, 'prompt', 'WEBFORGE_CONSTITUTION.md')),
+            constitution_verified: fs.existsSync(path.join(rootDir, 'WEBFORGE_CONSTITUTION.md')) || fs.existsSync(path.join(rootDir, 'docs', 'WEBFORGE_CONSTITUTION.md')) || fs.existsSync(path.join(rootDir, 'prompt', 'WEBFORGE_CONSTITUTION.md')),
             manifest_verified: fs.existsSync(path.join(rootDir, '.webforge', 'manifest.yaml')) || fs.existsSync(path.join(rootDir, '.webforge', 'manifest.json')),
             metrics: {
                 rulesLoaded: 14,

@@ -20,6 +20,8 @@ prompt/
 tests/
 legacy/
 apps/
+docs/
+packages/**/tests/
 
 # 4. بيئة التشغيل والأسرار المحتملة
 .env*

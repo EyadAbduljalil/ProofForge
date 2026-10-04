@@ -50,7 +50,7 @@ const fakePkg = AntiHallucinationGuard.verifyPackageExistence('magic-super-ai-in
 assert.strictEqual(fakePkg.verified, false);
 assert.strictEqual(fakePkg.status, 'VIOLATION_HALLUCINATED_PACKAGE');
 
-const realFile = AntiHallucinationGuard.verifyFileExistence('WEBFORGE_CONSTITUTION.md', path.resolve(__dirname, '../../..'));
+const realFile = AntiHallucinationGuard.verifyFileExistence('README.md', path.resolve(__dirname, '../../..'));
 assert.strictEqual(realFile.verified, true);
 console.log('  [PASS] Anti-Hallucination & Provenance Verification Verified');
 

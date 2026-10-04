@@ -62,7 +62,6 @@ describe('Phase 8: WebForge OS Master Final Completion & Release Audit', () => {
   const valDir = path.join(rootDir, '06-VALIDATORS');
   const adaptersDir = path.join(rootDir, '07-STACK-ADAPTERS');
   const templatesDir = path.join(rootDir, '08-TEMPLATES & BLUEPRINTS');
-  const reportsDir = path.join(rootDir, 'reports');
 
   // 1. Comprehensive Canonical Layer Filesystem Audit
   it('1. should verify physical completeness of all 8 canonical knowledge and governance layers', () => {
@@ -194,18 +193,20 @@ describe('Phase 8: WebForge OS Master Final Completion & Release Audit', () => {
     assert.equal(test3.gate, 'PASS');
   });
 
-  // 12. Verification of Consolidated Canonical Release Reports
-  it('12. should verify existence and validity of all canonical release reports', () => {
-    const expectedReports = [
-      'RELEASE_VERIFICATION.md',
-      'PROOFFORGE_RELEASE_CLEANUP_REPORT.md'
+  // 12. Verification of Canonical Release Documentation
+  it('12. should verify existence and validity of canonical release documentation', () => {
+    const expectedDocs = [
+      'README.md',
+      'CHANGELOG.md',
+      'SECURITY.md',
+      'LICENSE'
     ];
 
-    for (const rep of expectedReports) {
-      const repPath = path.join(reportsDir, rep);
-      assert.ok(fs.existsSync(repPath), `Required report file missing: ${rep}`);
-      const stat = fs.statSync(repPath);
-      assert.ok(stat.size > 50, `Report file too short: ${rep}`);
+    for (const doc of expectedDocs) {
+      const docPath = path.join(rootDir, doc);
+      assert.ok(fs.existsSync(docPath), `Required release doc missing: ${doc}`);
+      const stat = fs.statSync(docPath);
+      assert.ok(stat.size > 50, `Doc file too short: ${doc}`);
     }
   });
 });

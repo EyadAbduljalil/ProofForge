@@ -71,6 +71,14 @@ class AntiHallucinationGuard {
         let resolvedPath = relativeFilePath;
 
         if (!exists) {
+            const docsFallback = path.join(rootDir, 'docs', relativeFilePath);
+            if (fs.existsSync(docsFallback)) {
+                exists = true;
+                resolvedPath = path.join('docs', relativeFilePath);
+            }
+        }
+
+        if (!exists) {
             const promptFallback = path.join(rootDir, 'prompt', relativeFilePath);
             if (fs.existsSync(promptFallback)) {
                 exists = true;
