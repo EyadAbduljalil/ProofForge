@@ -14,5 +14,9 @@ module.exports = {
     ModelPolicyContract: require('./model-policy-contract'),
     ModelPolicyRegistry: require('./model-policy-registry'),
     AntigravityAdapterContract: require('./antigravity-adapter-contract'),
-    AntigravityAdapter: require('./antigravity-adapter')
+    AntigravityAdapter: require('./antigravity-adapter'),
+    ToolContract: require('./tool-contract'),
+    ToolRegistry: require('./tool-registry'),
+    AgentHandoffContract: require('./agent-handoff-contract'),
+    MultiAgentVerification: require('./multi-agent-verification')
 };

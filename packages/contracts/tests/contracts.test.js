@@ -60,4 +60,13 @@ require('./antigravity-adapter.test.js');
 // 10. تشغيل اختبارات التكامل الشامل بين المرحلتين 6 و 7
 require('./phase-6-7-integration.test.js');
 
+// 11. تشغيل اختبارات حوكمة الأدوات و MCP (المرحلة 8)
+require('./tool-contract.test.js');
+
+// 12. تشغيل اختبارات تسليم المهام والتحقق متعدد الوكلاء (المرحلة 9)
+require('./agent-handoff.test.js');
+
+// 13. تشغيل اختبارات التكامل الشامل بين المرحلتين 8 و 9
+require('./phase-8-9-integration.test.js');
+
 console.log('>>> [SUCCESS] All Contracts Package Tests PASSED with 100% Evidence.');

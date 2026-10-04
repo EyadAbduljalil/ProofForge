@@ -65,7 +65,9 @@ class AgentAuditRecorder {
             securityImpact: changeContext.securityImpact || 'NO_CRITICAL_IMPACT',
             evidence: this._sanitizeText(changeContext.evidence || 'Test execution output attached'),
             finalVerdict: changeContext.finalVerdict || 'VERIFIED_AND_ACCEPTED',
-            result: changeContext.finalVerdict || 'VERIFIED_AND_ACCEPTED'
+            result: changeContext.finalVerdict || 'VERIFIED_AND_ACCEPTED',
+            trace_chain: changeContext.trace_chain || null,
+            metadata: changeContext.metadata || null
         };
 
         this.auditLog.push(changeRecord);

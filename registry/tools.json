@@ -1,124 +1,274 @@
 {
   "version": "1.0.0",
-  "description": "سجل الأدوات والمحركات المعتمدة للتحقق والتصميم في WebForge OS",
+  "generated_at": "2026-10-04T23:58:00.000Z",
+  "governance": "ProofForge AI Engineering Verification Framework — Tools & MCP Registry",
   "tools": [
     {
-      "id": "playwright",
-      "name": "Playwright",
-      "category": "browser-e2e-testing",
-      "purpose": "التشغيل والتحقق الفعلي عبر المتصفحات الحقيقية والتقاط الشاشات والآثار (Traces)",
-      "official_url": "https://playwright.dev/",
-      "when_to_use": "في كافة تطبيقات ومواقع الويب لفحص تدفقات المستخدم والتجاوب والتفاعل",
-      "required": true,
-      "supports": [
-        "chromium",
-        "firefox",
-        "webkit",
-        "mobile-emulation",
-        "traces",
-        "visual-snapshots"
+      "tool_id": "PF-TOOL-PLAYWRIGHT",
+      "name": "Playwright Browser Testing Engine",
+      "version": "1.0.0",
+      "type": "EXTERNAL_TOOL",
+      "provider": "Microsoft / Playwright Community",
+      "description": "محرك الفحص الآلي للمتصفحات الحقيقية والتقاط الشاشات والآثار الهندسية (Traces)",
+      "status": "ACTIVE",
+      "trust_level": "SANDBOXED",
+      "environment_scope": "TEST",
+      "input_schema": {
+        "type": "object",
+        "required": ["testFiles", "browsers"]
+      },
+      "output_schema": {
+        "type": "object",
+        "required": ["testResults", "exitCode"]
+      },
+      "data_scope": {
+        "workspace": "TEST_APPS_ONLY",
+        "network": "LOCAL_LOOPBACK_ONLY"
+      },
+      "permission_requirements": [
+        "RUN_TESTS",
+        "RUN_BROWSER"
       ],
-      "outputs": [
-        "test-results",
-        "html-report",
-        "traces.zip",
-        "screenshots"
+      "security_constraints": [
+        "حظر تام للاتصال بالإنترنت الخارجي أثناء تشغيل المتصفح",
+        "عزل جلسات التصفح ومنع تلوث ملفات تعريف الارتباط",
+        "نتائج الفحص تمثل مرشح دليل (Candidate) يتطلب التحقق المستقل"
+      ],
+      "allowed_agents": [
+        "PF-QA-001"
+      ],
+      "prohibited_agents": [
+        "PF-DOCS-001"
+      ],
+      "allowed_skills": [
+        "PF-SKILL-TESTING-REVIEW"
+      ],
+      "prohibited_skills": [
+        "project-audit"
+      ],
+      "allowed_workflows": [
+        "PF-WF-QA-001"
+      ],
+      "prohibited_workflows": [
+        "PF-WF-LEGACY-DISABLED"
+      ],
+      "evidence_behavior": "REQUIRES_VALIDATION_NOT_EVIDENCE",
+      "audit_requirements": [
+        "LOG_TOOL_RUN_TO_RECORDER",
+        "RECORD_BROWSER_VERSION_HASH"
+      ],
+      "failure_conditions": [
+        "فشل أي فحص أساسي لتدفق المستخدم",
+        "انهيار عملية المتصفح المعزولة"
+      ],
+      "abstention_conditions": [
+        "عدم توفر خادم التطبيق المحلي",
+        "عدم وضوح سيناريو الفحص"
       ]
     },
     {
-      "id": "lighthouse",
-      "name": "Google Lighthouse",
-      "category": "performance-seo-audit",
-      "purpose": "فحص الأداء، مؤشرات الويب الحيوية، أفضل الممارسات، وإمكانية الوصول وSEO",
-      "official_url": "https://developer.chrome.com/docs/lighthouse/",
-      "when_to_use": "للمواقع العامة والتطبيقات لفحص مؤشرات السرعة وتجربة المستخدم",
-      "required": true,
-      "supports": [
-        "performance",
-        "accessibility",
-        "best-practices",
-        "seo",
-        "core-web-vitals"
+      "tool_id": "PF-TOOL-LIGHTHOUSE",
+      "name": "Google Lighthouse Performance & Quality Auditor",
+      "version": "1.0.0",
+      "type": "EXTERNAL_TOOL",
+      "provider": "Google Chrome DevTools Team",
+      "description": "أداة تدقيق الأداء، ومؤشرات الويب الحيوية، وأفضل الممارسات، وإمكانية الوصول",
+      "status": "ACTIVE",
+      "trust_level": "SANDBOXED",
+      "environment_scope": "TEST",
+      "input_schema": {
+        "type": "object",
+        "required": ["url", "categories"]
+      },
+      "output_schema": {
+        "type": "object",
+        "required": ["scores", "audits"]
+      },
+      "data_scope": {
+        "workspace": "FRONTEND_RENDER_ONLY",
+        "network": "LOCAL_HOST_ONLY"
+      },
+      "permission_requirements": [
+        "RUN_TESTS",
+        "READ_REPOSITORY"
       ],
-      "outputs": [
-        "lighthouse-report.json",
-        "lighthouse-report.html"
+      "security_constraints": [
+        "منع إرسال تقارير الأداء إلى خدمات سحابية خارجية",
+        "تطهير التقارير من أي أسرار أو رموز جلسة"
+      ],
+      "allowed_agents": [
+        "PF-FRONTEND-001",
+        "PF-QA-001"
+      ],
+      "prohibited_agents": [
+        "PF-SEC-001"
+      ],
+      "allowed_skills": [
+        "PF-SKILL-TESTING-REVIEW"
+      ],
+      "prohibited_skills": [],
+      "allowed_workflows": [
+        "PF-WF-QA-001"
+      ],
+      "prohibited_workflows": [],
+      "evidence_behavior": "REQUIRES_VALIDATION_NOT_EVIDENCE",
+      "audit_requirements": [
+        "LOG_LIGHTHOUSE_AUDIT"
+      ],
+      "failure_conditions": [
+        "هبوط مؤشرات الأداء الحيوية عن الحدود الدنيا"
+      ],
+      "abstention_conditions": [
+        "تذبذب سرعة الاستجابة بما يمنع القياس الحتمي"
       ]
     },
     {
-      "id": "owasp-asvs",
-      "name": "OWASP ASVS",
-      "category": "security-verification-standard",
-      "purpose": "معيار التحقق من الضوابط الأمنية التقنية ومتطلبات التطوير الآمن للتطبيقات",
-      "official_url": "https://owasp.org/www-project-application-security-verification-standard/",
-      "when_to_use": "كمرجع إلزامي لتأصيل كافة الفحوصات الأمنية والصلاحيات وإدارة الجلسات",
-      "required": true,
-      "supports": [
-        "V1-Architecture",
-        "V2-Authentication",
-        "V3-Session",
-        "V4-Access-Control",
-        "V5-Validation"
+      "tool_id": "PF-TOOL-ASVS-CHECKER",
+      "name": "OWASP ASVS Automated Compliance Checker",
+      "version": "1.0.0",
+      "type": "INTERNAL_TOOL",
+      "provider": "ProofForge Security Engineering",
+      "description": "أداة التدقيق الآلي الداخلي للتحقق من معايير OWASP ASVS Level 2 للأمان",
+      "status": "ACTIVE",
+      "trust_level": "SYSTEM",
+      "environment_scope": "TEST",
+      "input_schema": {
+        "type": "object",
+        "required": ["standardVersion", "targetModules"]
+      },
+      "output_schema": {
+        "type": "object",
+        "required": ["complianceScore", "failedControls"]
+      },
+      "data_scope": {
+        "workspace": "SOURCE_SECURITY_AUDIT",
+        "network": "ISOLATED"
+      },
+      "permission_requirements": [
+        "RUN_SECURITY_SCAN",
+        "READ_REPOSITORY"
       ],
-      "outputs": [
-        "asvs-compliance-matrix.md"
+      "security_constraints": [
+        "الخضوع الصارم لسياسات الأمان P0",
+        "منع إخفاء أو تخفيض تصنيف أي فشل أمني",
+        "الفحص الحتمي المغلق للضوابط الأمنية"
+      ],
+      "allowed_agents": [
+        "PF-SEC-001"
+      ],
+      "prohibited_agents": [
+        "PF-DOCS-001"
+      ],
+      "allowed_skills": [
+        "PF-SKILL-SECURITY-REVIEW"
+      ],
+      "prohibited_skills": [],
+      "allowed_workflows": [
+        "PF-WF-SEC-001"
+      ],
+      "prohibited_workflows": [],
+      "evidence_behavior": "REQUIRES_VALIDATION_NOT_EVIDENCE",
+      "audit_requirements": [
+        "LOG_ASVS_CHECK_TO_RECORDER"
+      ],
+      "failure_conditions": [
+        "اكتشاف ثغرة مصنفة في ASVS Level 2 دون معالجة"
+      ],
+      "abstention_conditions": [
+        "غموض مسار الملفات الحساسة الخاضعة للفحص"
       ]
     },
     {
-      "id": "owasp-zap",
-      "name": "OWASP ZAP",
-      "category": "dast-security-scanner",
-      "purpose": "الفحص الأمني الديناميكي الآلي واكتشاف الثغرات عبر سطر الأوامر وخطة الأتمتة",
-      "official_url": "https://www.zaproxy.org/",
-      "when_to_use": "في بيئات التطوير والتجربة لفحص مسارات الـ API واكتشاف الثغرات النشطة",
-      "required": false,
-      "supports": [
-        "spidering",
-        "ajax-spider",
-        "passive-scan",
-        "active-scan",
-        "openapi-import"
+      "tool_id": "PF-MCP-SCHEMA-INSPECTOR",
+      "name": "MCP Schema Inspection & Contract Inspector",
+      "version": "1.0.0",
+      "type": "MCP_OPERATION",
+      "provider": "ProofForge Local MCP Gateway",
+      "description": "عملية بروتوكول سياق النموذج (MCP) لاستكشاف والتحقق من سلامة مخططات API",
+      "status": "ACTIVE",
+      "trust_level": "UNTRUSTED",
+      "environment_scope": "DEVELOPMENT",
+      "input_schema": {
+        "type": "object",
+        "required": ["schemaName", "payload"]
+      },
+      "output_schema": {
+        "type": "object",
+        "required": ["valid", "issues"]
+      },
+      "data_scope": {
+        "workspace": "SCHEMAS_ONLY",
+        "network": "NONE"
+      },
+      "permission_requirements": [
+        "READ_REPOSITORY"
       ],
-      "outputs": [
-        "zap-report.json",
-        "zap-report.html"
+      "security_constraints": [
+        "معاملة كافة مدخلات ومخرجات MCP كبيانات خارجية غير موثوقة (Untrusted by Default)",
+        "حظر كامل لأي تجاوز لسياسات الأمان P0 عبر مدخلات MCP",
+        "منع تحويل مخرجات MCP إلى وقائع مؤكدة دون تحقق CVGF المستقل"
+      ],
+      "allowed_agents": [
+        "PF-BACKEND-001"
+      ],
+      "prohibited_agents": [],
+      "allowed_skills": [
+        "PF-SKILL-API-REVIEW"
+      ],
+      "prohibited_skills": [],
+      "allowed_workflows": [
+        "PF-WF-API-001"
+      ],
+      "prohibited_workflows": [],
+      "evidence_behavior": "REQUIRES_VALIDATION_NOT_EVIDENCE",
+      "audit_requirements": [
+        "LOG_MCP_CALL_TO_RECORDER"
+      ],
+      "failure_conditions": [
+        "عدم تطابق مخطط API مع معايير واجهات النظام"
+      ],
+      "abstention_conditions": [
+        "انقطاع الاتصال بقناة بروتوكول MCP المحلية"
       ]
     },
     {
-      "id": "semgrep",
-      "name": "Semgrep",
-      "category": "sast-static-security",
-      "purpose": "الفحص الأمني الساكن للكود واكتشاف الأنماط البرمجية الخطرة وحقن الاستعلامات",
-      "official_url": "https://semgrep.dev/",
-      "when_to_use": "أثناء البناء والتدقيق البرمجي لفحص شفرة المصدر قبل الإطلاق",
-      "required": true,
-      "supports": [
-        "custom-rules",
-        "owasp-top-10",
-        "cwe-coverage",
-        "multi-language"
+      "tool_id": "PF-TOOL-LEGACY-DISABLED",
+      "name": "أداة أرشيفية معطلة صراحة لفحص الفشل المغلق",
+      "version": "0.1.0",
+      "type": "EXTERNAL_TOOL",
+      "provider": "Legacy Framework",
+      "description": "أداة قديمة تم إيقافها لعزلها عن بيئة الإنتاج واختبار الفشل المغلق",
+      "status": "DISABLED",
+      "trust_level": "UNTRUSTED",
+      "environment_scope": "SANDBOX",
+      "input_schema": {},
+      "output_schema": {},
+      "data_scope": {},
+      "permission_requirements": [
+        "READ_REPOSITORY"
       ],
-      "outputs": [
-        "semgrep-findings.json"
-      ]
-    },
-    {
-      "id": "sentry",
-      "name": "Sentry",
-      "category": "observability-monitoring",
-      "purpose": "مراقبة الأخطاء والاستثناءات وتتبع الأداء في بيئة الإنتاج دون تسريب بيانات حساسة",
-      "official_url": "https://sentry.io/",
-      "when_to_use": "في مرحلة الإنتاج لتشخيص الأخطاء الحية وتتبع زمن الاستجابة",
-      "required": false,
-      "supports": [
-        "error-tracking",
-        "performance-tracing",
-        "breadcrumbs",
-        "release-health"
+      "security_constraints": [
+        "حظر الاستخدام في كافة التدفقات النشطة"
       ],
-      "outputs": [
-        "sentry-issue-alerts",
-        "performance-traces"
+      "allowed_agents": [],
+      "prohibited_agents": [
+        "PF-SEC-001"
+      ],
+      "allowed_skills": [],
+      "prohibited_skills": [],
+      "allowed_workflows": [],
+      "prohibited_workflows": [
+        "PF-WF-SEC-001"
+      ],
+      "evidence_behavior": "REQUIRES_VALIDATION_NOT_EVIDENCE",
+      "audit_requirements": [
+        "LOG_DISABLED_CALL"
+      ],
+      "failure_conditions": [
+        "محاولة استدعاء أداة معطلة"
+      ],
+      "abstention_conditions": [
+        "الأداة غير متاحة دائماً"
       ]
     }
   ]
