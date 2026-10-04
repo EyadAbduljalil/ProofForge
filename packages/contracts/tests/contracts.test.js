@@ -75,4 +75,7 @@ require('./phase-10-trial.test.js');
 // 15. تشغيل جناح الفحص والاختبارات العدائية الشاملة (المرحلة 11)
 require('./phase-11-adversarial.test.js');
 
-console.log('>>> [SUCCESS] All Contracts Package Tests PASSED with 100% Evidence.');
+// 16. تشغيل اختبار التحميل الشامل لكافة الوحدات والمكونات الكنسية
+require('./module-load.test.js');
+
+console.log('>>> [SUCCESS] All Contracts Package Tests PASSED Fully Verified.');

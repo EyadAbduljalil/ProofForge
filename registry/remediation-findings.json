@@ -114,6 +114,38 @@
       "remediation_status": "VERIFIED",
       "verification_status": "VERIFIED",
       "regression_status": "NO_REGRESSION"
+    },
+    {
+      "finding_id": "REM-FINDING-008",
+      "source_phase": "Production Readiness",
+      "category": "Testing & Module Loading",
+      "severity": "MEDIUM",
+      "title": "غياب اختبار التحميل الحتمي الشامل لكافة المكونات والعقود الكنسية في حزمة الاختبارات",
+      "description": "كانت الاختبارات السابقة تفحص العقود فردياً دون اختبار مجمع مخصص يتحقق من تهيئة وتحميل 100% من العقود والسجلات ومحركات CVGF في خطوة واحدة حتمية.",
+      "affected_component": "packages/contracts/tests/module-load.test.js",
+      "expected_behavior": "وجود اختبار حتمي مخصص يفحص تحميل وتكامل كافة المكونات الـ 16 ومحركات CVGF والسجلات الستة.",
+      "actual_behavior": "تم إنشاء packages/contracts/tests/module-load.test.js وإدراجه في سلسلة اختبارات العقود الرئيسية.",
+      "evidence": "اجتياز اختبار module-load.test.js بنجاح كامل 100% بكود خروج 0.",
+      "remediation_required": "إنشاء وتشغيل اختبار module-load.test.js وتأكيد نجاحه التام.",
+      "remediation_status": "FIXED",
+      "verification_status": "VERIFIED",
+      "regression_status": "NO_REGRESSION"
+    },
+    {
+      "finding_id": "REM-FINDING-009",
+      "source_phase": "Production Readiness",
+      "category": "CLI & Developer Experience",
+      "severity": "LOW",
+      "title": "غياب أمر مخصص في واجهة CLI لتشغيل فحص جاهزية منظومة ProofForge مباشرة",
+      "description": "كانت أداة bin/webforge.js تفتقر لأمر صريح لفحص وتحميل منظومة ProofForge وسجلاتها المركزية من سطر الأوامر.",
+      "affected_component": "bin/webforge.js, package.json",
+      "expected_behavior": "تمكين المطور من تشغيل webforge proofforge و npm run proofforge لفحص جاهزية المنظومة.",
+      "actual_behavior": "إضافة أمر proofforge في bin/webforge.js وسكربت proofforge في package.json.",
+      "evidence": "نجاح تشغيل node bin/webforge.js proofforge و npm run proofforge بنجاح تام بكود خروج 0.",
+      "remediation_required": "إضافة الأمر والسكربت وتوثيقهما في دليل الاستخدام.",
+      "remediation_status": "FIXED",
+      "verification_status": "VERIFIED",
+      "regression_status": "NO_REGRESSION"
     }
   ]
 }

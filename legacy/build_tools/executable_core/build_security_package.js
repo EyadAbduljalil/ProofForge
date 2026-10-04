@@ -628,7 +628,7 @@ async function runTests() {
     assert.strictEqual(cleanLog.details.apiKey, '[REDACTED_SECRET]');
     console.log('  [PASS] Secrets Redaction & Logging Sanitizer Verified');
 
-    console.log('>>> [SUCCESS] All Security Package Tests PASSED with 100% Evidence.');
+    console.log('>>> [SUCCESS] All Security Package Tests PASSED Fully Verified.');
 }
 
 runTests().catch(err => {

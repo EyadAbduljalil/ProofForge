@@ -216,9 +216,20 @@ async function main() {
                 execSync('node --test packages/orchestration/tests/c3-grounding-output-verification.test.js', { stdio: 'inherit' });
                 execSync('node --test packages/orchestration/tests/c4-adversarial-testing-repair.test.js', { stdio: 'inherit' });
                 execSync('node --test tests/e2e/server_app.test.js', { stdio: 'inherit' });
-                console.log('>>> [PASS] كافة اختبارات الحزم البرمجية والـ E2E واختبارات WebForge V2 و C1 و C2 و C3 و C4 و C5 اجتازت بنجاح 100%.');
+                console.log('>>> [PASS] كافة اختبارات الحزم البرمجية والـ E2E واختبارات WebForge V2 و C1 و C2 و C3 و C4 و C5 اجتازت بنجاح بالكامل.');
             } catch (e) {
                 console.error('>>> [FAIL] فشل في أحد الاختبارات:', e.message);
+                process.exit(1);
+            }
+            break;
+
+        case 'proofforge':
+            console.log('[PROOFFORGE] فحص وتشغيل منظومة ProofForge الكنسية للتحقق والحوكمة...');
+            try {
+                require('../packages/contracts/tests/module-load.test.js');
+                console.log('>>> [PASS] منظومة ProofForge جاهزة للتشغيل بكافة عقودها وسجلاتها ومحركاتها.');
+            } catch (err) {
+                console.error('>>> [FAIL] فشل في تحميل منظومة ProofForge:', err.message);
                 process.exit(1);
             }
             break;
@@ -280,6 +291,7 @@ async function main() {
             console.log('  webforge matrix               فحص مصفوفة الضوابط الأمنية وتتبع الفعالية');
             console.log('  webforge surface              جرد مساحة الهجوم والانكشاف في الإنتاج');
             console.log('  webforge benchmark            تشغيل معيار الفحص الأمني ضد النماذج الهجومية');
+            console.log('  webforge proofforge           فحص وتحميل منظومة ProofForge الكنسية والتحقق من السجلات');
             console.log('  webforge test                 تشغيل كافة اختبارات الحزم البرمجية والـ E2E');
             console.log('  webforge security             تشغيل التدقيق الأمني ومطابقة ASVS والحوكمة');
             console.log('  webforge verify               تشغيل بروتوكول التحقق الشامل');

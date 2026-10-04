@@ -125,7 +125,7 @@ async function runTests() {
     assert.strictEqual(state.count, 10); // Fully rolled back
     console.log('  [PASS] Safe Autonomous Repair & Automated Rollback Verified');
 
-    console.log('>>> [SUCCESS] All Security Package Tests PASSED with 100% Evidence.');
+    console.log('>>> [SUCCESS] All Security Package Tests PASSED Fully Verified.');
 }
 
 runTests().catch(err => {
