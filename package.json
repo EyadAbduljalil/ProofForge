@@ -1,9 +1,10 @@
 {
-  "name": "webforge-os",
+  "name": "proofforge",
   "version": "1.0.0",
   "description": "ProofForge — AI Engineering Verification Framework. Evidence-driven engineering rules, verification, security, grounding, and quality gates for AI-assisted software development.",
   "main": "bin/webforge.js",
   "bin": {
+    "proofforge": "./bin/webforge.js",
     "webforge": "./bin/webforge.js"
   },
   "engines": {
