@@ -4,14 +4,11 @@
  * conflict engine, permissions, safety boundaries, schemas, and rule traceability.
  */
 
-import { describe, it } from 'node:test';
-import assert from 'node:assert/strict';
-import fs from 'node:fs';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+const { describe, it } = require('node:test');
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 const REPO_ROOT = path.resolve(__dirname, '../../../');
 const INSTRUCTIONS_DIR = path.resolve(REPO_ROOT, '02-AI-INSTRUCTIONS');
 const KNOWLEDGE_DIR = path.resolve(REPO_ROOT, '01-KNOWLEDGE');

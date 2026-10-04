@@ -4,11 +4,9 @@
  * حزمة اختبارات شاملة وعدائية لأنظمة التعليم، اللوجستيات، التصنيع، والمستودعات وسلاسل الإمداد
  */
 
-import { describe, it } from 'node:test';
-import assert from 'node:assert/strict';
-import { createRequire } from 'node:module';
+const { describe, it } = require('node:test');
+const assert = require('node:assert/strict');
 
-const require = createRequire(import.meta.url);
 const v2 = require('../v2/index.js');
 const {
     ENROLLMENT_STATES,
