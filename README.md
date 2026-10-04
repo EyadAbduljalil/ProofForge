@@ -24,20 +24,8 @@ A deterministic, evidence-driven verification and governance framework for AI-as
 
 ## Quick Start
 
-### 1. Run Instantly (No Installation Required)
-```bash
-npx proofforge verify --json
-```
-
-### 2. Install in Your Project
 ```bash
 npm install proofforge
-```
-
-### 3. Develop from Source
-```bash
-git clone https://github.com/EyadAbduljalil/ProofForge.git
-cd ProofForge && npm test
 ```
 
 ---
