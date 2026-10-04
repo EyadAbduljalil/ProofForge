@@ -1,0 +1,27 @@
+# ملف حظر النشر المعماري لمنظومة ProofForge (.npmignore)
+# يمنع تسريب أي ملفات مؤقتة، أو بيئات تطوير، أو اختبارات، أو تقارير سابقة إلى منصة NPM
+
+# 1. تكوينات إدارة الإصدارات وبيئات CI/CD
+.git/
+.github/
+.gitignore
+
+# 2. ملفات الوسائط والمخازن المؤقتة
+.tempmediaStorage/
+.user_uploaded/
+scratch/
+*.log
+*.zip
+*.tmp
+
+# 3. وثائق المهام وسجلات التقارير والاختبارات
+reports/
+prompt/
+tests/
+legacy/
+apps/
+
+# 4. بيئة التشغيل والأسرار المحتملة
+.env*
+.DS_Store
+Thumbs.db

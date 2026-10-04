@@ -1,14 +1,25 @@
 {
   "name": "proofforge",
   "version": "1.0.0",
-  "description": "ProofForge — AI Engineering Verification Framework. Evidence-driven engineering rules, verification, security, grounding, and quality gates for AI-assisted software development.",
-  "main": "bin/webforge.js",
+  "description": "ProofForge — Deterministic AI Engineering Verification Framework. Evidence-driven engineering rules, claim verification, security, grounding, and quality gates for AI-assisted software development.",
+  "main": "packages/contracts/index.js",
   "bin": {
-    "proofforge": "./bin/webforge.js",
+    "proofforge": "./bin/proofforge.js",
     "webforge": "./bin/webforge.js"
   },
+  "files": [
+    "bin/",
+    "packages/",
+    "registry/",
+    "LICENSE",
+    "README.md",
+    "package.json"
+  ],
   "engines": {
     "node": ">=18.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
     "test": "node bin/webforge.js test",
@@ -31,6 +42,7 @@
     "ai-engineering",
     "verification-framework",
     "evidence-graph",
+    "claim-verification",
     "grounding-gate",
     "security",
     "asvs",
