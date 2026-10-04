@@ -31,7 +31,7 @@ const userSchema = {
 const validData = { email: 'user@example.com', age: 25 };
 const v1 = SchemaValidator.validate(userSchema, validData);
 assert.strictEqual(v1.isValid, true);
-assert.strictEqual(v1.data.email, 'user@example.com');
+assert(v1.data.email === 'user@example.com');
 
 const invalidData = { email: 'bad-email', age: 15 };
 const v2 = SchemaValidator.validate(userSchema, invalidData);
@@ -41,5 +41,8 @@ console.log('  [PASS] Schema Validator Rules Verified');
 
 // 4. تشغيل اختبارات عقد وسجل الوكيل
 require('./agent-contract.test.js');
+
+// 5. تشغيل اختبارات عقد وسجل المهارات
+require('./skill-contract.test.js');
 
 console.log('>>> [SUCCESS] All Contracts Package Tests PASSED with 100% Evidence.');

@@ -4,5 +4,7 @@ module.exports = {
     AppError: require('./error-model'),
     SchemaValidator: require('./schema-validator'),
     AgentContract: require('./agent-contract'),
-    AgentRegistry: require('./agent-registry')
+    AgentRegistry: require('./agent-registry'),
+    SkillContract: require('./skill-contract'),
+    SkillRegistry: require('./skill-registry')
 };

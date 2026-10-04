@@ -1,13 +1,970 @@
 {
   "version": "1.0.0",
-  "description": "سجل المهارات الهندسية المعتمدة في WebForge OS",
+  "description": "سجل المهارات الهندسية المعتمدة في ProofForge — Canonical Skill Registry",
   "skills": [
     {
-      "id": "architecture",
-      "name": "Architecture",
+      "id": "security-review",
+      "name": "Security Review",
+      "priority": "P0",
+      "path": "skills/security/SKILL.md",
+      "scope": "security",
+      "contract": {
+        "id": "PF-SKILL-SECURITY-REVIEW",
+        "name": "Security Review",
+        "version": "1.0.0",
+        "description": "مهارة تدقيق ومراجعة أمان التطبيقات والشفرات المصدرية ومنع ثغرات OWASP و ASVS L2",
+        "category": "security",
+        "purpose": "فحص وتحليل الكود لكشف الثغرات الأمنية (IDOR, Injection, Broken Auth) والتحقق من تطبيق مبادئ انعدام الثقة (Zero Trust)",
+        "inputs": [
+          { "name": "source_files", "type": "array", "required": true, "trust_level": "UNTRUSTED" },
+          { "name": "applicable_policies", "type": "array", "required": false, "trust_level": "SYSTEM" }
+        ],
+        "outputs": [
+          { "name": "vulnerability_findings", "type": "array" },
+          { "name": "security_verdict", "type": "string" },
+          { "name": "remediation_checklist", "type": "array" }
+        ],
+        "preconditions": [
+          "تحديد نطاق الملفات المستهدفة بالفحص",
+          "توفر سياسات الأمان المعتمدة في 05-SECURITY",
+          "تشغيل الفحص بواسطة وكيل مصرح له"
+        ],
+        "postconditions": [
+          "تسجيل كافة النتائج في تقرير التدقيق الأمني",
+          "تصنيف شدة الخطورة بدقة (Low/Medium/High/Critical)",
+          "توليد براهين جنائية قابلة لإعادة الإنتاج"
+        ],
+        "responsibilities": [
+          "اكتشاف ثغرات التحكم بالوصول وحقن الأوامر",
+          "مراجعة تأمين الجلسات وإدارة الأسرار",
+          "التحقق من التشفير الآمن والـ Scrubbing"
+        ],
+        "allowed_agents": [
+          "PF-SEC-001",
+          "PF-THREAT-001",
+          "PF-ARCH-001"
+        ],
+        "prohibited_agents": [
+          "PF-DOCS-001"
+        ],
+        "applicable_rules": [
+          "P0_SECURITY_SAFETY",
+          "sec.zero-trust",
+          "sec.authorization-ownership",
+          "sec.secrets-management"
+        ],
+        "security_constraints": [
+          "منع تخطي أو إخفاء أي ثغرة أمنية",
+          "حظر التعامل مع كود غير موثوق كتعليمات موثوقة",
+          "تطبيق مبدأ الرفض الافتراضي لكافة الصلاحيات"
+        ],
+        "permission_requirements": [
+          "READ_REPOSITORY",
+          "RUN_SECURITY_SCAN"
+        ],
+        "authority_constraints": [
+          "الالتزام الصارم بهرمية P0 الأمنية وعدم تصعيد السلطة"
+        ],
+        "validators": [
+          "SECURITY_AUDITOR",
+          "OWASP_ASVS_CHECKER",
+          "INJECTION_DETECTOR"
+        ],
+        "validation_requirements": [
+          "SECURITY_REGRESSION_SCAN",
+          "STATIC_ANALYSIS"
+        ],
+        "verification_requirements": [
+          "CVGF_GROUNDING_GATE",
+          "CVGF_CLAIM_VERIFICATION"
+        ],
+        "required_evidence": [
+          "VULNERABILITY_PROOF_OF_CONCEPT",
+          "SECURITY_FINDINGS_REGISTER",
+          "ASVS_L2_COMPLIANCE_PROOF"
+        ],
+        "evidence_schema": {
+          "evidence_type": "SECURITY_FINDING",
+          "severity_levels": ["LOW", "MEDIUM", "HIGH", "CRITICAL"],
+          "reproducible": true
+        },
+        "failure_conditions": [
+          "اكتشاف ثغرة حرجة غير قابلة للإصلاح الفوري",
+          "محاولة تجاوز حاجز الصلاحيات الأمني",
+          "غياب سياق التفويض والتحكم بالوصول"
+        ],
+        "abstention_conditions": [
+          "غموض بيئة التهديدات الأمنية",
+          "وجود كود مجهول المصدر لم يتم فحصه",
+          "عدم كفاية الأدلة لإثبات سلامة المسار"
+        ],
+        "reporting_requirements": [
+          "SECURITY_AUDIT_REPORT",
+          "RISK_MATRIX",
+          "ACTIONABLE_REMEDIATION_PLAN"
+        ],
+        "audit_requirements": [
+          "LOG_SECURITY_ASSESSMENT",
+          "RECORD_FINDINGS_EVIDENCE"
+        ],
+        "status": "ACTIVE"
+      }
+    },
+    {
+      "id": "architecture-review",
+      "name": "Architecture Review",
       "priority": "P1",
       "path": "skills/architecture/SKILL.md",
-      "scope": "system"
+      "scope": "system",
+      "contract": {
+        "id": "PF-SKILL-ARCHITECTURE-REVIEW",
+        "name": "Architecture Review",
+        "version": "1.0.0",
+        "description": "مهارة فحص المعمارية والحدود الهيكلية وسجلات القرارات وفصل الاهتمامات",
+        "category": "architecture",
+        "purpose": "تقييم التوافق المعماري بين المكونات ومنع التداخل غير المصرح به بين الطبقات الهندسية",
+        "inputs": [
+          { "name": "module_boundaries", "type": "object", "required": true, "trust_level": "SYSTEM" },
+          { "name": "proposed_changes", "type": "array", "required": true, "trust_level": "UNTRUSTED" }
+        ],
+        "outputs": [
+          { "name": "architectural_fitness_verdict", "type": "string" },
+          { "name": "layer_violations", "type": "array" }
+        ],
+        "preconditions": [
+          "توفر سجل القرارات المعمارية ADR",
+          "تحديد هرمية الطبقات المعمارية",
+          "استقرار مخطط التبعيات البرمجية"
+        ],
+        "postconditions": [
+          "عدم كسر حدود العزل بين الطبقات",
+          "توثيق أي تغيير هيكلي بسجل ADR"
+        ],
+        "responsibilities": [
+          "تدقيق التبعيات الدائرية والممنوعة",
+          "التحقق من نمط الحوكمة متعددة الحزم",
+          "ضمان حيادية وملاءمة الستاك الهندسي"
+        ],
+        "allowed_agents": [
+          "PF-ARCH-001",
+          "PF-REV-001"
+        ],
+        "prohibited_agents": [
+          "PF-FRONTEND-001"
+        ],
+        "applicable_rules": [
+          "P2_ARCHITECTURE",
+          "RULE-ARCH-01",
+          "RULE-ARCH-02"
+        ],
+        "security_constraints": [
+          "منع أي تعديل معماري يخفف القيود الأمنية",
+          "حظر تجاوز هرمية سلطة الدستور والأمان"
+        ],
+        "permission_requirements": [
+          "READ_REPOSITORY"
+        ],
+        "authority_constraints": [
+          "الالتزام بسلطة P2 المعمارية"
+        ],
+        "validators": [
+          "ARCH_FITNESS_CHECKER",
+          "DEPENDENCY_GRAPH_LINT"
+        ],
+        "validation_requirements": [
+          "CIRCULAR_DEPENDENCY_TEST"
+        ],
+        "verification_requirements": [
+          "CVGF_GROUNDING_GATE"
+        ],
+        "required_evidence": [
+          "ADR_DOCUMENT",
+          "DEPENDENCY_MATRIX_PROOF"
+        ],
+        "evidence_schema": {
+          "evidence_type": "ARCHITECTURE_EVIDENCE",
+          "boundary_intact": true
+        },
+        "failure_conditions": [
+          "وجود تبعيات دائرية مكسورة",
+          "تداخل غير مصرح به بين الحزم"
+        ],
+        "abstention_conditions": [
+          "نقص البيانات الهيكلية للوحدات",
+          "تضارب القواعد المعمارية دون حسم"
+        ],
+        "reporting_requirements": [
+          "ARCHITECTURAL_IMPACT_REPORT",
+          "BOUNDARY_VERIFICATION_STATUS"
+        ],
+        "audit_requirements": [
+          "LOG_ARCHITECTURAL_DECISION"
+        ],
+        "status": "ACTIVE"
+      }
+    },
+    {
+      "id": "backend-review",
+      "name": "Backend Review",
+      "priority": "P0",
+      "path": "skills/backend/SKILL.md",
+      "scope": "server",
+      "contract": {
+        "id": "PF-SKILL-BACKEND-REVIEW",
+        "name": "Backend Review",
+        "version": "1.0.0",
+        "description": "مهارة مراجعة وتدقيق النظم والخدمات الخلفية والمنطق التجاري والتحقق الخادمي",
+        "category": "backend",
+        "purpose": "فحص منطق الخدمات الخادمة والتحقق الصارم من المدخلات والمعاملات الذرية",
+        "inputs": [
+          { "name": "backend_handlers", "type": "array", "required": true, "trust_level": "UNTRUSTED" },
+          { "name": "dto_schemas", "type": "object", "required": true, "trust_level": "SYSTEM" }
+        ],
+        "outputs": [
+          { "name": "handler_review_findings", "type": "array" },
+          { "name": "validation_coverage", "type": "number" }
+        ],
+        "preconditions": [
+          "توفر المخططات الخادمية الصارمة",
+          "وجود بيئة اختبارات وحدات معزولة"
+        ],
+        "postconditions": [
+          "التحقق الخادمي الإلزامي من كافة المعاملات",
+          "تطهير ردود الأخطاء ومنع تسريب بيانات PII"
+        ],
+        "responsibilities": [
+          "فحص كفاءة وأمان المعالجات الخادمية",
+          "التحقق من ذرية العمليات وحماية الـ Replay",
+          "فرض التوقيعات الرقمية ومفاتيح الـ Idempotency"
+        ],
+        "allowed_agents": [
+          "PF-BACKEND-001",
+          "PF-API-001",
+          "PF-SEC-001"
+        ],
+        "prohibited_agents": [
+          "PF-DOCS-001"
+        ],
+        "applicable_rules": [
+          "P4_ENGINEERING",
+          "backend.schema-validation",
+          "backend.database-transactions"
+        ],
+        "security_constraints": [
+          "حظر الاعتماد على التحقق من طرف العميل",
+          "منع كشف استثناءات الخادم الحساسة"
+        ],
+        "permission_requirements": [
+          "READ_REPOSITORY",
+          "RUN_TESTS"
+        ],
+        "authority_constraints": [
+          "الالتزام بسلطة المعايير الهندسية P4"
+        ],
+        "validators": [
+          "SERVER_SCHEMA_VALIDATOR",
+          "IDEMPOTENCY_CHECKER"
+        ],
+        "validation_requirements": [
+          "UNIT_TESTS",
+          "INTEGRATION_TESTS"
+        ],
+        "verification_requirements": [
+          "CVGF_OUTPUT_VERIFICATION"
+        ],
+        "required_evidence": [
+          "API_ENDPOINT_PROOF",
+          "TEST_EXECUTION_RESULTS"
+        ],
+        "evidence_schema": {
+          "evidence_type": "BACKEND_VALIDATION",
+          "server_validated": true
+        },
+        "failure_conditions": [
+          "غياب التحقق الخادمي لأي حقل مدخل",
+          "فشل التعامل الآمن مع الأخطاء"
+        ],
+        "abstention_conditions": [
+          "غموض مواصفات الواجهة الخلفية",
+          "غياب سياق قاعدة البيانات المعزولة"
+        ],
+        "reporting_requirements": [
+          "BACKEND_AUDIT_REPORT",
+          "VALIDATION_MATRIX"
+        ],
+        "audit_requirements": [
+          "LOG_BACKEND_FINDINGS"
+        ],
+        "status": "ACTIVE"
+      }
+    },
+    {
+      "id": "api-review",
+      "name": "API Review",
+      "priority": "P0",
+      "path": "skills/api/SKILL.md",
+      "scope": "network",
+      "contract": {
+        "id": "PF-SKILL-API-REVIEW",
+        "name": "API Review",
+        "version": "1.0.0",
+        "description": "مهارة تدقيق واجهات البرمجة والمظاريف المعيارية وتوقيعات الـ Webhooks وعمق الاستعلامات",
+        "category": "api",
+        "purpose": "فحص عقود واجهات البرمجة، رؤوس الأمان، ومحددات المعدلات (Rate Limiting)",
+        "inputs": [
+          { "name": "api_endpoints", "type": "array", "required": true, "trust_level": "UNTRUSTED" },
+          { "name": "envelope_spec", "type": "object", "required": true, "trust_level": "SYSTEM" }
+        ],
+        "outputs": [
+          { "name": "api_compliance_verdict", "type": "string" },
+          { "name": "contract_drift_findings", "type": "array" }
+        ],
+        "preconditions": [
+          "توفر مواصفات المظروف المعياري ApiResponse",
+          "تحديد معايير التوثيق وتوقيعات HMAC"
+        ],
+        "postconditions": [
+          "مطابقة كافة الردود للمظروف المعياري",
+          "حظر تسريب الأسرار في مخرجات الأخطاء"
+        ],
+        "responsibilities": [
+          "مراجعة عمق استعلامات GraphQL",
+          "التحقق من التوقيعات المقاومة لهجمات التوقيت",
+          "ضمان تحديد معدلات الطلب والـ Sliders"
+        ],
+        "allowed_agents": [
+          "PF-API-001",
+          "PF-BACKEND-001",
+          "PF-SEC-001"
+        ],
+        "prohibited_agents": [
+          "PF-FRONTEND-001"
+        ],
+        "applicable_rules": [
+          "P4_ENGINEERING",
+          "backend.schema-validation",
+          "sec.zero-trust"
+        ],
+        "security_constraints": [
+          "فرض التحقق الآمن في الوقت الثابت (Constant-Time Verification)",
+          "منع أي استدعاء شبكي خارجي غير مقيد"
+        ],
+        "permission_requirements": [
+          "READ_REPOSITORY",
+          "RUN_TESTS"
+        ],
+        "authority_constraints": [
+          "الالتزام بمعايير P4 الهندسية"
+        ],
+        "validators": [
+          "API_CONTRACT_VALIDATOR",
+          "TIMING_SAFE_CHECKER"
+        ],
+        "validation_requirements": [
+          "API_LINT",
+          "INTEGRATION_TESTS"
+        ],
+        "verification_requirements": [
+          "CVGF_OUTPUT_VERIFICATION"
+        ],
+        "required_evidence": [
+          "API_CONTRACT_PROOF",
+          "HMAC_SIGNATURE_PROOF"
+        ],
+        "evidence_schema": {
+          "evidence_type": "API_EVIDENCE",
+          "envelope_compliant": true
+        },
+        "failure_conditions": [
+          "انحراف الاستجابة عن المظروف المعياري",
+          "فحص توقيعات ضعيف أو معرض للتوقيت"
+        ],
+        "abstention_conditions": [
+          "عدم وضوح عقود الطرف الثالث",
+          "غياب مفاتيح التحقق الرسمية"
+        ],
+        "reporting_requirements": [
+          "API_CONFORMANCE_REPORT",
+          "SECURITY_HEADERS_STATUS"
+        ],
+        "audit_requirements": [
+          "LOG_API_REVIEW"
+        ],
+        "status": "ACTIVE"
+      }
+    },
+    {
+      "id": "database-review",
+      "name": "Database Review",
+      "priority": "P0",
+      "path": "skills/database/SKILL.md",
+      "scope": "data",
+      "contract": {
+        "id": "PF-SKILL-DATABASE-REVIEW",
+        "name": "Database Review",
+        "version": "1.0.0",
+        "description": "مهارة مراجعة وتدقيق قواعد البيانات والهجرة والمعاملات الذرية وحماية البيانات",
+        "category": "database",
+        "purpose": "فحص سلامة المخططات، والاستعلامات المعلمة، وعزل بيانات المستأجرين",
+        "inputs": [
+          { "name": "schema_migrations", "type": "array", "required": true, "trust_level": "UNTRUSTED" },
+          { "name": "query_patterns", "type": "array", "required": true, "trust_level": "UNTRUSTED" }
+        ],
+        "outputs": [
+          { "name": "migration_safety_verdict", "type": "string" },
+          { "name": "isolation_findings", "type": "array" }
+        ],
+        "preconditions": [
+          "توفر بيئة عزل رملية (Sandboxed Database)",
+          "توفر سجلات الهجرة ونقاط الاستعادة"
+        ],
+        "postconditions": [
+          "ضمان ذرية المعاملات (ACID)",
+          "حظر تنفيذ أي أمر مدمر غير قابل للتراجع"
+        ],
+        "responsibilities": [
+          "فحص الاستعلامات لمنع حقن SQL",
+          "التحقق من عزل بيانات المستأجرين (Tenant Isolation)",
+          "مراجعة كفاءة الفهارس وسرعة الاستعلام"
+        ],
+        "allowed_agents": [
+          "PF-DB-001",
+          "PF-BACKEND-001",
+          "PF-SEC-001"
+        ],
+        "prohibited_agents": [
+          "PF-FRONTEND-001",
+          "PF-DOCS-001"
+        ],
+        "applicable_rules": [
+          "P4_ENGINEERING",
+          "backend.database-transactions",
+          "sec.secrets-management"
+        ],
+        "security_constraints": [
+          "حظر الاستعلامات غير المعلمة نهائياً",
+          "منع أي أمر DROP دون بوابات موافقة بشرية"
+        ],
+        "permission_requirements": [
+          "READ_REPOSITORY",
+          "RUN_DATABASE"
+        ],
+        "authority_constraints": [
+          "الالتزام بسلطة المعايير الهندسية P4"
+        ],
+        "validators": [
+          "SQL_INJECTION_CHECKER",
+          "TRANSACTION_ISOLATION_VALIDATOR"
+        ],
+        "validation_requirements": [
+          "MIGRATION_ROLLBACK_TEST"
+        ],
+        "verification_requirements": [
+          "CVGF_OUTPUT_VERIFICATION"
+        ],
+        "required_evidence": [
+          "TRANSACTION_PROOF",
+          "MIGRATION_INTEGRITY_LOG"
+        ],
+        "evidence_schema": {
+          "evidence_type": "DATABASE_EVIDENCE",
+          "acid_verified": true
+        },
+        "failure_conditions": [
+          "وجود مخاطر حقن SQL",
+          "هجرة بيانات غير قابلة للتراجع الآمن"
+        ],
+        "abstention_conditions": [
+          "غياب بيئة العزل الرملية لقاعدة البيانات",
+          "عدم وضوح سياسات عزل المستأجرين"
+        ],
+        "reporting_requirements": [
+          "DATABASE_AUDIT_REPORT",
+          "MIGRATION_RISK_ASSESSMENT"
+        ],
+        "audit_requirements": [
+          "LOG_DATABASE_REVIEW"
+        ],
+        "status": "ACTIVE"
+      }
+    },
+    {
+      "id": "testing-review",
+      "name": "Testing Review",
+      "priority": "P0",
+      "path": "skills/testing/SKILL.md",
+      "scope": "qa",
+      "contract": {
+        "id": "PF-SKILL-TESTING-REVIEW",
+        "name": "Testing Review",
+        "version": "1.0.0",
+        "description": "مهارة مراجعة جودة الاختبارات الآلية والتحقق من الأدلة ومكافحة الادعاءات الزائفة",
+        "category": "testing",
+        "purpose": "التأكد من تشغيل الاختبارات فعلياً وجمع الأدلة القطعية ومكافحة الإنجاز الزائف (Anti-Fake-Completion)",
+        "inputs": [
+          { "name": "test_suites", "type": "array", "required": true, "trust_level": "SYSTEM" },
+          { "name": "execution_logs", "type": "object", "required": true, "trust_level": "SYSTEM" }
+        ],
+        "outputs": [
+          { "name": "test_pass_evidence", "type": "object" },
+          { "name": "fake_completion_alerts", "type": "array" }
+        ],
+        "preconditions": [
+          "توفر أوامر الاختبار الآلية في package.json",
+          "استقرار بيئة التشغيل دون تلوث"
+        ],
+        "postconditions": [
+          "تطابق نتائج الاختبارات مع الواقع المادي",
+          "توثيق كافة المقاييس والأدلة"
+        ],
+        "responsibilities": [
+          "فحص تغطية الاختبارات الآلية",
+          "كشف محاولات كتم الأخطاء (Mock Suppression)",
+          "التحقق من عدم حدوث تراجعات برمجية"
+        ],
+        "allowed_agents": [
+          "PF-QA-001",
+          "PF-REV-001",
+          "PF-SEC-001"
+        ],
+        "prohibited_agents": [
+          "PF-DOCS-001"
+        ],
+        "applicable_rules": [
+          "P4_ENGINEERING",
+          "RULE-QA-01",
+          "RULE-QA-02"
+        ],
+        "security_constraints": [
+          "حظر إعلان اكتمال أي ميزة دون اختبار حقيقي مثبت",
+          "التمييز الصارم بين مرور الاختبار ووجود الدليل"
+        ],
+        "permission_requirements": [
+          "READ_REPOSITORY",
+          "RUN_TESTS"
+        ],
+        "authority_constraints": [
+          "الالتزام بمعايير P4 الهندسية"
+        ],
+        "validators": [
+          "INTEGRITY_RUNNER",
+          "REGRESSION_DETECTOR"
+        ],
+        "validation_requirements": [
+          "E2E_SUITE",
+          "INTEGRITY_CHECK"
+        ],
+        "verification_requirements": [
+          "CVGF_EVIDENCE_GRAPH",
+          "CVGF_GROUNDING_GATE"
+        ],
+        "required_evidence": [
+          "TEST_OUTPUT_LOG",
+          "PASS_METRICS_PROOF"
+        ],
+        "evidence_schema": {
+          "evidence_type": "TEST_EVIDENCE",
+          "executed_live": true
+        },
+        "failure_conditions": [
+          "فشل أي اختبار أساسي في الحزمة",
+          "محاولة ادعاء النجاح دون تنفيذ أمر الاختبار"
+        ],
+        "abstention_conditions": [
+          "بيئة اختبار معطوبة أو متناقضة",
+          "نقص معايير القبول المحددة"
+        ],
+        "reporting_requirements": [
+          "TEST_EXECUTION_REPORT",
+          "FAILURE_DIAGNOSTICS"
+        ],
+        "audit_requirements": [
+          "LOG_TEST_REVIEW"
+        ],
+        "status": "ACTIVE"
+      }
+    },
+    {
+      "id": "performance-review",
+      "name": "Performance Review",
+      "priority": "P2",
+      "path": "skills/performance/SKILL.md",
+      "scope": "perf",
+      "contract": {
+        "id": "PF-SKILL-PERFORMANCE-REVIEW",
+        "name": "Performance Review",
+        "version": "1.0.0",
+        "description": "مهارة قياس ومراجعة الأداء واستهلاك الموارد ومؤشرات الويب الحيوية",
+        "category": "performance",
+        "purpose": "فحص زمن الاستجابة، ميزانيات الأداء، استهلاك الذاكرة، وضغط البيانات",
+        "inputs": [
+          { "name": "benchmarks", "type": "array", "required": true, "trust_level": "SYSTEM" },
+          { "name": "resource_metrics", "type": "object", "required": true, "trust_level": "SYSTEM" }
+        ],
+        "outputs": [
+          { "name": "performance_score", "type": "number" },
+          { "name": "bottleneck_findings", "type": "array" }
+        ],
+        "preconditions": [
+          "توفر سيناريوهات قياس أداء مستقرة",
+          "تحديد ميزانية الأداء القصوى"
+        ],
+        "postconditions": [
+          "عدم تجاوز الميزانيات المحددة للذاكرة وسرعة المعالجة"
+        ],
+        "responsibilities": [
+          "اكتشاف تسريبات الذاكرة (Memory Leaks)",
+          "تحسين الاستعلامات والعمليات غير المتزامنة",
+          "مراجعة زمن تحميل الأصول والوسائط"
+        ],
+        "allowed_agents": [
+          "PF-BACKEND-001",
+          "PF-FRONTEND-001",
+          "PF-ARCH-001"
+        ],
+        "prohibited_agents": [
+          "PF-DOCS-001"
+        ],
+        "applicable_rules": [
+          "P4_ENGINEERING",
+          "RULE-PERF-01"
+        ],
+        "security_constraints": [
+          "منع استغلال موارد النظام في عمليات تعدين أو إرهاق خبيث",
+          "تطبيق محددات المهلة (Timeouts) على كافة العمليات"
+        ],
+        "permission_requirements": [
+          "READ_REPOSITORY",
+          "RUN_TESTS"
+        ],
+        "authority_constraints": [
+          "الالتزام بمعايير P4 الهندسية"
+        ],
+        "validators": [
+          "BENCHMARK_VALIDATOR",
+          "MEMORY_LEAK_CHECKER"
+        ],
+        "validation_requirements": [
+          "PERFORMANCE_TEST"
+        ],
+        "verification_requirements": [
+          "CVGF_OUTPUT_VERIFICATION"
+        ],
+        "required_evidence": [
+          "BENCHMARK_REPORT",
+          "LATENCY_METRICS_PROOF"
+        ],
+        "evidence_schema": {
+          "evidence_type": "PERFORMANCE_EVIDENCE",
+          "budget_respected": true
+        },
+        "failure_conditions": [
+          "تجاوز ميزانية الأداء أو استهلاك الذاكرة",
+          "وجود تسريب مستمر في الموارد"
+        ],
+        "abstention_conditions": [
+          "بيئة تشغيل غير معيارية للقياس",
+          "تذبذب شديد في مقاييس الأداء"
+        ],
+        "reporting_requirements": [
+          "PERFORMANCE_AUDIT_REPORT",
+          "BOTTLENECK_ANALYSIS"
+        ],
+        "audit_requirements": [
+          "LOG_PERF_METRICS"
+        ],
+        "status": "ACTIVE"
+      }
+    },
+    {
+      "id": "dependency-audit",
+      "name": "Dependency Audit",
+      "priority": "P0",
+      "path": "skills/security/SKILL.md",
+      "scope": "supply-chain",
+      "contract": {
+        "id": "PF-SKILL-DEPENDENCY-AUDIT",
+        "name": "Dependency Audit",
+        "version": "1.0.0",
+        "description": "مهارة تدقيق سلاسل الإمداد البرمجية والتبعيات وكشف الثغرات والتبعيات المسمومة",
+        "category": "security",
+        "purpose": "فحص ملفات package.json و lockfiles وتوليد SBOM والتحقق من التراخيص والنزاهة",
+        "inputs": [
+          { "name": "manifest_files", "type": "array", "required": true, "trust_level": "UNTRUSTED" },
+          { "name": "vulnerability_advisories", "type": "object", "required": false, "trust_level": "SYSTEM" }
+        ],
+        "outputs": [
+          { "name": "vulnerable_packages", "type": "array" },
+          { "name": "sbom_artifact", "type": "object" }
+        ],
+        "preconditions": [
+          "توفر ملفات تعريف التبعيات الحقيقية",
+          "عدم وجود تبعيات معلقة غير مثبتة"
+        ],
+        "postconditions": [
+          "خلو شجرة التبعيات من الثغرات الحرجة المعروفة",
+          "مطابقة التراخيص لسياسات المشروع"
+        ],
+        "responsibilities": [
+          "مراجعة التبعيات المشبوهة أو المتروكة",
+          "كشف محاولات التسميم والـ Typosquatting",
+          "توليد ومطابقة براهين SBOM"
+        ],
+        "allowed_agents": [
+          "PF-SEC-001",
+          "PF-REV-001",
+          "PF-ARCH-001"
+        ],
+        "prohibited_agents": [
+          "PF-FRONTEND-001",
+          "PF-DOCS-001"
+        ],
+        "applicable_rules": [
+          "P0_SECURITY_SAFETY",
+          "sec.zero-trust",
+          "sec.supply-chain"
+        ],
+        "security_constraints": [
+          "حظر تثبيت حزم من مصادر غير موثوقة",
+          "منع تشغيل نصوص تثبيت غير معزولة (postinstall scripts)"
+        ],
+        "permission_requirements": [
+          "READ_REPOSITORY",
+          "RUN_SECURITY_SCAN"
+        ],
+        "authority_constraints": [
+          "الالتزام بسلطة P0 الأمنية"
+        ],
+        "validators": [
+          "SUPPLY_CHAIN_GUARD",
+          "SBOM_VALIDATOR"
+        ],
+        "validation_requirements": [
+          "NPM_AUDIT",
+          "LICENSE_CHECK"
+        ],
+        "verification_requirements": [
+          "CVGF_GROUNDING_GATE",
+          "CVGF_CLAIM_VERIFICATION"
+        ],
+        "required_evidence": [
+          "DEPENDENCY_SCAN_REPORT",
+          "SBOM_EVIDENCE"
+        ],
+        "evidence_schema": {
+          "evidence_type": "SUPPLY_CHAIN_EVIDENCE",
+          "zero_critical_vulns": true
+        },
+        "failure_conditions": [
+          "وجود حزمة بها ثغرة أمنية حرجة بدون معالجة",
+          "ترخيص برمجي يتعارض مع رخصة المشروع"
+        ],
+        "abstention_conditions": [
+          "ملفات lockfiles مفقودة أو غير متزامنة",
+          "عدم القدرة على التحقق من مصادر الحزم"
+        ],
+        "reporting_requirements": [
+          "SUPPLY_CHAIN_REPORT",
+          "VULNERABLE_PACKAGE_LIST"
+        ],
+        "audit_requirements": [
+          "LOG_DEPENDENCY_AUDIT"
+        ],
+        "status": "ACTIVE"
+      }
+    },
+    {
+      "id": "authentication-review",
+      "name": "Authentication Review",
+      "priority": "P0",
+      "path": "skills/security/SKILL.md",
+      "scope": "auth",
+      "contract": {
+        "id": "PF-SKILL-AUTHENTICATION-REVIEW",
+        "name": "Authentication Review",
+        "version": "1.0.0",
+        "description": "مهارة تدقيق آليات التوثيق والتحقق من الهوية وإدارة الجلسات وكلمات المرور",
+        "category": "security",
+        "purpose": "مراجعة خوارزميات التجزئة (Argon2)، تعقيد كلمات المرور، تدوير الجلسات، وحماية الرموز",
+        "inputs": [
+          { "name": "auth_controllers", "type": "array", "required": true, "trust_level": "UNTRUSTED" },
+          { "name": "token_configs", "type": "object", "required": true, "trust_level": "SYSTEM" }
+        ],
+        "outputs": [
+          { "name": "auth_flaws", "type": "array" },
+          { "name": "session_security_verdict", "type": "string" }
+        ],
+        "preconditions": [
+          "توفر وحدات إدارة الجلسات وكلمات المرور",
+          "تحديد معايير تعقيد كلمات المرور"
+        ],
+        "postconditions": [
+          "استخدام خوارزميات تجزئة معتمدة ومقاومة للتوقيت",
+          "تأمين ملفات الارتباط بسمات HttpOnly و Secure"
+        ],
+        "responsibilities": [
+          "منع هجمات التخمين والقوة الغاشمة",
+          "التحقق من تدوير الرموز وإلغاء الجلسات المنتهية",
+          "ضمان التحقق الآمن في الوقت الثابت"
+        ],
+        "allowed_agents": [
+          "PF-SEC-001",
+          "PF-BACKEND-001"
+        ],
+        "prohibited_agents": [
+          "PF-FRONTEND-001",
+          "PF-DOCS-001"
+        ],
+        "applicable_rules": [
+          "P0_SECURITY_SAFETY",
+          "sec.zero-trust",
+          "sec.secrets-management"
+        ],
+        "security_constraints": [
+          "حظر تخزين كلمات المرور كنص صريح",
+          "منع تمديد صلاحية الجلسات بدون إعادة توثيق"
+        ],
+        "permission_requirements": [
+          "READ_REPOSITORY",
+          "RUN_TESTS"
+        ],
+        "authority_constraints": [
+          "الالتزام الصارم بسلطة P0 الأمنية"
+        ],
+        "validators": [
+          "AUTH_FLOW_VALIDATOR",
+          "PASSWORD_HASH_CHECKER"
+        ],
+        "validation_requirements": [
+          "AUTH_UNIT_TESTS",
+          "BRUTE_FORCE_DEFENSE_TEST"
+        ],
+        "verification_requirements": [
+          "CVGF_OUTPUT_VERIFICATION",
+          "CVGF_CLAIM_VERIFICATION"
+        ],
+        "required_evidence": [
+          "AUTH_SECURITY_PROOF",
+          "TOKEN_ROTATION_PROOF"
+        ],
+        "evidence_schema": {
+          "evidence_type": "AUTH_EVIDENCE",
+          "constant_time_verified": true
+        },
+        "failure_conditions": [
+          "استخدام خوارزمية تجزئة ضعيفة مثل MD5 أو SHA1",
+          "ثغرات تثبيت الجلسات (Session Fixation)"
+        ],
+        "abstention_conditions": [
+          "غياب مواصفات التوثيق الرسمية",
+          "تضارب آليات إدارة الجلسات"
+        ],
+        "reporting_requirements": [
+          "AUTHENTICATION_AUDIT_REPORT",
+          "SESSION_SECURITY_MATRIX"
+        ],
+        "audit_requirements": [
+          "LOG_AUTH_REVIEW"
+        ],
+        "status": "ACTIVE"
+      }
+    },
+    {
+      "id": "authorization-review",
+      "name": "Authorization Review",
+      "priority": "P0",
+      "path": "skills/security/SKILL.md",
+      "scope": "authz",
+      "contract": {
+        "id": "PF-SKILL-AUTHORIZATION-REVIEW",
+        "name": "Authorization Review",
+        "version": "1.0.0",
+        "description": "مهارة تدقيق التفويض والتحكم بالوصول وعزل المستأجرين ومكافحة ثغرات IDOR و BOLA",
+        "category": "security",
+        "purpose": "فحص مصفوفة الصلاحيات، التحقق من ملكية السجلات خادمياً، وتطبيق مبدأ الامتيازات الأقل",
+        "inputs": [
+          { "name": "protected_resources", "type": "array", "required": true, "trust_level": "UNTRUSTED" },
+          { "name": "rbac_matrix", "type": "object", "required": true, "trust_level": "SYSTEM" }
+        ],
+        "outputs": [
+          { "name": "idor_findings", "type": "array" },
+          { "name": "privilege_escalation_risks", "type": "array" }
+        ],
+        "preconditions": [
+          "تحديد مصفوفة الصلاحيات والأدوار بوضوح",
+          "توفر معرفات المستأجرين والمستخدمين في السياق"
+        ],
+        "postconditions": [
+          "التحقق الخادمي الصارم من ملكية كل مورد مطلوب",
+          "حظر الوصول المتقاطع بين المستأجرين 100%"
+        ],
+        "responsibilities": [
+          "كشف ومعالجة ثغرات التجاوز الأفقي والعمودي للصلاحيات",
+          "التحقق من حراسة المعرفات المباشرة للموارد",
+          "فرض الرفض الافتراضي لأي تصريح غير محدد صراحة"
+        ],
+        "allowed_agents": [
+          "PF-SEC-001",
+          "PF-BACKEND-001",
+          "PF-ARCH-001"
+        ],
+        "prohibited_agents": [
+          "PF-FRONTEND-001",
+          "PF-DOCS-001"
+        ],
+        "applicable_rules": [
+          "P0_SECURITY_SAFETY",
+          "sec.zero-trust",
+          "sec.authorization-ownership"
+        ],
+        "security_constraints": [
+          "حظر الاعتماد على معرفات العميل للتحقق من الصلاحية",
+          "تطبيق التحقق من الملكية على مستوى كل نقطة نهاية"
+        ],
+        "permission_requirements": [
+          "READ_REPOSITORY",
+          "RUN_TESTS"
+        ],
+        "authority_constraints": [
+          "الالتزام الصارم بسلطة P0 الأمنية"
+        ],
+        "validators": [
+          "IDOR_DETECTOR",
+          "TENANT_ISOLATION_GUARD"
+        ],
+        "validation_requirements": [
+          "IDOR_SECURITY_TEST",
+          "MULTI_TENANT_TEST"
+        ],
+        "verification_requirements": [
+          "CVGF_OUTPUT_VERIFICATION",
+          "CVGF_CLAIM_VERIFICATION"
+        ],
+        "required_evidence": [
+          "AUTHORIZATION_AUDIT_PROOF",
+          "OWNERSHIP_GUARD_EVIDENCE"
+        ],
+        "evidence_schema": {
+          "evidence_type": "AUTHORIZATION_EVIDENCE",
+          "idor_protected": true
+        },
+        "failure_conditions": [
+          "إمكانية وصول مستخدم لبيانات مستخدم آخر دون تصريح",
+          "تخطي فحص التفويض عبر التلاعب بالمعاملات"
+        ],
+        "abstention_conditions": [
+          "غموض نموذج ملكية الموارد",
+          "نقص سياق المستأجر في بيئة التشغيل"
+        ],
+        "reporting_requirements": [
+          "AUTHORIZATION_AUDIT_REPORT",
+          "ACCESS_CONTROL_FINDINGS"
+        ],
+        "audit_requirements": [
+          "LOG_AUTHORIZATION_REVIEW"
+        ],
+        "status": "ACTIVE"
+      }
     },
     {
       "id": "frontend",
@@ -15,34 +972,6 @@
       "priority": "P2",
       "path": "skills/frontend/SKILL.md",
       "scope": "ui"
-    },
-    {
-      "id": "backend",
-      "name": "Backend",
-      "priority": "P0",
-      "path": "skills/backend/SKILL.md",
-      "scope": "server"
-    },
-    {
-      "id": "database",
-      "name": "Database",
-      "priority": "P0",
-      "path": "skills/database/SKILL.md",
-      "scope": "data"
-    },
-    {
-      "id": "api",
-      "name": "API",
-      "priority": "P0",
-      "path": "skills/api/SKILL.md",
-      "scope": "network"
-    },
-    {
-      "id": "security",
-      "name": "Security",
-      "priority": "P0",
-      "path": "skills/security/SKILL.md",
-      "scope": "security"
     },
     {
       "id": "ui-ux",
@@ -106,20 +1035,6 @@
       "priority": "P3",
       "path": "skills/ecommerce/SKILL.md",
       "scope": "domain"
-    },
-    {
-      "id": "testing",
-      "name": "Testing",
-      "priority": "P0",
-      "path": "skills/testing/SKILL.md",
-      "scope": "qa"
-    },
-    {
-      "id": "performance",
-      "name": "Performance",
-      "priority": "P2",
-      "path": "skills/performance/SKILL.md",
-      "scope": "perf"
     },
     {
       "id": "seo",
