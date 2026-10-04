@@ -6,5 +6,7 @@ module.exports = {
     AgentContract: require('./agent-contract'),
     AgentRegistry: require('./agent-registry'),
     SkillContract: require('./skill-contract'),
-    SkillRegistry: require('./skill-registry')
+    SkillRegistry: require('./skill-registry'),
+    AgentSkillMapping: require('./agent-skill-mapping'),
+    AgentSkillMappingRegistry: require('./agent-skill-mapping-registry')
 };
