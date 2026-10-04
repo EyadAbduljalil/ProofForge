@@ -30,6 +30,32 @@ npm install proofforge
 
 ---
 
+## AI Agent Prompt (Cursor, Claude, Copilot)
+
+After installing `proofforge`, add this prompt to your project's `AGENTS.md`, `.cursorrules`, or paste it directly to your AI assistant:
+
+```markdown
+# ProofForge AI Verification Protocol
+
+This codebase is governed by **ProofForge** (`proofforge`). Follow these fail-closed rules:
+
+1. **Evidence Over Assertion**:
+   - Never claim code works, tests pass, or fixes are complete without execution proof.
+   - Respect the 5-state boundary: AI_CLAIMED ≠ CODE_CHANGED ≠ TEST_PASSED ≠ EVIDENCE_EXISTS ≠ PROOFFORGE_VERIFIED.
+   - Memory ≠ Evidence, Tool Result ≠ Evidence, Citation ≠ Verification.
+
+2. **Mandatory Verification**:
+   - Before declaring any task complete, run: `npx proofforge verify --json`
+   - Only mark a claim verified if the runner exits with code 0 and confirms PROOFFORGE_VERIFIED.
+   - If evidence is missing, abstain and state the limitation honestly.
+
+3. **Security & Grounding**:
+   - Enforce server-side authorization, anti-IDOR, and least privilege.
+   - No phantom dependencies or phantom APIs. Never claim 100% security or zero bugs.
+```
+
+---
+
 ## What is ProofForge?
 
 ProofForge is an **authoritative, evidence-driven verification and governance framework** purpose-built for AI-assisted and agentic software engineering.
