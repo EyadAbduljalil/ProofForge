@@ -81,4 +81,7 @@ require('./module-load.test.js');
 // 17. تشغيل اختبار التحصين الإنتاجي الشامل والتحقق المقيد
 require('./hardening-e2e.test.js');
 
+// 18. تشغيل تجربة التحقق الواقعية المستقلة ضد مشروع خارجي (Final Release Verification)
+require('./independent-trial.test.js');
+
 console.log('>>> [SUCCESS] All Contracts Package Tests PASSED Fully Verified.');

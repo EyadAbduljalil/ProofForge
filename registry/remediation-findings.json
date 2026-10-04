@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
   "description": "سجل المكتشفات والتسوية النهائية لمنظومة ProofForge — Canonical Remediation Findings Registry",
-  "last_updated": "2026-10-05T00:45:00+03:00",
+  "last_updated": "2026-10-05T00:50:00+03:00",
   "findings": [
     {
       "finding_id": "REM-FINDING-001",
@@ -207,6 +207,38 @@
       "actual_behavior": "تم تحديث .github/workflows/ci.yml ليتضمن خطوات التحقق الكنسية الكاملة قبل إجازة البناء.",
       "evidence": "الملف المحدث .github/workflows/ci.yml واجتياز كافة الأوامر محلياً بنجاح.",
       "remediation_required": "تحديث ملف CI/CD وإدراج بوابات النزاهة الإلزامية.",
+      "remediation_status": "FIXED",
+      "verification_status": "VERIFIED",
+      "regression_status": "NO_REGRESSION"
+    },
+    {
+      "finding_id": "REM-FINDING-014",
+      "source_phase": "Final Release Verification",
+      "category": "Supply Chain & Clean Install",
+      "severity": "HIGH",
+      "title": "غياب ملف القفل المعياري package-lock.json وإعاقة فحص التثبيت النظيف والتدقيق الأمني",
+      "description": "كان المستودع يفتقر لملف package-lock.json، مما تسبب في فشل npm ci وفشل npm audit بخطأ ENOLOCK، وعرقل إثبات التثبيت النظيف الحتمي في خط أنابيب CI.",
+      "affected_component": "package-lock.json, package.json, .github/workflows/ci.yml",
+      "expected_behavior": "وجود ملف قفل معياري package-lock.json يثبت خلو التبعيات من الثغرات (0 vulnerabilities) ويمكن npm ci من العمل بنجاح فوري.",
+      "actual_behavior": "تم توليد package-lock.json واجتاز npm ci بنجاح في 751ms، وأكد npm audit وجود 0 ثغرات، وتمت إضافة npm ci لسير عمل CI.",
+      "evidence": "نتائج تنفيذ npm ci و npm audit واجتيازهما بكود خروج 0 في 751ms.",
+      "remediation_required": "توليد package-lock.json والتحقق من سلامة التبعيات ودمج npm ci في خط أنابيب CI.",
+      "remediation_status": "FIXED",
+      "verification_status": "VERIFIED",
+      "regression_status": "NO_REGRESSION"
+    },
+    {
+      "finding_id": "REM-FINDING-015",
+      "source_phase": "Final Release Verification",
+      "category": "Independent Real Project Trial",
+      "severity": "MEDIUM",
+      "title": "الحاجة لتوثيق وتأكيد قدرة ProofForge على فحص ومعاينة مشروع برمجي حقيقي مستقل",
+      "description": "التحقق من قدرة المنظومة على العمل كإطار تدقيق وتحقق مستقل خارج نطاق حزمة اختبارات المستودع نفسه، ليشمل المعاينة، وتحديد القواعد، وتأصيل الأدلة، والتحقق بسلطة CVGF.",
+      "affected_component": "packages/contracts/tests/independent-trial.test.js, scratch/independent-billing-app",
+      "expected_behavior": "إجراء تجربة واقعية مستقلة مؤتمتة تثبت فحص ومعاينة خدمة برمجية حقيقية وتوليد هوية تدقيق ومخرجات JSON مهيكلة.",
+      "actual_behavior": "تم إنشاء packages/contracts/tests/independent-trial.test.js واجتياز الخطوات الثمانية بنجاح 100% بكود خروج 0.",
+      "evidence": "اجتياز اختبار independent-trial.test.js وتوليد هوية التشغيل PF-RUN-EXT وتمايز الحالات الخمس.",
+      "remediation_required": "بناء وتشغيل اختبار التجربة المستقلة ودمجه في جناح اختبارات العقود الرئيسية.",
       "remediation_status": "FIXED",
       "verification_status": "VERIFIED",
       "regression_status": "NO_REGRESSION"
