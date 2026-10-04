@@ -175,7 +175,7 @@ const requiredFiles = [
 requiredFiles.forEach(checkFileExists);
 
 if (errorsCount === 0) {
-    console.log('>>> [PASS] All Integrity Checks Passed Successfully! 100% Validated.');
+    console.log('>>> [PASS] All Integrity Checks Passed Successfully! Fully Verified.');
     process.exit(0);
 } else {
     console.error(\`>>> [FAIL] Integrity Test Failed with \${errorsCount} errors.\`);
