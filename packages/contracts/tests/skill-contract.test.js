@@ -277,6 +277,6 @@ for (const entry of skillsJson.skills) {
         assert(fs.existsSync(fullPath), `مسار المهارة غير موجود فعلياً على القرص: ${entry.path}`);
     }
 }
-console.log('  [PASS] All 26 Physical Skill Paths in Root Workspace Verified 100%');
+console.log('  [PASS] All 29 Skill Registry Paths (26 Unique Physical Directories) in Root Workspace Verified (Tested Scope)');
 
 console.log('>>> [SUCCESS] All 7 ProofForge Skill Contract & Registry Test Suites PASSED 100%.');
