@@ -24,43 +24,20 @@ A deterministic, evidence-driven verification and governance framework for AI-as
 
 ## Quick Start
 
-### 1. Run Instantly with `npx`
-Execute an evidence-driven verification cycle without prior installation:
+### 1. Run Instantly (No Installation Required)
 ```bash
 npx proofforge verify --json
 ```
 
-### 2. Install as a Project Dependency
-Install ProofForge into your Node.js application:
+### 2. Install in Your Project
 ```bash
-# Using npm
 npm install proofforge
-
-# Using yarn
-yarn add proofforge
-
-# Using pnpm
-pnpm add proofforge
 ```
 
-### 3. Clone and Verify from Source
-For contributors, security auditors, and framework evaluators:
+### 3. Develop from Source
 ```bash
-# Clone the repository
 git clone https://github.com/EyadAbduljalil/ProofForge.git
-cd ProofForge
-
-# Install dependencies deterministically
-npm ci
-
-# Verify repository structure and registry mappings
-npm run integrity
-
-# Verify module loading across all contracts and engines
-npm run proofforge
-
-# Run the complete test suite (270+ automated tests)
-npm test
+cd ProofForge && npm test
 ```
 
 ---
