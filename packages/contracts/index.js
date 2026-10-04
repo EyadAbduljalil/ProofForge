@@ -10,5 +10,9 @@ module.exports = {
     AgentSkillMapping: require('./agent-skill-mapping'),
     AgentSkillMappingRegistry: require('./agent-skill-mapping-registry'),
     WorkflowContract: require('./workflow-contract'),
-    WorkflowRegistry: require('./workflow-registry')
+    WorkflowRegistry: require('./workflow-registry'),
+    ModelPolicyContract: require('./model-policy-contract'),
+    ModelPolicyRegistry: require('./model-policy-registry'),
+    AntigravityAdapterContract: require('./antigravity-adapter-contract'),
+    AntigravityAdapter: require('./antigravity-adapter')
 };

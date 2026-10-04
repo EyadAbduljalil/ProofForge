@@ -51,4 +51,13 @@ require('./agent-skill-mapping.test.js');
 // 7. تشغيل اختبارات عقد وسجل تدفقات العمل (المرحلة 5)
 require('./workflow-contract.test.js');
 
+// 8. تشغيل اختبارات عقد وسجل سياسات النماذج والذكاء الاصطناعي (المرحلة 6)
+require('./model-policy.test.js');
+
+// 9. تشغيل اختبارات محول Google Antigravity (المرحلة 7)
+require('./antigravity-adapter.test.js');
+
+// 10. تشغيل اختبارات التكامل الشامل بين المرحلتين 6 و 7
+require('./phase-6-7-integration.test.js');
+
 console.log('>>> [SUCCESS] All Contracts Package Tests PASSED with 100% Evidence.');
