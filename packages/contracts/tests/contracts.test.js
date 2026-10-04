@@ -39,4 +39,7 @@ assert.strictEqual(v2.isValid, false);
 assert.strictEqual(v2.errors.length, 2);
 console.log('  [PASS] Schema Validator Rules Verified');
 
+// 4. تشغيل اختبارات عقد وسجل الوكيل
+require('./agent-contract.test.js');
+
 console.log('>>> [SUCCESS] All Contracts Package Tests PASSED with 100% Evidence.');
