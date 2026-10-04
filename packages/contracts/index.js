@@ -8,5 +8,7 @@ module.exports = {
     SkillContract: require('./skill-contract'),
     SkillRegistry: require('./skill-registry'),
     AgentSkillMapping: require('./agent-skill-mapping'),
-    AgentSkillMappingRegistry: require('./agent-skill-mapping-registry')
+    AgentSkillMappingRegistry: require('./agent-skill-mapping-registry'),
+    WorkflowContract: require('./workflow-contract'),
+    WorkflowRegistry: require('./workflow-registry')
 };

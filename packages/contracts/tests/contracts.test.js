@@ -48,4 +48,7 @@ require('./skill-contract.test.js');
 // 6. تشغيل اختبارات عقد وسجل الربط بين الوكلاء والمهارات (المرحلة 4)
 require('./agent-skill-mapping.test.js');
 
+// 7. تشغيل اختبارات عقد وسجل تدفقات العمل (المرحلة 5)
+require('./workflow-contract.test.js');
+
 console.log('>>> [SUCCESS] All Contracts Package Tests PASSED with 100% Evidence.');
