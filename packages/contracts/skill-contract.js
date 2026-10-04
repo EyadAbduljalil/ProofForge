@@ -163,6 +163,7 @@ class SkillContract {
         if (Array.isArray(def.authority_constraints)) {
             const hasP0Bypass = def.authority_constraints.some(c =>
                 c.toLowerCase().includes('override p0') ||
+                c.toLowerCase().includes('bypass p0') ||
                 c.toLowerCase().includes('bypass security') ||
                 c.toLowerCase().includes('escalate root')
             );

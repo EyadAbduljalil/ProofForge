@@ -69,4 +69,10 @@ require('./agent-handoff.test.js');
 // 13. تشغيل اختبارات التكامل الشامل بين المرحلتين 8 و 9
 require('./phase-8-9-integration.test.js');
 
+// 14. تشغيل اختبارات التجربة الحقيقية للمشروع الواقعي (المرحلة 10)
+require('./phase-10-trial.test.js');
+
+// 15. تشغيل جناح الفحص والاختبارات العدائية الشاملة (المرحلة 11)
+require('./phase-11-adversarial.test.js');
+
 console.log('>>> [SUCCESS] All Contracts Package Tests PASSED with 100% Evidence.');
