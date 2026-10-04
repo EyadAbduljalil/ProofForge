@@ -8,6 +8,7 @@
 
 const fs = require('fs');
 const ToolContract = require('./tool-contract');
+const PathLoaderGuard = require('./path-loader-guard');
 
 class ToolRegistry {
     constructor() {
@@ -384,13 +385,11 @@ class ToolRegistry {
      * @returns {ToolRegistry}
      */
     static loadFromFile(filePath, registries = {}) {
-        if (!fs.existsSync(filePath)) {
-            throw new Error(`ملف سجل الأدوات غير موجود في المسار: ${filePath}`);
-        }
+        const safePath = PathLoaderGuard.validateSafePath(filePath);
 
         let rawContent;
         try {
-            rawContent = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+            rawContent = JSON.parse(fs.readFileSync(safePath, 'utf8'));
         } catch (err) {
             throw new Error(`تعذر قراءة أو تحليل ملف JSON لسجل الأدوات: ${err.message}`);
         }

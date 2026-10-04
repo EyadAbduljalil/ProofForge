@@ -7,6 +7,7 @@
 const fs = require('fs');
 const path = require('path');
 const SkillContract = require('./skill-contract');
+const PathLoaderGuard = require('./path-loader-guard');
 
 class SkillRegistry {
     constructor() {
@@ -116,13 +117,11 @@ class SkillRegistry {
      * @returns {SkillRegistry}
      */
     static loadFromFile(filePath) {
-        if (!fs.existsSync(filePath)) {
-            throw new Error(`ملف سجل المهارات غير موجود على القرص: '${filePath}'`);
-        }
+        const safePath = PathLoaderGuard.validateSafePath(filePath);
 
         let rawContent;
         try {
-            rawContent = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+            rawContent = JSON.parse(fs.readFileSync(safePath, 'utf8'));
         } catch (err) {
             throw new Error(`فشل تحليل ملف سجل المهارات (تنسيق JSON تالف): ${err.message}`);
         }

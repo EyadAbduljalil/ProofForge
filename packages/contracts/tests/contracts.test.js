@@ -78,4 +78,7 @@ require('./phase-11-adversarial.test.js');
 // 16. تشغيل اختبار التحميل الشامل لكافة الوحدات والمكونات الكنسية
 require('./module-load.test.js');
 
+// 17. تشغيل اختبار التحصين الإنتاجي الشامل والتحقق المقيد
+require('./hardening-e2e.test.js');
+
 console.log('>>> [SUCCESS] All Contracts Package Tests PASSED Fully Verified.');

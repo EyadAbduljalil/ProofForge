@@ -11,15 +11,22 @@ class AISecurityGuard {
         if (!inputText || typeof inputText !== 'string') return { detected: false };
 
         const dangerousPatterns = [
-            /ignore\s+(all\s+)?(previous|prior|above)\s+(instructions|rules|prompts|commands|security|guards)/i,
-            /disregard\s+(all\s+)?(rules|prompts|system|instructions|security)/i,
+            /ignore\s+(all\s+)?(previous|prior|above|proofforge|system)?\s*(instructions|rules|prompts|commands|security|guards)/i,
+            /disregard\s+(all\s+)?(rules|prompts|system|instructions|security|guards)/i,
             /you\s+are\s+now\s+in\s+(DAN|developer|override)\s+mode/i,
-            /bypass\s+(security|filter|guardrail|verification|rules)/i,
+            /bypass\s+(security|filter|guardrail|verification|rules|p0)/i,
             /reveal\s+(system\s+prompt|secret\s+key|api\s+key)/i,
             /print\s+(environment\s+variables|env\s+vars)/i,
-            /تجاهل\s+(كافة|جميع|كل)?\s*(التعليمات|الأوامر|القواعد|السياق|الضوابط)/i,
-            /(تخطى|تجاوز|عطل)\s*(الأمان|الفلتر|الحماية|الضوابط|التحقق)/i,
-            /(اطبع|اكشف|اعرض)\s*(التعليمات\s*النظامية|المفاتيح\s*السرية|المتغيرات)/i
+            /mark\s+(this|all|evidence|claim)\s+(as\s+)?(verified|passed|safe|trusted|authorized)/i,
+            /disable\s+(security|checks|verification|guards|filters|rules)/i,
+            /treat\s+(this\s+file\s+as|these\s+as)\s+(system\s+instructions|system\s+prompt|rules|authority)/i,
+            /override\s+(proofforge|security|verification|rules)/i,
+            /تجاهل\s+(?:كافة|جميع|كل)?\s*(?:ال)?(?:تعليمات|أوامر|قواعد|سياق|ضوابط|أمان)/i,
+            /(?:تخطى|تجاوز|عطل|ألغِ|تجاهل)\s+(?:ال)?(?:أمان|فلتر|حماية|ضوابط|تحقق|قواعد)/i,
+            /(?:اطبع|اكشف|اعرض)\s*(?:ال)?(?:تعليمات\s*نظامية|مفاتيح\s*سرية|متغيرات)/i,
+            /اعتبر\s+(?:هذا|الملف|المحتوى).*(?:تعليمات|أوامر|قواعد)\s*(?:نظامية|سيادية)/i,
+            /ضع\s*(?:هذا|الحالة|الادعاء)\s*كـ?\s*(?:متحقق|معتمد|ناجح)/i,
+            /(?:تجاوز|تخطي|تعطيل)\s+.*(?:الأمان|الحماية|الفحص|التحقق)/i
         ];
 
         for (const pattern of dangerousPatterns) {

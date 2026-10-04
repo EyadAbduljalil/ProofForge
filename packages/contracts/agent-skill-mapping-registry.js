@@ -7,6 +7,7 @@
 const fs = require('fs');
 const path = require('path');
 const AgentSkillMapping = require('./agent-skill-mapping');
+const PathLoaderGuard = require('./path-loader-guard');
 
 class AgentSkillMappingRegistry {
     constructor() {
@@ -114,13 +115,11 @@ class AgentSkillMappingRegistry {
      * @returns {AgentSkillMappingRegistry}
      */
     static loadFromFile(filePath, options = {}) {
-        if (!fs.existsSync(filePath)) {
-            throw new Error(`ملف سجل روابط الوكلاء والمهارات غير موجود في المسار: ${filePath}`);
-        }
+        const safePath = PathLoaderGuard.validateSafePath(filePath);
 
         let rawContent;
         try {
-            rawContent = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+            rawContent = JSON.parse(fs.readFileSync(safePath, 'utf8'));
         } catch (err) {
             throw new Error(`تعذر قراءة أو تحليل ملف JSON لسجل الروابط: ${err.message}`);
         }

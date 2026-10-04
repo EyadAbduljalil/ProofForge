@@ -7,6 +7,7 @@
 const fs = require('fs');
 const path = require('path');
 const AgentContract = require('./agent-contract');
+const PathLoaderGuard = require('./path-loader-guard');
 
 class AgentRegistry {
     constructor() {
@@ -81,13 +82,11 @@ class AgentRegistry {
      * @returns {AgentRegistry}
      */
     static loadFromFile(filePath) {
-        if (!fs.existsSync(filePath)) {
-            throw new Error(`ملف سجل الوكلاء غير موجود على القرص: '${filePath}'`);
-        }
+        const safePath = PathLoaderGuard.validateSafePath(filePath);
 
         let rawContent;
         try {
-            rawContent = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+            rawContent = JSON.parse(fs.readFileSync(safePath, 'utf8'));
         } catch (err) {
             throw new Error(`فشل تحليل ملف سجل الوكلاء (تنسيق JSON تالف): ${err.message}`);
         }

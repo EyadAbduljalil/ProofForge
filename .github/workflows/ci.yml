@@ -24,6 +24,12 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
 
+    - name: Run Integrity Checks
+      run: npm run integrity
+
+    - name: Run ProofForge Deterministic Initialization & Load
+      run: npm run proofforge
+
     - name: Run Master Quality & Security Test Suites
       run: npm test
 

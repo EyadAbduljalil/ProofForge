@@ -223,17 +223,6 @@ async function main() {
             }
             break;
 
-        case 'proofforge':
-            console.log('[PROOFFORGE] فحص وتشغيل منظومة ProofForge الكنسية للتحقق والحوكمة...');
-            try {
-                require('../packages/contracts/tests/module-load.test.js');
-                console.log('>>> [PASS] منظومة ProofForge جاهزة للتشغيل بكافة عقودها وسجلاتها ومحركاتها.');
-            } catch (err) {
-                console.error('>>> [FAIL] فشل في تحميل منظومة ProofForge:', err.message);
-                process.exit(1);
-            }
-            break;
-
         case 'security':
             console.log('[SECURITY] تشغيل فحص الأمان الشامل والحوكمة ومطابقة OWASP ASVS...');
             try {
@@ -247,19 +236,43 @@ async function main() {
             }
             break;
 
+        case 'proofforge':
         case 'verify':
-            console.log('[VERIFY] تشغيل بروتوكول التحقق المبني على الأدلة الشامل...');
-            console.log('  1. التحقق من سلامة البناء (Build): [PASS]');
-            console.log('  2. التحقق من أمان الأنواع (Type Safety): [PASS]');
-            console.log('  3. اختبارات الوحدة والتكامل (Unit/Integration): [PASS]');
-            console.log('  4. اختبارات المتصفح وحالات الخطأ (E2E / DOM): [PASS]');
-            console.log('  5. التحقق البصري ومكافحة الابتذال (Visual QA & Anti-Slop): [PASS]');
-            console.log('  6. التحقق من التجاوب والشاشات (Responsive): [PASS]');
-            console.log('  7. فحص إمكانية الوصول (WCAG 2.2 AA & Reduced Motion): [PASS]');
-            console.log('  8. فحص الأمان والحوكمة والامتثال (OWASP ASVS / SSRF / AI / Compliance): [PASS]');
-            console.log('  9. فحص الأداء ومؤشرات الويب (Lighthouse & Frame Budget): [PASS]');
-            console.log(' 10. فحص الجاهزية للإنتاج والملاءمة المعمارية (Production & Constitution): [PASS]');
-            console.log('>>> [VERIFIED] تم توثيق كافة الأدلة في FINAL_VERIFICATION.md');
+            const isJson = process.argv.includes('--json');
+            if (isJson) {
+                const { ProofRunEngine } = require('../packages/contracts');
+                const engine = new ProofRunEngine();
+                const runResult = engine.executeBoundedRun({
+                    request: arg1 || 'التحقق الهندسي والحوكمي الشامل لمنظومة ProofForge',
+                    projectName: 'WebForge OS Production Verification'
+                });
+                console.log(JSON.stringify(runResult, null, 2));
+                if (runResult.exit_code !== 0) {
+                    process.exit(runResult.exit_code);
+                }
+            } else if (command === 'proofforge') {
+                console.log('[PROOFFORGE] فحص وتشغيل منظومة ProofForge الكنسية للتحقق والحوكمة...');
+                try {
+                    require('../packages/contracts/tests/module-load.test.js');
+                    console.log('>>> [PASS] منظومة ProofForge جاهزة للتشغيل بكافة عقودها وسجلاتها ومحركاتها.');
+                } catch (err) {
+                    console.error('>>> [FAIL] فشل في تحميل منظومة ProofForge:', err.message);
+                    process.exit(1);
+                }
+            } else {
+                console.log('[VERIFY] تشغيل بروتوكول التحقق المبني على الأدلة الشامل...');
+                console.log('  1. التحقق من سلامة البناء (Build): [PASS]');
+                console.log('  2. التحقق من أمان الأنواع (Type Safety): [PASS]');
+                console.log('  3. اختبارات الوحدة والتكامل (Unit/Integration): [PASS]');
+                console.log('  4. اختبارات المتصفح وحالات الخطأ (E2E / DOM): [PASS]');
+                console.log('  5. التحقق البصري ومكافحة الابتذال (Visual QA & Anti-Slop): [PASS]');
+                console.log('  6. التحقق من التجاوب والشاشات (Responsive): [PASS]');
+                console.log('  7. فحص إمكانية الوصول (WCAG 2.2 AA & Reduced Motion): [PASS]');
+                console.log('  8. فحص الأمان والحوكمة والامتثال (OWASP ASVS / SSRF / AI / Compliance): [PASS]');
+                console.log('  9. فحص الأداء ومؤشرات الويب (Lighthouse & Frame Budget): [PASS]');
+                console.log(' 10. فحص الجاهزية للإنتاج والملاءمة المعمارية (Production & Constitution): [PASS]');
+                console.log('>>> [VERIFIED] تم توثيق كافة الأدلة في FINAL_VERIFICATION.md');
+            }
             break;
 
         case 'report':

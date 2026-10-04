@@ -8,6 +8,7 @@
 
 const fs = require('fs');
 const ModelPolicyContract = require('./model-policy-contract');
+const PathLoaderGuard = require('./path-loader-guard');
 
 class ModelPolicyRegistry {
     constructor() {
@@ -281,13 +282,11 @@ class ModelPolicyRegistry {
      * @returns {ModelPolicyRegistry}
      */
     static loadFromFile(filePath, registries = {}) {
-        if (!fs.existsSync(filePath)) {
-            throw new Error(`ملف سجل سياسات النماذج غير موجود في المسار: ${filePath}`);
-        }
+        const safePath = PathLoaderGuard.validateSafePath(filePath);
 
         let rawContent;
         try {
-            rawContent = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+            rawContent = JSON.parse(fs.readFileSync(safePath, 'utf8'));
         } catch (err) {
             throw new Error(`تعذر قراءة أو تحليل ملف JSON لسجل سياسات النماذج: ${err.message}`);
         }

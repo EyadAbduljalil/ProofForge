@@ -7,6 +7,7 @@
 const fs = require('fs');
 const path = require('path');
 const WorkflowContract = require('./workflow-contract');
+const PathLoaderGuard = require('./path-loader-guard');
 
 class WorkflowRegistry {
     constructor() {
@@ -163,13 +164,11 @@ class WorkflowRegistry {
      * @returns {WorkflowRegistry}
      */
     static loadFromFile(filePath, registries = {}) {
-        if (!fs.existsSync(filePath)) {
-            throw new Error(`ملف سجل تدفقات العمل غير موجود في المسار: ${filePath}`);
-        }
+        const safePath = PathLoaderGuard.validateSafePath(filePath);
 
         let rawContent;
         try {
-            rawContent = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+            rawContent = JSON.parse(fs.readFileSync(safePath, 'utf8'));
         } catch (err) {
             throw new Error(`تعذر قراءة أو تحليل ملف JSON لسجل تدفقات العمل: ${err.message}`);
         }

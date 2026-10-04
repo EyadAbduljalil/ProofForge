@@ -18,5 +18,7 @@ module.exports = {
     ToolContract: require('./tool-contract'),
     ToolRegistry: require('./tool-registry'),
     AgentHandoffContract: require('./agent-handoff-contract'),
-    MultiAgentVerification: require('./multi-agent-verification')
+    MultiAgentVerification: require('./multi-agent-verification'),
+    PathLoaderGuard: require('./path-loader-guard'),
+    ProofRunEngine: require('./proof-run-engine')
 };
