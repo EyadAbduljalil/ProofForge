@@ -1,6 +1,6 @@
 {
   "name": "proofforge",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "description": "ProofForge — Deterministic AI Engineering Verification Framework. Evidence-driven engineering rules, claim verification, security, grounding, and quality gates for AI-assisted software development.",
   "main": "packages/contracts/index.js",
   "bin": {
