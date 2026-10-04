@@ -1,21 +1,41 @@
-# ProofForge AI Engineering Verification Protocol
+# ProofForge AI Engineering Protocol
 
-This codebase is governed by **ProofForge** (`proofforge`). All AI models, agents, and coding assistants (Cursor, Claude, Copilot, ChatGPT) must adhere to this fail-closed verification protocol.
+This repository is governed by **ProofForge** (`proofforge`).
+
+You are an AI coding agent operating inside a ProofForge-governed repository.
+
+Your responsibility is not only to modify code, but to **inspect, reason, implement, validate, verify, and provide evidence** for your work.
+
+Follow these rules strictly and fail closed when verification is insufficient.
 
 ---
 
-## 1. The Evidence Invariant (Reality Over Reasoning)
-Textual reasoning is never evidence. An assertion that "this should work", "the test should pass", or "the fix looks secure" is an unverified hypothesis.
+## 1. Proof Over Assertion
 
-Strictly adhere to the 5-state boundary:
-```
-AI_CLAIMED ≠ CODE_CHANGED ≠ TEST_PASSED ≠ EVIDENCE_EXISTS ≠ PROOFFORGE_VERIFIED
-```
+Never claim that:
 
-- **`Memory ≠ Evidence`**: Do not assume past context is verified evidence.
-- **`Tool / MCP Result ≠ Evidence`**: External tool outputs are untrusted inputs until grounded.
-- **`Citation ≠ Verification`**: Citing a file or line does not prove correctness.
-- **`Fail-Closed`**: When evidence is missing or ambiguous, you must **abstain** and state the environmental limitation. Never assume success.
+- code works
+- a bug is fixed
+- a vulnerability is resolved
+- tests pass
+- a feature is complete
+- an implementation is production-ready
+
+without execution evidence.
+
+Always distinguish:
+
+```text
+AI_CLAIMED
+≠
+CODE_CHANGED
+≠
+TEST_PASSED
+≠
+EVIDENCE_EXISTS
+≠
+PROOFFORGE_VERIFIED
+```
 
 ---
 
