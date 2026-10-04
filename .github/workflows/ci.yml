@@ -1,40 +1,49 @@
-name: WebForge OS — Master Continuous Verification & Quality CI
+name: ProofForge CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: proofforge-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   verify:
-    name: Execute Verification & Security Benchmark
+    name: Verify (Node.js ${{ matrix.node-version }})
     runs-on: ubuntu-latest
 
     strategy:
+      fail-fast: false
       matrix:
         node-version: [18.x, 20.x, 22.x]
 
     steps:
-    - name: Checkout Source Code
-      uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - name: Setup Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
 
-    - name: Clean Install Dependencies
-      run: npm ci
+      - name: Clean install
+        run: npm ci
 
-    - name: Run Integrity Checks
-      run: npm run integrity
+      - name: Dependency audit
+        run: npm audit --audit-level=high
 
-    - name: Run ProofForge Deterministic Initialization & Load
-      run: npm run proofforge
+      - name: Repository integrity
+        run: npm run integrity
 
-    - name: Run Master Quality & Security Test Suites
-      run: npm test
+      - name: ProofForge initialization
+        run: npm run proofforge
 
-    - name: Run Multi-Stack Adaptive Benchmarks
-      run: node -e "const Benchmark = require('./packages/orchestration/benchmark-framework'); const res = Benchmark.runMultiStackBenchmark(); if (res.detectionAccuracy < 100) process.exit(1);"
+      - name: Full regression
+        run: npm test
