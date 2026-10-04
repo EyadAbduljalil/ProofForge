@@ -197,8 +197,12 @@ class SkillRegistry {
      * @returns {{compatible: boolean, reason: string}}
      */
     static checkCompatibility(agent, skill) {
-        if (!agent || !skill) {
-            return { compatible: false, reason: 'يجب تزويد كائني الوكيل والمهارة معاً لإجراء الفحص' };
+        if (!agent || typeof agent !== 'object' || !agent.id || !agent.status) {
+            return { compatible: false, reason: 'كائن الوكيل غير صالح أو مشوه (Malformed Agent)' };
+        }
+
+        if (!skill || typeof skill !== 'object' || !skill.id || !skill.status || typeof skill.isAgentCompatible !== 'function') {
+            return { compatible: false, reason: 'كائن المهارة غير صالح أو مشوه (Malformed Skill)' };
         }
 
         if (agent.status !== 'ACTIVE') {

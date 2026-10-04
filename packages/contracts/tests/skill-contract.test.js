@@ -142,40 +142,81 @@ assert(abstainStale.reason.includes('الأدلة المقدمة متقادمة'
 console.log('  [PASS] Preconditions & Deterministic Abstention Logic Verified');
 
 // ==========================================
-// 5. التوافق المتبادل بين الوكيل والمهارة (Agent ↔ Skill Compatibility)
+// 5. التوافق المتبادل بين الوكيل والمهارة (Agent ↔ Skill Compatibility — 9 Scenarios)
 // ==========================================
-console.log('>>> [5/7] Testing Bidirectional Agent ↔ Skill Compatibility Matrix...');
+console.log('>>> [5/7] Testing Bidirectional Agent ↔ Skill Compatibility (9 Mandatory Scenarios)...');
 const agentsRegistryPath = path.resolve(__dirname, '../../../registry/agents.json');
 const agentReg = AgentRegistry.loadFromFile(agentsRegistryPath);
 
 const qaAgent = agentReg.getActiveAgent('PF-QA-001');
 const docsAgent = agentReg.getActiveAgent('PF-DOCS-001');
+const backendAgent = agentReg.getActiveAgent('PF-BACKEND-001');
 
 assert(qaAgent !== null);
 assert(docsAgent !== null);
+assert(backendAgent !== null);
 
-// الوكيل QA مصرح له بالمهارة والمهارة تسمح له
-const compQA = SkillRegistry.checkCompatibility(qaAgent, skill);
-assert.strictEqual(compQA.compatible, true);
+// 1. Valid Agent + Valid Skill
+const comp1 = SkillRegistry.checkCompatibility(qaAgent, skill);
+assert.strictEqual(comp1.compatible, true, 'Scenario 1: Valid Agent + Valid Skill must be compatible');
 
-// الوكيل DOCS محظور في المهارة (PF-DOCS-001 in prohibited_agents)
-const compDocs = SkillRegistry.checkCompatibility(docsAgent, skill);
-assert.strictEqual(compDocs.compatible, false);
-assert(compDocs.reason.includes('غير مصرح له'));
-
-// مهارة محظورة في عقد الوكيل
-const prohibitedSkillByAgent = new SkillContract({
+// 2. Agent not allowed by Skill
+const skillRestricted = new SkillContract({
     ...validSkillFixture,
-    id: 'PF-SKILL-TAMPER',
-    name: 'test-result-tampering',
-    category: 'test-result-tampering',
-    allowed_agents: ['PF-QA-001'],
+    id: 'PF-SKILL-RESTRICTED',
+    allowed_agents: ['PF-SEC-001'],
     prohibited_agents: []
 });
-const compProh = SkillRegistry.checkCompatibility(qaAgent, prohibitedSkillByAgent);
-assert.strictEqual(compProh.compatible, false);
-assert(compProh.reason.includes('محظورة صراحة في عقد الوكيل'));
-console.log('  [PASS] Bidirectional Agent ↔ Skill Compatibility Verified');
+const comp2 = SkillRegistry.checkCompatibility(qaAgent, skillRestricted);
+assert.strictEqual(comp2.compatible, false, 'Scenario 2: Agent not allowed by Skill must be rejected');
+
+// 3. Skill not allowed by Agent
+const skillNotAllowed = new SkillContract({
+    ...validSkillFixture,
+    id: 'PF-SKILL-UNALLOWED',
+    name: 'arbitrary-unallowed-skill',
+    category: 'unallowed',
+    allowed_agents: ['PF-BACKEND-001'],
+    prohibited_agents: []
+});
+const comp3 = SkillRegistry.checkCompatibility(backendAgent, skillNotAllowed);
+assert.strictEqual(comp3.compatible, false, 'Scenario 3: Skill not in Agent allowed_skills must be rejected');
+
+// 4. Explicitly prohibited Agent
+const comp4 = SkillRegistry.checkCompatibility(docsAgent, skill);
+assert.strictEqual(comp4.compatible, false, 'Scenario 4: Explicitly prohibited Agent must be rejected');
+assert(comp4.reason.includes('غير مصرح له'));
+
+// 5. Malformed Agent
+const comp5a = SkillRegistry.checkCompatibility(null, skill);
+const comp5b = SkillRegistry.checkCompatibility({ name: 'incomplete' }, skill);
+assert.strictEqual(comp5a.compatible, false, 'Scenario 5a: Null Agent must fail closed');
+assert.strictEqual(comp5b.compatible, false, 'Scenario 5b: Malformed Agent must fail closed');
+
+// 6. Malformed Skill
+const comp6a = SkillRegistry.checkCompatibility(qaAgent, null);
+const comp6b = SkillRegistry.checkCompatibility(qaAgent, { id: 'fake' });
+assert.strictEqual(comp6a.compatible, false, 'Scenario 6a: Null Skill must fail closed');
+assert.strictEqual(comp6b.compatible, false, 'Scenario 6b: Malformed Skill must fail closed');
+
+// 7. Disabled / Draft Skill
+const disabledSkill = new SkillContract({
+    ...validSkillFixture,
+    id: 'PF-SKILL-DISABLED',
+    status: 'DISABLED'
+});
+const comp7 = SkillRegistry.checkCompatibility(qaAgent, disabledSkill);
+assert.strictEqual(comp7.compatible, false, 'Scenario 7: Disabled Skill must be rejected');
+
+// 8. Unknown Skill (undefined)
+const comp8 = SkillRegistry.checkCompatibility(qaAgent, undefined);
+assert.strictEqual(comp8.compatible, false, 'Scenario 8: Unknown/undefined Skill must fail closed');
+
+// 9. Unknown Agent (undefined)
+const comp9 = SkillRegistry.checkCompatibility(undefined, skill);
+assert.strictEqual(comp9.compatible, false, 'Scenario 9: Unknown/undefined Agent must fail closed');
+
+console.log('  [PASS] All 9 Bidirectional Agent ↔ Skill Compatibility Scenarios Verified');
 
 // ==========================================
 // 6. تحميل سجل المهارات وفحوصات النزاهة المغلقة (Skill Registry Loading)
