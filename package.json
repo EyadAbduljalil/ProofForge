@@ -21,6 +21,14 @@
   "publishConfig": {
     "access": "public"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/EyadAbduljalil/ProofForge.git"
+  },
+  "bugs": {
+    "url": "https://github.com/EyadAbduljalil/ProofForge/issues"
+  },
+  "homepage": "https://github.com/EyadAbduljalil/ProofForge#readme",
   "scripts": {
     "test": "node bin/webforge.js test",
     "test:e2e": "node --test tests/e2e/server_app.test.js",
