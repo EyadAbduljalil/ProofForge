@@ -197,19 +197,11 @@ describe('Phase 8: WebForge OS Master Final Completion & Release Audit', () => {
     assert.equal(test3.gate, 'PASS');
   });
 
-  // 12. Verification of All Prior Phase Reports
-  it('12. should verify existence and validity of all phase reports (Phase 1B through Phase 7)', () => {
+  // 12. Verification of Consolidated Canonical Release Reports
+  it('12. should verify existence and validity of all canonical release reports', () => {
     const expectedReports = [
-      'ARCHITECTURE_REALIGNMENT_REPORT.md',
-      'WEBFORGE_CANONICAL_ARCHITECTURE.md',
-      'PHASE_1B_KNOWLEDGE_CORE_AUDIT_REPORT.md',
-      'PHASE_2B_AI_INSTRUCTION_AUDIT_REPORT.md',
-      'PHASE_3B_DESIGN_INTELLIGENCE_AUDIT_REPORT.md',
-      'PHASE_4B_ENGINEERING_SECURITY_AUDIT_REPORT.md',
-      'PHASE_5B_VALIDATION_QUALITY_GATES_AUDIT_REPORT.md',
-      'PHASE_6A_DOMAINS_TEMPLATES_STACK_ADAPTERS_IMPLEMENTATION_REPORT.md',
-      'PHASE_6B_DOMAINS_TEMPLATES_STACK_ADAPTERS_AUDIT_REPORT.md',
-      'PHASE_7_SYSTEM_INTEGRATION_VERIFICATION_REPORT.md'
+      'RELEASE_VERIFICATION.md',
+      'PROOFFORGE_RELEASE_CLEANUP_REPORT.md'
     ];
 
     for (const rep of expectedReports) {
