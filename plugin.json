@@ -1,0 +1,17 @@
+{
+  "name": "proofforge",
+  "displayName": "ProofForge — AI Engineering Verification Framework",
+  "version": "1.1.0",
+  "description": "Deterministic, evidence-driven verification and governance framework for AI-assisted software development. Enforces P0 security, Clean Architecture, anti-slop visual craft, and rigorous testing across 26 specialized skills.",
+  "author": {
+    "name": "Eyad Abduljalil",
+    "url": "https://github.com/EyadAbduljalil"
+  },
+  "homepage": "https://github.com/EyadAbduljalil/ProofForge#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/EyadAbduljalil/ProofForge.git"
+  },
+  "skills": "./skills",
+  "rules": "./AGENTS.md"
+}
