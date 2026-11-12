@@ -11,14 +11,29 @@
 A deterministic, evidence-driven verification and governance framework for AI-assisted software development. ProofForge establishes cognitive boundaries, enforces fail-closed engineering rules, grounds assertions in verifiable cryptographic artifacts, and governs agentic workflows.
 
 [![npm version](https://img.shields.io/npm/v/proofforge.svg)](https://www.npmjs.com/package/proofforge)
+[![Release: v1.1.0](https://img.shields.io/badge/Release-v1.1.0-purple.svg)](https://github.com/EyadAbduljalil/ProofForge/releases/tag/v1.1.0)
+[![Antigravity Skills](https://img.shields.io/badge/Antigravity%20Skills-26%20Verified-emerald.svg)](skills/)
+[![Security Standard](https://img.shields.io/badge/Security-OWASP%20ASVS%20Level%202-blue.svg)](skills/security/references/security_matrix.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Node.js](https://img.shields.io/badge/Node.js-%3E%3D18-brightgreen.svg)](package.json)
 [![CI Pipeline](https://img.shields.io/badge/CI-GitHub%20Actions-blue.svg)](https://github.com/EyadAbduljalil/ProofForge/actions)
 [![Integrity](https://img.shields.io/badge/Integrity-Fully%20Verified-success.svg)](tests/integrity_test.js)
 
 **NPM Package:** [`proofforge`](https://www.npmjs.com/package/proofforge) &nbsp;|&nbsp; **Repository:** [github.com/EyadAbduljalil/ProofForge](https://github.com/EyadAbduljalil/ProofForge)
 
 </div>
+
+---
+
+## 📌 Table of Contents
+
+- [⚡ One-Click AI Skills Adoption Directive](#-one-click-ai-skills-adoption-directive)
+- [🛡️ The 26 Antigravity Engineering Skills](#️-the-26-antigravity-engineering-skills)
+- [🚀 Quick Start & CLI Usage](#quick-start)
+- [🧠 Using ProofForge with an AI Coding Agent](#using-proofforge-with-an-ai-coding-agent)
+- [📦 Programmatic API Usage](#programmatic-api-usage)
+- [📂 Repository Structure](#repository-structure)
+- [🔒 Operational Limitations & Honest Engineering](#operational-limitations--honest-engineering)
+- [📜 Contributing & Security](#contributing--security)
 
 ---
 
@@ -775,9 +790,10 @@ if (check.isInjection) {
 
 ## Repository Structure
 
-```
+```text
 ProofForge/
 ├── bin/                          # Executable CLI entry points (proofforge, webforge)
+├── skills/                       # 26 Verified Antigravity Engineering Skills (with scripts, examples & references)
 ├── packages/
 │   ├── contracts/                # Core contracts, registries, PathLoaderGuard, ProofRunEngine
 │   ├── orchestration/            # EvidenceGraph, ClaimVerificationEngine, CVGF C1-C5
@@ -792,8 +808,11 @@ ProofForge/
 ├── docs/                         # Canonical project documentation & WEBFORGE_CONSTITUTION.md
 ├── tests/                        # Repository integrity & end-to-end integration test suites
 ├── .github/                      # CI/CD Workflows (GitHub Actions)
+├── plugin.json                   # Official Antigravity Plugin manifest
+├── GEMINI.md                     # Always-on project-level rules for Antigravity & Gemini
+├── AGENTS.md                     # Universal AI Agent Engineering Protocol
 ├── package.json                  # Package manifest, dependencies, and script runner
-└── README.md                     # Framework documentation
+└── README.md                     # Framework documentation & Quick Start
 ```
 
 ---
