@@ -19,7 +19,7 @@ const path = require('path');
 class VerifierEngine {
     constructor(verifierName, options = {}) {
         this.name = verifierName;
-        this.rootDir = options.rootDir || path.resolve(__dirname, '../../');
+        this.rootDir = options.rootDir || process.env.TARGET_DIR || process.cwd();
         this.isJson = process.argv.includes('--json') || options.json || false;
         this.verbose = process.argv.includes('--verbose') || options.verbose || false;
         this.findings = [];

@@ -24,7 +24,7 @@ const skillDirs = fs.readdirSync(skillsDir).filter(d => {
     return fs.statSync(path.join(skillsDir, d)).isDirectory();
 });
 
-assert.strictEqual(skillDirs.length, 26, `المتوقع وجود 26 مهارة كنسية، وجد ${skillDirs.length}`);
+assert.strictEqual(skillDirs.length, 28, `المتوقع وجود 28 مهارة كنسية، وجد ${skillDirs.length}`);
 
 const benchmarkResults = [];
 let totalScore = 0;
@@ -135,10 +135,10 @@ const averageBenchmarkScore = Math.round(totalScore / skillDirs.length);
 
 console.log('======================================================');
 console.log(`📊 Global Benchmark Quality Score: ${averageBenchmarkScore} / 100`);
-console.log(`Total Verified Skills: ${benchmarkResults.filter(r => r.classification === 'VERIFIED').length} / 26`);
+console.log(`Total Verified Skills: ${benchmarkResults.filter(r => r.classification === 'VERIFIED').length} / ${skillDirs.length}`);
 console.log('======================================================');
 
 assert.strictEqual(benchmarkResults.filter(r => r.classification === 'BLOCKED').length, 0, 'يجب ألا توجد أي مهارة بحالة BLOCKED');
 assert(averageBenchmarkScore >= 90, `متوسط التقييم يجب ألا يقل عن 90%، الحالي: ${averageBenchmarkScore}`);
 
-console.log('>>> [SUCCESS] All 26 ProofForge Skills Passed Quality Benchmark with VERIFIED Status.');
+console.log(`>>> [SUCCESS] All ${skillDirs.length} ProofForge Skills Passed Quality Benchmark with VERIFIED Status.`);

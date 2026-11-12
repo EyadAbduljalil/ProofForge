@@ -452,6 +452,210 @@ class AntigravityAdapter {
 
         return report;
     }
+
+    /**
+     * سرد المهارات الكنسية وحالتها
+     * @param {string} canonicalSkillsDir 
+     * @returns {{skills: Array, total: number, validCount: number}}
+     */
+    static listSkills(canonicalSkillsDir) {
+        if (!fs.existsSync(canonicalSkillsDir)) {
+            throw new Error(`مجلد المهارات الكنسي '${canonicalSkillsDir}' غير موجود.`);
+        }
+
+        const entries = fs.readdirSync(canonicalSkillsDir, { withFileTypes: true });
+        const skills = [];
+        let validCount = 0;
+
+        for (const entry of entries) {
+            if (!entry.isDirectory()) continue;
+            const skillName = entry.name;
+            const skillDir = path.join(canonicalSkillsDir, skillName);
+            const skillMdPath = path.join(skillDir, 'SKILL.md');
+
+            const hasSkillMd = fs.existsSync(skillMdPath);
+            const hasScripts = fs.existsSync(path.join(skillDir, 'scripts'));
+            const hasExamples = fs.existsSync(path.join(skillDir, 'examples'));
+            const hasReferences = fs.existsSync(path.join(skillDir, 'references'));
+
+            let issues = [];
+            let name = skillName;
+            let description = '';
+
+            if (hasSkillMd) {
+                const content = fs.readFileSync(skillMdPath, 'utf8');
+                const fmMatch = content.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+                if (fmMatch) {
+                    const fm = fmMatch[1];
+                    const nameMatch = fm.match(/name:\s*([^\r\n]+)/);
+                    const descMatch = fm.match(/description:\s*(?:>[-+]?|\|[-+]?)?\s*\n?([\s\S]*?)(?=\n[a-z0-9_-]+:|$)/i) || fm.match(/description:\s*([^\r\n]+)/);
+                    if (nameMatch) name = nameMatch[1].trim().replace(/^['"]|['"]$/g, '');
+                    if (descMatch) description = descMatch[1].replace(/\r?\n\s*/g, ' ').replace(/^['"]|['"]$/g, '').trim();
+                } else {
+                    issues.push('Invalid YAML frontmatter');
+                }
+            } else {
+                issues.push('Missing SKILL.md');
+            }
+
+            if (!hasScripts) issues.push('Missing scripts/');
+            if (!hasExamples) issues.push('Missing examples/');
+            if (!hasReferences) issues.push('Missing references/');
+
+            const isValid = issues.length === 0 && Boolean(description && description.length >= 15);
+            if (isValid) validCount++;
+
+            skills.push({
+                slug: skillName,
+                name,
+                description,
+                hasSkillMd,
+                hasScripts,
+                hasExamples,
+                hasReferences,
+                isValid,
+                issues
+            });
+        }
+
+        return { skills, total: skills.length, validCount };
+    }
+
+    /**
+     * فحص وتدقيق مهارة فردية بالتفصيل
+     * @param {string} canonicalSkillsDir 
+     * @param {string} skillName 
+     * @returns {Object}
+     */
+    static inspectSkill(canonicalSkillsDir, skillName) {
+        const skillDir = path.join(canonicalSkillsDir, skillName);
+        if (!fs.existsSync(skillDir)) {
+            throw new Error(`المهارة '${skillName}' غير موجودة في المجلد الكنسي.`);
+        }
+
+        const skillMdPath = path.join(skillDir, 'SKILL.md');
+        let content = '';
+        let frontmatter = null;
+        if (fs.existsSync(skillMdPath)) {
+            content = fs.readFileSync(skillMdPath, 'utf8');
+            const fmMatch = content.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+            if (fmMatch) {
+                frontmatter = fmMatch[1].trim();
+            }
+        }
+
+        const scripts = fs.existsSync(path.join(skillDir, 'scripts')) ? fs.readdirSync(path.join(skillDir, 'scripts')) : [];
+        const examples = fs.existsSync(path.join(skillDir, 'examples')) ? fs.readdirSync(path.join(skillDir, 'examples')) : [];
+        const references = fs.existsSync(path.join(skillDir, 'references')) ? fs.readdirSync(path.join(skillDir, 'references')) : [];
+
+        return {
+            slug: skillName,
+            path: skillDir,
+            hasSkillMd: fs.existsSync(skillMdPath),
+            frontmatter,
+            scripts,
+            examples,
+            references,
+            contentLength: content.length
+        };
+    }
+
+    /**
+     * مقارنة الفروق بين المصدر الكنسي والمجلد المثبت في مساحة العمل
+     * @param {string} canonicalSkillsDir 
+     * @param {string} targetDir 
+     * @returns {Object}
+     */
+    static diffSkills(canonicalSkillsDir, targetDir) {
+        if (!fs.existsSync(canonicalSkillsDir)) {
+            throw new Error(`مجلد المهارات الكنسي '${canonicalSkillsDir}' غير موجود.`);
+        }
+
+        const canonicalEntries = fs.readdirSync(canonicalSkillsDir, { withFileTypes: true })
+            .filter(e => e.isDirectory())
+            .map(e => e.name);
+
+        const targetEntries = fs.existsSync(targetDir)
+            ? fs.readdirSync(targetDir, { withFileTypes: true }).filter(e => e.isDirectory()).map(e => e.name)
+            : [];
+
+        const diffReport = {
+            identical: [],
+            missingInTarget: [],
+            modifiedInTarget: [],
+            staleProofForge: [],
+            userCustom: []
+        };
+
+        for (const skill of canonicalEntries) {
+            const canonicalSkillMd = path.join(canonicalSkillsDir, skill, 'SKILL.md');
+            const targetSkillMd = path.join(targetDir, skill, 'SKILL.md');
+
+            if (!fs.existsSync(targetSkillMd)) {
+                diffReport.missingInTarget.push(skill);
+            } else {
+                const canContent = fs.readFileSync(canonicalSkillMd, 'utf8');
+                const tarContent = fs.readFileSync(targetSkillMd, 'utf8');
+                if (canContent === tarContent) {
+                    diffReport.identical.push(skill);
+                } else {
+                    diffReport.modifiedInTarget.push(skill);
+                }
+            }
+        }
+
+        for (const targetSkill of targetEntries) {
+            if (!canonicalEntries.includes(targetSkill)) {
+                const tarSkillMd = path.join(targetDir, targetSkill, 'SKILL.md');
+                let isProofForge = false;
+                if (fs.existsSync(tarSkillMd)) {
+                    const content = fs.readFileSync(tarSkillMd, 'utf8');
+                    if (content.includes('ProofForge') || content.includes('pf-skill')) {
+                        isProofForge = true;
+                    }
+                }
+
+                if (isProofForge) {
+                    diffReport.staleProofForge.push(targetSkill);
+                } else {
+                    diffReport.userCustom.push(targetSkill);
+                }
+            }
+        }
+
+        return diffReport;
+    }
+
+    /**
+     * تشذيب وتنظيف المهارات المتقادمة مع حماية مهارات المستخدم المخصصة
+     * @param {string} canonicalSkillsDir 
+     * @param {string} targetDir 
+     * @param {Object} [options]
+     * @returns {Object}
+     */
+    static pruneSkills(canonicalSkillsDir, targetDir, options = {}) {
+        const dryRun = options.dryRun || false;
+        const force = options.force || false;
+
+        const diff = AntigravityAdapter.diffSkills(canonicalSkillsDir, targetDir);
+        const report = {
+            pruned: [],
+            protectedUserSkills: diff.userCustom,
+            skippedDryRun: []
+        };
+
+        for (const stale of diff.staleProofForge) {
+            const staleDir = path.join(targetDir, stale);
+            if (dryRun || !force) {
+                report.skippedDryRun.push(stale);
+            } else {
+                fs.rmSync(staleDir, { recursive: true, force: true });
+                report.pruned.push(stale);
+            }
+        }
+
+        return report;
+    }
 }
 
 module.exports = AntigravityAdapter;

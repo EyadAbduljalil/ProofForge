@@ -26,6 +26,8 @@ const verifiers = [
     { name: 'Design System & Tokens', script: 'skills/design-system/scripts/verify_tokens.js', weight: 5, critical: false },
     { name: 'RTL & Bidirectional Localization', script: 'skills/rtl/scripts/verify_rtl.js', weight: 5, critical: false },
     { name: 'Motion & GPU Acceleration', script: 'skills/motion/scripts/audit_motion.js', weight: 5, critical: false },
+    { name: 'AI Systems & Tool Governance', script: 'skills/ai-engineering/scripts/verify_ai_engineering.js', weight: 10, critical: true },
+    { name: 'Full-Stack Systems & E2E Integration', script: 'skills/fullstack/scripts/verify_fullstack.js', weight: 10, critical: true },
     { name: 'Adversarial Code Review', script: 'skills/code-review/scripts/review_code.js', weight: 5, critical: true }
 ];
 
