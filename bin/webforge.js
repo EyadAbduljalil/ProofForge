@@ -260,18 +260,15 @@ async function main() {
                     process.exit(1);
                 }
             } else {
-                console.log('[VERIFY] تشغيل بروتوكول التحقق المبني على الأدلة الشامل...');
-                console.log('  1. التحقق من سلامة البناء (Build): [PASS]');
-                console.log('  2. التحقق من أمان الأنواع (Type Safety): [PASS]');
-                console.log('  3. اختبارات الوحدة والتكامل (Unit/Integration): [PASS]');
-                console.log('  4. اختبارات المتصفح وحالات الخطأ (E2E / DOM): [PASS]');
-                console.log('  5. التحقق البصري ومكافحة الابتذال (Visual QA & Anti-Slop): [PASS]');
-                console.log('  6. التحقق من التجاوب والشاشات (Responsive): [PASS]');
-                console.log('  7. فحص إمكانية الوصول (WCAG 2.2 AA & Reduced Motion): [PASS]');
-                console.log('  8. فحص الأمان والحوكمة والامتثال (OWASP ASVS / SSRF / AI / Compliance): [PASS]');
-                console.log('  9. فحص الأداء ومؤشرات الويب (Lighthouse & Frame Budget): [PASS]');
-                console.log(' 10. فحص الجاهزية للإنتاج والملاءمة المعمارية (Production & Constitution): [PASS]');
-                console.log('>>> [VERIFIED] تم توثيق كافة الأدلة في FINAL_VERIFICATION.md');
+                console.log('[VERIFY] تشغيل بروتوكول التحقق المبني على الأدلة الشامل عبر المحركات المادية...');
+                const auditScript = path.join(__dirname, '../skills/project-audit/scripts/run_audit.js');
+                try {
+                    execSync(`node "${auditScript}"`, { stdio: 'inherit' });
+                    console.log('>>> [VERIFIED] تم إثبات كافة الخصائص البرمجية بالأدلة المادية.');
+                } catch (err) {
+                    console.error('>>> [FAIL] فشل في تدقيق المشروع والتحقق من الموثوقية:', err.message);
+                    process.exit(1);
+                }
             }
             break;
 
@@ -287,27 +284,101 @@ async function main() {
             break;
 
         case 'skills':
-            console.log('🛡️ WebForge OS — Antigravity Skills Inventory & Status');
+            console.log('🛡️ WebForge OS — Real Antigravity Skills Validation & Inventory');
             console.log('======================================================');
             const skillsDir = path.join(__dirname, '../skills');
             if (fs.existsSync(skillsDir)) {
                 const list = fs.readdirSync(skillsDir);
                 let validCount = 0;
+                let totalSkills = 0;
                 list.forEach(s => {
                     const skillPath = path.join(skillsDir, s);
                     if (fs.statSync(skillPath).isDirectory()) {
-                        const hasSkill = fs.existsSync(path.join(skillPath, 'SKILL.md'));
+                        totalSkills++;
+                        const skillMdPath = path.join(skillPath, 'SKILL.md');
+                        const hasSkill = fs.existsSync(skillMdPath);
                         const hasRef = fs.existsSync(path.join(skillPath, 'references'));
                         const hasEx = fs.existsSync(path.join(skillPath, 'examples'));
                         const hasScr = fs.existsSync(path.join(skillPath, 'scripts'));
-                        const status = (hasSkill && hasRef && hasEx && hasScr) ? '✓ READY (Antigravity Standard)' : '✗ INCOMPLETE';
-                        if (hasSkill && hasRef && hasEx && hasScr) validCount++;
+
+                        let issues = [];
+                        if (!hasSkill) issues.push('Missing SKILL.md');
+                        if (!hasRef) issues.push('Missing references/');
+                        if (!hasEx) issues.push('Missing examples/');
+                        if (!hasScr) issues.push('Missing scripts/');
+
+                        if (hasSkill) {
+                            const content = fs.readFileSync(skillMdPath, 'utf8');
+                            const fmMatch = content.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+                            if (!fmMatch) {
+                                issues.push('Invalid YAML frontmatter');
+                            } else {
+                                const fm = fmMatch[1];
+                                const nameMatch = fm.match(/name:\s*([^\r\n]+)/);
+                                const descMatch = fm.match(/description:\s*(?:>[-+]?|\|[-+]?)?\s*\n?([\s\S]*?)(?=\n[a-z0-9_-]+:|$)/i) || fm.match(/description:\s*([^\r\n]+)/);
+
+                                if (!nameMatch || !nameMatch[1].trim()) {
+                                    issues.push('Missing skill name');
+                                } else {
+                                    const rawName = nameMatch[1].trim().replace(/^['"]|['"]$/g, '');
+                                    if (!/^[a-z0-9-]+$/.test(rawName)) {
+                                        issues.push(`Invalid name '${rawName}' (must be lowercase-hyphenated)`);
+                                    }
+                                }
+
+                                const descText = descMatch ? descMatch[1].replace(/\r?\n\s*/g, ' ').replace(/^['"]|['"]$/g, '').trim() : '';
+                                if (!descText || descText.length < 15) {
+                                    issues.push('Missing/insufficient description');
+                                }
+                            }
+                        }
+
+                        const isValid = issues.length === 0;
+                        if (isValid) validCount++;
+                        const status = isValid ? '✓ VERIFIED (Native Antigravity Standard)' : `✗ FAILED: [${issues.join(', ')}]`;
                         console.log(`  [${s.padEnd(22)}] -> ${status}`);
                     }
                 });
                 console.log('======================================================');
-                console.log(`✅ Total Verified Antigravity Skills: ${validCount} / ${list.length}`);
+                console.log(`📊 Validated Antigravity Skills: ${validCount} / ${totalSkills}`);
+                if (validCount !== totalSkills) {
+                    process.exit(1);
+                }
             }
+            break;
+
+        case 'sync-skills':
+        case 'install-skills':
+            console.log('🚀 WebForge OS — Canonical Skills Synchronization to Antigravity');
+            console.log('======================================================');
+            const AntigravityAdapter = require('../packages/contracts/antigravity-adapter');
+            const srcDir = path.join(__dirname, '../skills');
+            const targetBase = (arg1 && !arg1.startsWith('--')) ? arg1 : path.join(process.cwd(), '.agents/skills');
+            const isDryRun = process.argv.includes('--dry-run');
+            const isForce = process.argv.includes('--force');
+
+            console.log(`المصدر الكنسي: ${srcDir}`);
+            console.log(`الوجهة المستهدفة: ${targetBase}`);
+            console.log(`الوضع: ${isDryRun ? 'معاينة تجريبية (--dry-run)' : 'تثبيت ومزامنة حقيقية'}`);
+
+            const syncResult = AntigravityAdapter.syncCanonicalSkills(srcDir, targetBase, {
+                dryRun: isDryRun,
+                force: isForce
+            });
+
+            console.log(`\nالمهارات المزامنة (${syncResult.synced.length}):`);
+            syncResult.synced.forEach(s => console.log(`  ✓ ${s}`));
+            if (syncResult.skipped.length > 0) {
+                console.log(`\nالمهارات المتجاوزة (${syncResult.skipped.length}):`);
+                syncResult.skipped.forEach(s => console.log(`  ⚠️ ${s}`));
+            }
+            if (syncResult.errors.length > 0) {
+                console.log(`\nالأخطاء (${syncResult.errors.length}):`);
+                syncResult.errors.forEach(e => console.log(`  ❌ ${e}`));
+                process.exit(1);
+            }
+            console.log('======================================================');
+            console.log('>>> اكتملت المزامنة بنجاح وحتمية.');
             break;
 
         default:

@@ -19,14 +19,15 @@
 .skip-to-content {
   position: absolute;
   inset-inline-start: var(--space-md);
-  top: -100px;
+  top: var(--space-md);
+  transform: translateY(-200%);
   z-index: 9999;
   background: var(--bg-surface-elevated);
   padding: var(--space-sm) var(--space-md);
   border: 1px solid var(--border-strong);
-  transition: top var(--duration-fast) var(--ease-standard);
+  transition: transform var(--duration-fast) var(--ease-standard);
 }
 
 .skip-to-content:focus {
-  top: var(--space-md);
+  transform: translateY(0);
 }

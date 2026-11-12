@@ -1,48 +1,69 @@
 #!/usr/bin/env node
 /**
- * ProofForge Anti-Slop Visual Scanner
- * Scans workspace for typical AI slop keywords and low-contrast patterns
+ * ProofForge Anti-Slop Visual Intelligence Auditor (Real Inspection)
+ * Validates: Detection of generic AI tropes, clichéd purple/indigo gradients,
+ * fake trust counters, bloated shadow wrappers, and enforces semantic HTML hierarchy.
  */
-const fs = require('fs');
 const path = require('path');
+const fs = require('fs');
+const VerifierEngine = require('../../../packages/contracts/verifier-engine');
 
-console.log('🎨 [ProofForge Anti-Slop Skill] Auditing codebase for AI visual slop patterns...');
+const engine = new VerifierEngine('Anti-Slop Visual Intelligence Auditor');
 
-const slopRegexes = [
-  { name: 'Excessive Purple/Pink Gradients', pattern: /from-purple-\d+.*to-(pink|indigo)-\d+/i },
-  { name: 'Magic/Super AI Clichés in UI', pattern: /AI-Powered Super Magic|The Ultimate Next-Gen/i },
-  { name: 'Overly Rounded Bloated Cards', pattern: /rounded-(2xl|3xl).*shadow-2xl/i }
+const htmlFiles = engine.findFiles('apps/web', ['.html']);
+const cssFiles = engine.findFiles('packages/design-system', ['.css']);
+const allFiles = [...htmlFiles, ...cssFiles];
+
+engine.recordCheck(
+    'Visual Style Assets Discovery',
+    allFiles.length > 0,
+    `Discovered ${allFiles.length} UI and style assets for Anti-Slop inspection`,
+    'CRITICAL'
+);
+
+const slopTropePatterns = [
+    { name: 'Excessive Generic Purple Gradient', regex: /(from-purple-[\w-]+[\s\S]*?to-indigo|linear-gradient\([^)]*#8b5cf6[^)]*#6366f1\))/i, severity: 'HIGH' },
+    { name: 'Fake Marketing Trust Metric', regex: /(100%\s*(Satisfaction|Guaranteed|Secure)|99\.9%\s*(Loved|Trusted|Happy))/i, severity: 'MEDIUM' },
+    { name: 'Bloated Card Shadow Slop', regex: /shadow-2xl\s+shadow-purple/i, severity: 'MEDIUM' },
+    { name: 'Excessive Deeply Nested DIV Slop', regex: /<div>\s*<div>\s*<div>\s*<div>\s*<div>/i, severity: 'HIGH' }
 ];
 
-let slopFound = 0;
-const root = path.resolve(__dirname, '../../../');
+let slopCount = 0;
 
-function scanDir(dir) {
-  if (!fs.existsSync(dir)) return;
-  const entries = fs.readdirSync(dir, { withFileTypes: true });
-  for (const entry of entries) {
-    if (entry.name === 'node_modules' || entry.name === '.git' || entry.name === 'dist') continue;
-    const full = path.join(dir, entry.name);
-    if (entry.isDirectory()) {
-      scanDir(full);
-    } else if (/\.(tsx|jsx|html|css|vue)$/.test(entry.name)) {
-      const content = fs.readFileSync(full, 'utf8');
-      for (const rule of slopRegexes) {
-        if (rule.pattern.test(content)) {
-          console.warn(`  ⚠️ [SLOP WARNING] ${rule.name} found in: ${path.relative(root, full)}`);
-          slopFound++;
+for (const file of allFiles) {
+    const content = fs.readFileSync(file, 'utf8');
+    const rel = path.relative(engine.rootDir, file);
+
+    for (const trope of slopTropePatterns) {
+        if (trope.regex.test(content)) {
+            slopCount++;
+            engine.recordCheck(
+                `Anti-Slop Violation in ${rel}`,
+                false,
+                `Found prohibited trope: ${trope.name}`,
+                trope.severity
+            );
         }
-      }
     }
-  }
 }
 
-scanDir(path.join(root, 'apps'));
+engine.recordCheck(
+    'Zero AI Visual Slop Invariant',
+    slopCount === 0,
+    slopCount === 0 ? 'All visual templates and stylesheets conform to Anti-Slop craft standards' : `Detected ${slopCount} AI slop design tropes`,
+    'HIGH'
+);
 
-if (slopFound === 0) {
-  console.log('\n✅ [ProofForge Anti-Slop Skill] Codebase is 100% clean of generic AI slop.');
-  process.exit(0);
-} else {
-  console.log(`\n⚠️ [ProofForge Anti-Slop Skill] Found ${slopFound} potential visual slop occurrences to review.`);
-  process.exit(0);
+// Semantic tags presence check
+for (const htmlFile of htmlFiles) {
+    const html = fs.readFileSync(htmlFile, 'utf8');
+    const hasSemanticTags = /<(header|nav|main|section|article|footer)[^>]*>/i.test(html);
+    engine.recordCheck(
+        `Semantic HTML Architecture (${path.basename(htmlFile)})`,
+        hasSemanticTags,
+        hasSemanticTags ? 'HTML employs semantic landmarks' : 'Missing semantic HTML landmarks (generic div soup)',
+        'HIGH'
+    );
 }
+
+engine.finish();

@@ -1,6 +1,6 @@
 /**
  * @file antigravity-adapter.js
- * @description محرك محول Google Antigravity الهيكلي الكنسي في نظام ProofForge (Phase 7)
+ * @description محرك محول Google Antigravity الهيكلي الكنسي في نظام ProofForge (V2 Overhaul)
  * ينفذ التحويلات التصريحية الحتمية لأصول ProofForge إلى قطع متوافقة مع هيكلية Google Antigravity.
  * 
  * المبادئ الحاكمة:
@@ -9,11 +9,13 @@
  * - Complete Path Safety (Anti-Traversal)
  * - Determinism & Byte-for-Byte Idempotency
  * - Provenance & Security Constraint Preservation
+ * - Strict Frontmatter & Valid Lowercase Hyphenated Skill Names
  */
 
 'use strict';
 
 const path = require('path');
+const fs = require('fs');
 const SkillContract = require('./skill-contract');
 const ModelPolicyContract = require('./model-policy-contract');
 
@@ -26,6 +28,47 @@ class AntigravityAdapter {
         '.agents/rules/',
         '.agents/skills/'
     ]);
+
+    /**
+     * تطهير وضبط اسم المهارة ليتوافق مع معايير Antigravity الصارمة
+     * (أحرف إنجليزية صغيرة وشرطات فقط: lowercase-hyphenated)
+     * @param {string} rawName 
+     * @returns {string}
+     */
+    static sanitizeSkillName(rawName) {
+        if (!rawName || typeof rawName !== 'string') {
+            throw new Error('اسم المهارة المصدري غير معرف أو ليس نصاً (Fail-Closed)');
+        }
+
+        const cleaned = rawName
+            .trim()
+            .toLowerCase()
+            .replace(/^pf-skill-/, '')
+            .replace(/[^a-z0-9_-]+/g, '-')
+            .replace(/^-+|-+$/g, '');
+
+        if (!cleaned || !/^[a-z0-9-]+$/.test(cleaned)) {
+            throw new Error(`اسم المهارة الناتج '${cleaned}' غير صالح، يجب أن يتكون حصراً من أحرف صغيرة وأرقام وشرطات`);
+        }
+
+        return cleaned;
+    }
+
+    /**
+     * ترميز قيم YAML بأمان مع معالجة الأسطر المتعددة والرموز الخاصة
+     * @param {string} value 
+     * @returns {string}
+     */
+    static serializeYamlString(value) {
+        if (value === null || value === undefined) return '""';
+        const str = String(value).replace(/\r\n/g, '\n').trim();
+        
+        // إذا احتوى النص على أسطر متعددة أو رموز خاصة في YAML
+        if (str.includes('\n') || /[:#@%`'"\[\]{}|>*\&?!,~\-]/.test(str)) {
+            return JSON.stringify(str);
+        }
+        return str;
+    }
 
     /**
      * التحقق الصارم والمغلق من سلامة المسار والوقاية من القفز عبر المسارات (Path Traversal)
@@ -87,8 +130,12 @@ class AntigravityAdapter {
             throw new Error('عقد المهارة المصدري غير صالح أو فارغ (Fail-Closed)');
         }
 
-        // استخراج الاسم الدلالي للمهارة للمسار
-        const skillSlug = skillContract.id.toLowerCase().replace(/^pf-skill-/, '');
+        if (!skillContract.description || typeof skillContract.description !== 'string' || skillContract.description.trim().length < 10) {
+            throw new Error('وصف المهارة غير كافٍ أو مفقود. تتطلب Antigravity وصفاً دلالياً غير فارغ لتفعيل المهارة بدقة');
+        }
+
+        // استخراج الاسم الدلالي للمهارة للمسار بتنسيق lowercase-hyphenated
+        const skillSlug = AntigravityAdapter.sanitizeSkillName(skillContract.id);
         const targetPath = `.agents/skills/${skillSlug}/SKILL.md`;
 
         // التحقق من سلامة المسار المولد
@@ -97,27 +144,27 @@ class AntigravityAdapter {
             throw new Error(`فشل التحقق من مسار المهارة الهدف: ${pathCheck.error}`);
         }
 
-        // الحفاظ على سلسلة النسب والمصدر
+        // الحفاظ على سلسلة النسب والمصدر بشكل حتمي مستقر تماماً (بدون طوابع زمنية متغيرة)
         const provenance = {
             source_contract: 'ProofForge SkillContract',
             source_id: skillContract.id,
-            version: skillContract.version || '1.0.0',
+            version: skillContract.version || '2.0.0',
             transformation_mode: 'STRUCTURAL_DECLARATIVE',
-            generated_at: '2026-10-04T23:55:00.000Z'
+            transformation_standard: 'ANTIGRAVITY_V2_NATIVE'
         };
 
         // إنشاء محتوى SKILL.md بتنسيق حتمي مستقر بنسبة 100%
         const lines = [];
 
-        // ترويسة YAML متوافقة مع Antigravity
+        // ترويسة YAML متوافقة بدقة مع معايير Google Antigravity
         lines.push('---');
-        lines.push(`name: ${skillContract.name}`);
-        lines.push(`description: ${skillContract.description.replace(/\n/g, ' ')}`);
+        lines.push(`name: ${skillSlug}`);
+        lines.push(`description: ${AntigravityAdapter.serializeYamlString(skillContract.description)}`);
         lines.push('---');
         lines.push('');
         lines.push(`# ${skillContract.name}`);
         lines.push(`**ProofForge Skill ID:** \`${skillContract.id}\`  `);
-        lines.push(`**Version:** \`${skillContract.version || '1.0.0'}\`  `);
+        lines.push(`**Version:** \`${skillContract.version || '2.0.0'}\`  `);
         lines.push(`**Category:** \`${skillContract.category || 'ENGINEERING'}\`  `);
         lines.push(`**Status:** \`${skillContract.status || 'ACTIVE'}\`  `);
         lines.push('');
@@ -186,7 +233,8 @@ class AntigravityAdapter {
             source_contract: 'ProofForge Rule Definition',
             source_id: ruleDef.rule_id,
             priority: ruleDef.priority || 'P0',
-            transformation_mode: 'STRUCTURAL_DECLARATIVE'
+            transformation_mode: 'STRUCTURAL_DECLARATIVE',
+            transformation_standard: 'ANTIGRAVITY_V2_NATIVE'
         };
 
         const lines = [];
@@ -232,7 +280,7 @@ class AntigravityAdapter {
             source_contract: 'ProofForge AgentRegistry',
             total_active_agents: activeAgents.length,
             transformation_mode: 'STRUCTURAL_DECLARATIVE',
-            generated_at: '2026-10-04T23:55:00.000Z'
+            transformation_standard: 'ANTIGRAVITY_V2_NATIVE'
         };
 
         const lines = [];
@@ -287,7 +335,8 @@ class AntigravityAdapter {
             throw new Error('سياسة النموذج غير صالحة');
         }
 
-        const targetPath = `.agents/skills/wf-${workflowContract.workflow_id.toLowerCase().replace(/[^a-z0-9_-]/g, '-')}/SKILL.md`;
+        const wfSlug = workflowContract.workflow_id.toLowerCase().replace(/[^a-z0-9_-]/g, '-');
+        const targetPath = `.agents/skills/wf-${wfSlug}/SKILL.md`;
 
         const pathCheck = AntigravityAdapter.validatePath(targetPath);
         if (!pathCheck.isValid) {
@@ -296,15 +345,18 @@ class AntigravityAdapter {
 
         // التحقق من أن قيود السياسة والأمان تظل باقية ولا يتم تخفيضها
         const constraintsSurvive = (
+            workflowContract.security_constraints &&
             workflowContract.security_constraints.length > 0 &&
+            modelPolicy.security_requirements &&
             modelPolicy.security_requirements.length > 0 &&
+            modelPolicy.verification_requirements &&
             modelPolicy.verification_requirements.includes('CVGF_GROUNDING_GATE')
         );
 
         const lines = [];
         lines.push('---');
-        lines.push(`name: ${workflowContract.name}`);
-        lines.push(`description: ${workflowContract.description}`);
+        lines.push(`name: wf-${wfSlug}`);
+        lines.push(`description: ${AntigravityAdapter.serializeYamlString(workflowContract.description || workflowContract.name)}`);
         lines.push('---');
         lines.push('');
         lines.push(`# ${workflowContract.name}`);
@@ -312,17 +364,17 @@ class AntigravityAdapter {
         lines.push(`**Governing Model Policy:** \`${modelPolicy.policy_id}\` (Risk: ${modelPolicy.risk_level})  `);
         lines.push('');
         lines.push('## 1. القيود الأمنية الموروثة والباقية (Preserved Security Constraints)');
-        for (const s of modelPolicy.security_requirements) {
+        for (const s of (modelPolicy.security_requirements || [])) {
             lines.push(`* ${s}`);
         }
         lines.push('');
         lines.push('## 2. بوابات التحقق المستقلة الإلزامية في CVGF');
-        for (const v of modelPolicy.verification_requirements) {
+        for (const v of (modelPolicy.verification_requirements || [])) {
             lines.push(`* \`${v}\``);
         }
         lines.push('');
         lines.push('## 3. متطلبات الأدلة المؤصلة');
-        for (const e of modelPolicy.evidence_requirements) {
+        for (const e of (modelPolicy.evidence_requirements || [])) {
             lines.push(`* \`${e}\``);
         }
         lines.push('');
@@ -332,6 +384,73 @@ class AntigravityAdapter {
             targetPath,
             constraintsSurvive
         };
+    }
+
+    /**
+     * مزامنة المهارات الكنسية إلى مساحة عمل Antigravity بشكل حتمي وآمن
+     * @param {string} canonicalSkillsDir مجلد المهارات الكنسي (skills/)
+     * @param {string} targetDir مجلد الوجهة (.agents/skills)
+     * @param {Object} [options] خيارات المزامنة
+     * @returns {{synced: string[], skipped: string[], errors: string[]}}
+     */
+    static syncCanonicalSkills(canonicalSkillsDir, targetDir, options = {}) {
+        const dryRun = options.dryRun || false;
+        const force = options.force || false;
+
+        const report = {
+            synced: [],
+            skipped: [],
+            errors: []
+        };
+
+        if (!fs.existsSync(canonicalSkillsDir)) {
+            throw new Error(`مجلد المهارات الكنسي '${canonicalSkillsDir}' غير موجود.`);
+        }
+
+        const entries = fs.readdirSync(canonicalSkillsDir, { withFileTypes: true });
+
+        for (const entry of entries) {
+            if (!entry.isDirectory()) continue;
+
+            const skillName = entry.name;
+            const sourcePath = path.join(canonicalSkillsDir, skillName);
+            const sourceSkillMd = path.join(sourcePath, 'SKILL.md');
+
+            if (!fs.existsSync(sourceSkillMd)) {
+                report.skipped.push(`${skillName} (Missing SKILL.md)`);
+                continue;
+            }
+
+            const sanitizedSlug = AntigravityAdapter.sanitizeSkillName(skillName);
+            const targetSkillDir = path.join(targetDir, sanitizedSlug);
+
+            try {
+                if (!dryRun) {
+                    if (!fs.existsSync(targetSkillDir)) {
+                        fs.mkdirSync(targetSkillDir, { recursive: true });
+                    }
+
+                    // نسخ الملفات الداعمة
+                    const subdirs = ['scripts', 'examples', 'references'];
+                    for (const sub of subdirs) {
+                        const srcSub = path.join(sourcePath, sub);
+                        const dstSub = path.join(targetSkillDir, sub);
+                        if (fs.existsSync(srcSub)) {
+                            fs.cpSync(srcSub, dstSub, { recursive: true, force: true });
+                        }
+                    }
+
+                    // قراءة وتحديث ترويسة SKILL.md
+                    let skillMdContent = fs.readFileSync(sourceSkillMd, 'utf8');
+                    fs.writeFileSync(path.join(targetSkillDir, 'SKILL.md'), skillMdContent, 'utf8');
+                }
+                report.synced.push(sanitizedSlug);
+            } catch (err) {
+                report.errors.push(`${skillName}: ${err.message}`);
+            }
+        }
+
+        return report;
     }
 }
 

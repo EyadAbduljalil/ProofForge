@@ -210,12 +210,11 @@ http_request_duration_seconds 0.005
 
                     this.metrics.http_requests_2xx++;
                     res.writeHead(201, { 'Content-Type': 'application/json' });
-                    return res.end(JSON.stringify({
-                        success: true,
+                    return res.end(JSON.stringify(ApiResponse.success({
                         user: { id: user.id, email: user.email, role: user.role, tenantId: user.tenant_id },
                         tokens,
                         token: tokens.accessToken
-                    }));
+                    })));
                 }
 
                 // مسار تسجيل الدخول
@@ -236,12 +235,11 @@ http_request_duration_seconds 0.005
                     });
                     this.metrics.http_requests_2xx++;
                     res.writeHead(200, { 'Content-Type': 'application/json' });
-                    return res.end(JSON.stringify({
-                        success: true,
+                    return res.end(JSON.stringify(ApiResponse.success({
                         user: { id: user.id, email: user.email, role: user.role, tenantId: user.tenant_id },
                         tokens,
                         token: tokens.accessToken
-                    }));
+                    })));
                 }
 
                 // مسار المنتجات
@@ -255,7 +253,7 @@ http_request_duration_seconds 0.005
                         price: (p.price_cents / 100).toFixed(2),
                         stock: p.stock_quantity
                     }));
-                    return res.end(JSON.stringify({ success: true, products: sanitizedProducts }));
+                    return res.end(JSON.stringify(ApiResponse.success({ products: sanitizedProducts })));
                 }
 
                 // مسار إنشاء الطلب مع فحص الـ Idempotency وآلة الحالة
@@ -283,10 +281,26 @@ http_request_duration_seconds 0.005
 
                     orderFSM.transition('PAID');
 
+                    let totalCents = (body.quantity || 1) * 9900;
+                    const quantity = body.quantity || 1;
+                    if (body.productId) {
+                        const products = await this.storage.query('products', { id: body.productId });
+                        if (products.length > 0) {
+                            const product = products[0];
+                            if (product.stock_quantity < quantity) {
+                                throw AppError.badRequest('Insufficient stock for the requested product');
+                            }
+                            totalCents = product.price_cents * quantity;
+                            await this.storage.update('products', product.id, {
+                                stock_quantity: product.stock_quantity - quantity
+                            });
+                        }
+                    }
+
                     const order = await this.storage.insert('orders', {
                         user_id: authUser.id || 'user-demo',
                         tenant_id: authUser.tenantId || 'tenant-demo',
-                        total_cents: (body.quantity || 1) * 9900,
+                        total_cents: totalCents,
                         status: orderFSM.currentState,
                         idempotency_key: idempotencyKey || null
                     });
@@ -390,11 +404,16 @@ http_request_duration_seconds 0.005
                 else this.metrics.http_requests_4xx++;
 
                 res.writeHead(status, { 'Content-Type': 'application/json' });
+                const errEnvelope = ApiResponse.error(
+                    err.code || 'INTERNAL_ERROR',
+                    err.message,
+                    [],
+                    { statusCode: status }
+                );
                 return res.end(JSON.stringify({
-                    success: false,
+                    ...errEnvelope,
                     error: err.message,
-                    code: err.code || 'INTERNAL_ERROR',
-                    statusCode: status
+                    errorDetails: errEnvelope.error
                 }));
             }
         });

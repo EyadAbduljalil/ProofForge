@@ -63,7 +63,7 @@ const agentReg = AgentRegistry.loadFromFile(agentsJsonPath);
 console.log('>>> [1/18] Testing Valid Skill Transformation...');
 const skillResult = AntigravityAdapter.transformSkill(validSkillFixture);
 assert(typeof skillResult.content === 'string');
-assert(skillResult.content.includes('name: Security Test Skill'));
+assert(skillResult.content.includes('name: sec-test'));
 assert(skillResult.content.includes('PF-SKILL-SEC-TEST'));
 assert.strictEqual(skillResult.targetPath, '.agents/skills/sec-test/SKILL.md');
 console.log('  [PASS] 1. Valid Skill Transformation Verified');
@@ -95,7 +95,7 @@ console.log('  [PASS] 3. Valid AGENTS.md Generation Verified');
 // 4. اختبار توليد SKILL.md متوافق (4. Valid SKILL.md Generation)
 // ==========================================
 console.log('>>> [4/18] Testing SKILL.md Header & Body Formatting...');
-assert(skillResult.content.startsWith('---\nname: Security Test Skill\n'));
+assert(skillResult.content.startsWith('---\nname: sec-test\n'));
 assert(skillResult.content.includes('## 1. الغرض وحدود الاستخدام'));
 assert(skillResult.content.includes('## 2. المحددات الأمنية والامتثال'));
 console.log('  [PASS] 4. Valid SKILL.md Generation Verified');
@@ -252,7 +252,7 @@ console.log('  [PASS] 17. Adapter Fail-Closed Behavior Verified');
 // ==========================================
 // 18. اختبار منع تصعيد السلطة (18. No Authority Escalation)
 // ==========================================
-console.log('>>> [18/18] Testing Anti-Authority Escalation Defense in Adapter...');
+console.log('>>> [18/22] Testing Anti-Authority Escalation Defense in Adapter...');
 const escalationContract = AntigravityAdapterContract.validate({
     adapter_id: 'PF-ADAPT-ESCALATION',
     transformation_type: 'SKILL_TRANSFORMATION',
@@ -269,4 +269,50 @@ assert.strictEqual(escalationContract.isValid, false);
 assert(escalationContract.errors.some(e => e.issue.includes('محاولة تصعيد سلطة غير مصرح بها')));
 console.log('  [PASS] 18. Anti-Authority Escalation Defense Verified');
 
-console.log('>>> [SUCCESS] All 18 ProofForge Antigravity Adapter Test Suites PASSED 100%.');
+// ==========================================
+// 19. اختبار تطهير اسم المهارة وحظر الأسماء غير المتوافقة (19. Skill Name Sanitization)
+// ==========================================
+console.log('>>> [19/22] Testing Lowercase-Hyphenated Skill Name Sanitization...');
+assert.strictEqual(AntigravityAdapter.sanitizeSkillName('PF-SKILL-FRONTEND-ARCH'), 'frontend-arch');
+assert.strictEqual(AntigravityAdapter.sanitizeSkillName('My Advanced Skill 2026!'), 'my-advanced-skill-2026');
+assert.throws(() => AntigravityAdapter.sanitizeSkillName(''), /اسم المهارة المصدري غير معرف/);
+console.log('  [PASS] 19. Skill Name Sanitization Verified');
+
+// ==========================================
+// 20. اختبار حظر الوصف الفارغ والمشوه (20. Fail-Closed on Empty Description)
+// ==========================================
+console.log('>>> [20/22] Testing Rejection of Empty/Truncated Skill Descriptions...');
+assert.throws(() => {
+    AntigravityAdapter.transformSkill({
+        id: 'PF-SKILL-NO-DESC',
+        name: 'No Desc Skill',
+        description: ''
+    });
+}, /وصف المهارة غير كافٍ أو مفقود/);
+console.log('  [PASS] 20. Fail-Closed on Empty Description Verified');
+
+// ==========================================
+// 21. اختبار ترميز قيم YAML الخاصة والأسطر المتعددة (21. YAML Value Serialization)
+// ==========================================
+console.log('>>> [21/22] Testing YAML Special Character Serialization...');
+const serializedSpecial = AntigravityAdapter.serializeYamlString('Description with: colons, [brackets], and #hashtags');
+assert(serializedSpecial.startsWith('"') && serializedSpecial.endsWith('"'));
+const serializedNormal = AntigravityAdapter.serializeYamlString('normaltextwithoutspecial');
+assert.strictEqual(serializedNormal, 'normaltextwithoutspecial');
+console.log('  [PASS] 21. YAML Value Serialization Verified');
+
+// ==========================================
+// 22. اختبار المزامنة الحتمية الآمنة (22. Safe Canonical Skills Synchronization)
+// ==========================================
+console.log('>>> [22/22] Testing Safe Canonical Skills Synchronization (Dry-Run)...');
+const syncReport = AntigravityAdapter.syncCanonicalSkills(
+    path.resolve(__dirname, '../../../skills'),
+    path.resolve(__dirname, '../../../.agents/skills'),
+    { dryRun: true }
+);
+assert(Array.isArray(syncReport.synced));
+assert(syncReport.synced.length >= 26);
+assert.strictEqual(syncReport.errors.length, 0);
+console.log(`  [PASS] 22. Safe Synchronization Verified (${syncReport.synced.length} skills previewed)`);
+
+console.log('>>> [SUCCESS] All 22 ProofForge Antigravity Adapter Test Suites PASSED 100%.');

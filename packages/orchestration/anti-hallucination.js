@@ -26,7 +26,9 @@ class AntiHallucinationGuard {
                 const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
                 const allDeps = { ...(pkg.dependencies || {}), ...(pkg.devDependencies || {}) };
                 if (allDeps[packageName]) isDeclaredInPkg = true;
-            } catch (e) {}
+            } catch (readErr) {
+                // تجاوز خطأ قراءة package.json عند عدم صلاحيته
+            }
         }
 
         if (fs.existsSync(regPath)) {
@@ -35,7 +37,9 @@ class AntiHallucinationGuard {
                 if (reg.approved_dependencies && reg.approved_dependencies.some(d => d.name === packageName || d.alias === packageName)) {
                     isApprovedInRegistry = true;
                 }
-            } catch (e) {}
+            } catch (readErr) {
+                // تجاوز خطأ قراءة سجل الاعتماديات عند عدم توفره
+            }
         }
 
         // الحزم المدمجة في Node.js

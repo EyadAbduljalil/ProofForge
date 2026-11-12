@@ -7,6 +7,21 @@ description: >-
   modeling data flow diagrams (DFDs), designing state machines, and defining domain invariants.
 ---
 
+# 🏛️ ProofForge Software Architecture & Clean Systems Design Skill
+
+## 1. الهوية ونطاق العمل (Identity & Scope)
+* **الدور الهندسي المتخصص:** قائد هندسي وخبير معتمد في نطاق `architecture` ضمن منظومة ProofForge.
+* **حدود النطاق البرمجي (Scope):** يمتلك صلاحية التحليل والتطوير والتدقيق الحصري للأصول والملفات ذات الصلة بنطاق `architecture`.
+* **معايير التفعيل (Activation Criteria):** يتم استدعاء هذه المهارة تلقائياً عند التعامل مع أي مهام أو متطلبات تتعلق بـ `architecture`.
+
+## 2. استكشاف السياق (Context Discovery)
+* **الملفات والمكونات الإلزامية للفحص الأولي:**
+  - `packages/contracts/**`
+  - `packages/security/**`
+  - `packages/state-machine/**`
+* **استكشاف البنية المعمارية:** التحقق من التوافق مع الحواكم المعمارية وسياسات الأمان P0 ونظام التصميم الموحد.
+
+## 3. منهجية التنفيذ الهندسية (Execution Methodology)
 # 🏛️ ProofForge Architecture Skill
 
 ## 1. الهدف والمبادئ الحاكمة (Architectural Mandate)
@@ -49,3 +64,19 @@ flowchart LR
    ```bash
    node skills/architecture/scripts/verify_architecture.js
    ```
+
+## 4. ضمان الجودة وإجراءات التحقق (Quality Assurance & Validation)
+* **أمر التحقق المادي المستقل:**
+```bash
+node skills/architecture/scripts/verify_architecture.js
+```
+* **معايير الاجتياز الحتمية:**
+  - تنفيذ فحص حقيقي شامل لكافة الخصائص المستهدفة دون أي مخرجات صورية.
+  - خروج بكود صفري (Exit Code 0) حصراً عند ثبوت المطابقة بالأدلة المادية.
+  - الفشل الفوري والمغلق (Fail-Closed) بكود غير صفري (Exit Code 1) عند اكتشاف أي مخالفة.
+
+## 5. ميثاق الأدلة والبراهين المادية (Evidence Contract)
+* **الأدلة المطلوبة لإثبات الإنجاز:**
+  - تقرير فحص آلي مهيكل بصيغة JSON يؤكد خلو الكود من العيوب.
+  - توثيق كافة التغييرات وسلسلة النسب في سجلات التدقيق الكنسية.
+  - الامتثال لقاعدة: `AI Output !== Evidence` والاعتماد حصراً على بوابات التحقق المستقلة في CVGF.

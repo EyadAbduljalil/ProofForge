@@ -102,7 +102,7 @@ ProofForge includes **26 production-grade, modular skills** formatted according 
 | **Architecture** | [`architecture`](./skills/architecture/SKILL.md) | Clean Architecture layers, ADR records, DFDs, State machines | `node skills/architecture/scripts/verify_architecture.js` |
 | **Design Craft** | [`anti-slop`](./skills/anti-slop/SKILL.md) | Banning generic AI purple gradients, bloated cards, WCAG AAA contrast | `node skills/anti-slop/scripts/audit_slop.js` |
 | **Evidence QA** | [`testing`](./skills/testing/SKILL.md) | Property-based testing, fuzzing, Evidence Contract enforcement | `node skills/testing/scripts/verify_evidence.js` |
-| **Bug Hunting** | [`code-review`](./skills/code-review/SKILL.md) | Adversarial bug hunting, side-effect analysis, 10-point review rubric | `npm test` |
+| **Bug Hunting** | [`code-review`](./skills/code-review/SKILL.md) | Adversarial bug hunting, side-effect analysis, 10-point review rubric | `node skills/code-review/scripts/review_code.js` |
 | **Completeness**| [`anti-laziness`](./skills/anti-laziness/SKILL.md) | Banning `// TODO` placeholders, mock bypasses, and unhandled logic | `node skills/anti-laziness/scripts/scan_laziness.js` |
 | **Design System**| [`design-system`](./skills/design-system/SKILL.md) | 4px/8px spatial rhythm, typographic hierarchy, semantic tokens | `node skills/design-system/scripts/verify_tokens.js` |
 | **Visual Taste** | [`taste-craft`](./skills/taste-craft/SKILL.md) | Subtle borders, ambient shadows, tactile button physics, and restraint | `node skills/taste-craft/scripts/audit_craft.js` |
@@ -169,10 +169,26 @@ npx proofforge verify --json
 ```
 
 ### 3. Check Verified Antigravity Skills
-Inspect the status of all 26 engineering skills:
+Inspect the status and frontmatter validity of all 26 engineering skills:
 
 ```bash
 npm run skills
+```
+
+### 4. Run Automated Skills Quality Benchmark
+Execute the automated 26-skill benchmark against the Antigravity specification:
+
+```bash
+npm run benchmark:skills
+```
+
+### 5. Synchronize Skills to Google Antigravity
+Install and synchronize all 26 canonical skills directly to `.agents/skills/`:
+
+```bash
+npm run sync:skills
+# Or preview without copying:
+npm run sync:skills -- --dry-run
 ```
 
 ---

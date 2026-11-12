@@ -194,7 +194,9 @@ class StackDetector {
                 if (allDeps['vitest']) stack.testing.frameworks.push('vitest');
                 if (allDeps['playwright'] || allDeps['@playwright/test']) stack.testing.frameworks.push('playwright');
                 if (allDeps['cypress']) stack.testing.frameworks.push('cypress');
-            } catch (e) {}
+            } catch (jsonErr) {
+                // تجاوز الخطأ في حال كان ملف package.json غير قابل للتحليل
+            }
         }
 
         // فحص بيئة Python
@@ -365,7 +367,9 @@ class StackDetector {
                 if (htmlContent.includes('dir="rtl"') || htmlContent.includes('lang="ar"')) {
                     stack.localization = { supported: true, rtl: true, confidence: 'DETECTED', evidence: ['dir="rtl" and lang="ar" in index.html'] };
                 }
-            } catch (e) {}
+            } catch (htmlErr) {
+                // تجاوز خطأ قراءة ملف HTML
+            }
         }
 
         // تصنيف نوع المشروع

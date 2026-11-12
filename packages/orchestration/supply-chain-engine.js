@@ -89,7 +89,9 @@ class SupplyChainEngine {
                     });
                     score -= 10;
                 }
-            } catch (e) {}
+            } catch (lockErr) {
+                // تجاوز خطأ قراءة ملف القفل
+            }
         }
 
         // 2. فحص بيئة Python

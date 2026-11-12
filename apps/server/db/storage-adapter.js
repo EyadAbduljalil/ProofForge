@@ -95,6 +95,30 @@ class StorageAdapter {
 
         return tableMap.delete(id);
     }
+
+    /**
+     * تنفيذ معاملة ذرية تضمن التراجع الكامل (Rollback) في حال حدوث أي خطأ
+     * Atomic ACID Transaction Engine
+     * @param {Function} callback دالة العمليات المطلوب تنفيذها ذرياً
+     */
+    async transaction(callback) {
+        // إنشاء لقطة لحالة الجداول لتمكين التراجع الذري الكامل
+        const snapshot = new Map();
+        for (const [tableName, map] of Object.entries(this.tables)) {
+            snapshot.set(tableName, new Map(map));
+        }
+
+        try {
+            const result = await callback(this);
+            return result;
+        } catch (error) {
+            // استرجاع النسخة الاحتياطية فوراً (Rollback)
+            for (const [tableName, map] of snapshot.entries()) {
+                this.tables[tableName] = new Map(map);
+            }
+            throw error;
+        }
+    }
 }
 
 module.exports = StorageAdapter;

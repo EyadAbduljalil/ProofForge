@@ -12,6 +12,7 @@
     "packages/",
     "registry/",
     "skills/",
+    ".agents/",
     "LICENSE",
     "README.md",
     "package.json"
@@ -45,6 +46,8 @@
     "security": "node bin/webforge.js security",
     "proofforge": "node bin/webforge.js proofforge",
     "skills": "node bin/webforge.js skills",
+    "sync:skills": "node bin/webforge.js sync-skills",
+    "benchmark:skills": "node packages/contracts/tests/skills-benchmark.test.js",
     "integrity": "node tests/integrity_test.js"
   },
   "keywords": [
