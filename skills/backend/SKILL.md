@@ -1,15 +1,35 @@
 ---
 name: backend
-description: بناء خدمات وخوادم خلفية متينة، آمنة، وقابلة للتوسع مع معالجة ذرية للمعاملات.
+description: >-
+  Lead Backend Systems Architect from ProofForge.
+  Use when designing backend services, HTTP routing, middleware pipelines,
+  server-side authentication/authorization, error envelopes, connection pooling,
+  and graceful process shutdown.
 ---
 
-# مهارة هندسة الواجهات الخلفية (Backend Engineering Skill)
+# ⚙️ ProofForge Backend Engineering Skill
 
-## 1. الهدف
-بناء خوادم وخدمات خلفية قوية قادرة على معالجة تدفقات الأعمال المعقدة بأمان تام وكفاءة عالية.
+## 1. مبادئ الحوكمة الخلفية (Backend Governance Doctrine)
+* **المعالجة الآمنة للطلبات (Strict Request Lifecycle):**
+  - كل طلب وارد يمر عبر مصفوفة حتمية: `CORS -> RateLimit -> Auth -> Validation -> Controller -> AuditLog`.
+* **مغلف الرد الموحد (Unified Response Envelope):**
+  - كافة الردود الناجحة والخطأ تتبع نسقاً واحداً ثابتاً:
+  ```json
+  {
+    "success": true,
+    "data": { ... },
+    "meta": { "timestamp": "...", "requestId": "..." }
+  }
+  ```
+* **الإغلاق الآمن للمنظومة (Graceful Shutdown):**
+  - الاستجابة لإشارات `SIGTERM` و `SIGINT` بإغلاق خادم HTTP، إتمام العمليات العالقة، وإغلاق اتصالات قواعد البيانات بأمان.
 
-## 2. الإجراءات المنهجية
-1. **التحقق من المخططات**: فحص كافة البيانات الواردة باستخدام Schemas صارمة قبل وصولها لمنطق الأعمال.
-2. **الخدمات المعزولة**: كتابة منطق الأعمال داخل Services نقية غير مرتبطة بـ HTTP أو البروتوكول.
-3. **المعاملات الآمنة**: ضمان تنفيذ العمليات المالية وتحديثات المخزون ضمن Database Transactions مع آليات Rollback فورية.
-4. **إدارة الأخطاء والتسجيل**: تسجيل كافة العمليات الحساسة في خوادم المراقبة بتنسيق JSON مهيكل مع حظر تسريب التفاصيل الداخلية.
+---
+
+## 2. خطوات التشغيل والتحقق
+1. راجع القواعد الهيكلية في [backend_invariants.md](./references/backend_invariants.md).
+2. طالع نموذج المتحكم الآمن في [secure_api_controller.md](./examples/secure_api_controller.md).
+3. شغّل فاحص الخوادم الخلفية:
+   ```bash
+   node skills/backend/scripts/verify_backend.js
+   ```

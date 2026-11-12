@@ -1,15 +1,25 @@
 ---
 name: database
-description: تصميم قواعد البيانات، العلاقات، الفهارس، وضمان سلامة البيانات وسرعة الاستعلامات.
+description: >-
+  Lead Database Architect & Data Integrity Engineer from ProofForge.
+  Use when designing schemas, migrations, relational/NoSQL models,
+  enforcing multi-tenant isolation, eliminating N+1 query traps,
+  and executing atomic ACID transactions.
 ---
 
-# مهارة هندسة قواعد البيانات (Database Engineering Skill)
+# 🗄️ ProofForge Database Engineering & Data Integrity Skill
 
-## 1. الهدف
-إنشاء نماذج بيانات قوية، متسقة، ومحسنة للاستعلامات العالية، مع منع ثغرات الحقن وضمان سلامة العلاقات.
+## 1. مبادئ سلامة البيانات والمعاملات الذرية (Data Invariant Doctrine)
+* **المعاملات الذرية (ACID Transactions):** أي عملية تتضمن أكثر من جدول أو مستند (مثل الخصم وإنشاء الفاتورة) يجب أن تُنفذ حصراً داخل معاملة ذرية قابلة للاسترجاع (Rollback on error).
+* **عزل المستأجرين (Multi-Tenant Isolation):** كل جدول مستأجر يجب أن يحتوي على عمود `tenant_id` مفهرس ومرتبط بسياسات أمان على مستوى الصفوف (Row-Level Security).
+* **حظر مصيدة N+1 Queries:** استخدام الربط الفعال (`JOIN` أو `DataLoader` أو `include/preload`) لمنع إرسال مئات الاستعلامات في حلقة تكرارية.
 
-## 2. القواعد التنفيذية
-1. **تصميم العلاقات والقيود**: تعريف Foreign Keys و Unique Constraints بصرامة داخل قاعدة البيانات.
-2. **التحسين والفهرسة**: إنشاء فهارس على كافة الأعمدة المستخدمة في الربط والبحث ومنع استعلامات N+1.
-3. **إدارة الترحيلات**: استخدام ترحيلات (Migrations) غير هدامة وموثقة في النسخ.
-4. **الاستعلامات الآمنة**: الاعتماد الحصري على Parameterized Queries ومكتبات ORM/Query Builders الموثوقة.
+---
+
+## 2. خطوات التشغيل والتحقق
+1. راجع معايير الفهرسة ومنع N+1 في [db_optimization.md](./references/db_optimization.md).
+2. طالع نموذج المعاملة الذرية في [atomic_transaction.md](./examples/atomic_transaction.md).
+3. شغّل فاحص قواعد البيانات:
+   ```bash
+   node skills/database/scripts/verify_database.js
+   ```

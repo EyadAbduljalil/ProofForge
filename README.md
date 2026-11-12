@@ -22,6 +22,77 @@ A deterministic, evidence-driven verification and governance framework for AI-as
 
 ---
 
+## ⚡ One-Click AI Skills Adoption Directive
+
+> 💡 **For Antigravity, Claude Code, Cursor, Windsurf, ChatGPT, and Gemini:**  
+> Copy and send this prompt to your AI coding agent to automatically adopt ProofForge's 26 engineering skills and governance rules in any project:
+
+```text
+================================================================================
+           PROOFFORGE AI SUITE — ONE-CLICK SKILL ADOPTION PROMPT
+================================================================================
+You are the Lead Software & Security Architect for this project, governed by ProofForge.
+
+MANDATORY FIRST STEP:
+Clone and activate the official ProofForge engineering skills suite:
+git clone https://github.com/EyadAbduljalil/ProofForge.git .proofforge
+
+CORE GOVERNANCE RULES:
+1. [Security (P0)]: Zero-trust, server-side authorization, anti-IDOR, sanitize I/O, enforce default-deny.
+2. [Architecture]: Strict separation of data/logic from presentation; preserve system invariants & strong types.
+3. [Anti-Slop UI]: Reject generic AI designs; enforce high typographic craft, semantic tokens, and RTL/LTR parity.
+4. [Evidence QA]: Never claim completion without proof (0 type errors, clean lint, 100% passing tests, green build).
+5. [Anti-Laziness]: Strictly no "// TODO: implement later"; deliver complete, robust, production-grade solutions.
+
+OPERATING CONTRACT:
+- Inspect codebase & understand context before editing any file.
+- Apply Minimal Safe Diffs without breaking existing patterns.
+- Conclude each task with a structured report: Security Summary, Changes Made, and Verifiable Proof.
+================================================================================
+```
+
+---
+
+## 🛡️ The 26 Antigravity Engineering Skills
+
+ProofForge provides **26 deterministic, production-grade skills** built according to the official Antigravity Skill Specification (featuring progressive disclosure, references, examples, and automated verification scripts):
+
+| Category | Skill Name | Primary Responsibility | Automated Verification |
+|---|---|---|---|
+| **P0 Security** | [`security`](./skills/security/SKILL.md) | OWASP ASVS Level 2, Anti-IDOR/BOLA, SSRF, Injection prevention | `node skills/security/scripts/verify_security.js` |
+| **Architecture** | [`architecture`](./skills/architecture/SKILL.md) | Clean Architecture layers, ADR documentation, DFDs, State machines | `node skills/architecture/scripts/verify_architecture.js` |
+| **Anti-Slop** | [`anti-slop`](./skills/anti-slop/SKILL.md) | Banning generic AI purple gradients, bloated cards, WCAG AAA contrast | `node skills/anti-slop/scripts/audit_slop.js` |
+| **Evidence QA** | [`testing`](./skills/testing/SKILL.md) | Property-based testing, fuzzing, Evidence Contract enforcement | `node skills/testing/scripts/verify_evidence.js` |
+| **Code Review** | [`code-review`](./skills/code-review/SKILL.md) | Adversarial bug hunting, side-effect analysis, 10-point review rubric | `npm test` |
+| **Anti-Laziness** | [`anti-laziness`](./skills/anti-laziness/SKILL.md) | Banning `// TODO` placeholders, mock bypasses, and unhandled logic | `node skills/anti-laziness/scripts/scan_laziness.js` |
+| **Design Tokens** | [`design-system`](./skills/design-system/SKILL.md) | 4px/8px spatial rhythm, typographic hierarchy, semantic tokens | `node skills/design-system/scripts/verify_tokens.js` |
+| **Visual Craft** | [`taste-craft`](./skills/taste-craft/SKILL.md) | Subtle borders, ambient shadows, tactile button physics, and restraint | `node skills/taste-craft/scripts/audit_craft.js` |
+| **BiDi Parity** | [`rtl`](./skills/rtl/SKILL.md) | CSS logical properties (`ms-`, `me-`), directional icon mirroring, Arabic type | `node skills/rtl/scripts/verify_rtl.js` |
+| **Accessibility** | [`accessibility`](./skills/accessibility/SKILL.md) | WCAG 2.2 AA/AAA, screen reader ARIA, full keyboard navigation, focus trap | `node skills/accessibility/scripts/audit_a11y.js` |
+| **Performance Motion** | [`motion`](./skills/motion/SKILL.md) | 60fps frame budget, GPU transforms (`translate/opacity`), reduced motion | `node skills/motion/scripts/audit_motion.js` |
+| **UI/UX States** | [`ui-ux`](./skills/ui-ux/SKILL.md) | The 5 UI states (Idle, Loading, Empty, Error, Success), cognitive reduction | `node skills/ui-ux/scripts/verify_ux.js` |
+| **Mobile-First** | [`responsive`](./skills/responsive/SKILL.md) | 320px to 4K viewports, 44x44px touch targets, zero horizontal overflow | `node skills/responsive/scripts/verify_responsive.js` |
+| **Backend Core** | [`backend`](./skills/backend/SKILL.md) | Express/Fastify/Next routing, unified response envelopes, graceful shutdown | `node skills/backend/scripts/verify_backend.js` |
+| **API Contracts** | [`api`](./skills/api/SKILL.md) | Idempotent mutations (`Idempotency-Key`), REST/GraphQL, sliding rate-limits | `node skills/api/scripts/verify_api.js` |
+| **Data Integrity** | [`database`](./skills/database/SKILL.md) | ACID transactions, multi-tenant RLS, anti-N+1 queries, foreign key indexes | `node skills/database/scripts/verify_database.js` |
+| **Client Core** | [`frontend`](./skills/frontend/SKILL.md) | Error boundary containment, Vite chunk splitting (< 200KB), re-render guards | `node skills/frontend/scripts/verify_frontend.js` |
+| **Safe Forms** | [`forms`](./skills/forms/SKILL.md) | Zod schema validation, double-submit protection, inline accessible errors | `node skills/forms/scripts/verify_forms.js` |
+| **Data Density** | [`dashboards`](./skills/dashboards/SKILL.md) | Real-time KPI cards, tabular monospace numbers, table virtualization | `node skills/dashboards/scripts/verify_dashboards.js` |
+| **Transactions** | [`ecommerce`](./skills/ecommerce/SKILL.md) | Inventory locks, double-spend defense, timing-safe webhook HMAC checks | `node skills/ecommerce/scripts/verify_ecommerce.js` |
+| **Design to Code** | [`image-to-code`](./skills/image-to-code/SKILL.md) | Converting mockups to anti-slop React/Tailwind without visual hallucination | `node skills/image-to-code/scripts/verify_image_code.js` |
+| **SRE Reliability**| [`production-readiness`](./skills/production-readiness/SKILL.md) | 12-Factor compliance, `/healthz` & `/readyz` probes, JSON log hygiene | `node skills/production-readiness/scripts/audit_readiness.js` |
+| **DevOps Guard** | [`deployment`](./skills/deployment/SKILL.md) | Non-root multi-stage Dockerfiles, frozen lockfiles, secure CI/CD pipelines | `node skills/deployment/scripts/verify_deployment.js` |
+| **Web Vitals** | [`performance`](./skills/performance/SKILL.md) | Google Core Web Vitals (< 2.5s LCP, < 200ms INP, < 0.1 CLS), image optimization | `node skills/performance/scripts/audit_performance.js` |
+| **Semantic SEO** | [`seo`](./skills/seo/SKILL.md) | Semantic HTML5 headings, OpenGraph, Twitter cards, JSON-LD schemas | `node skills/seo/scripts/verify_seo.js` |
+| **Health Audit** | [`project-audit`](./skills/project-audit/SKILL.md) | Deep repository diagnostic, technical debt scoring, automated remediation | `node skills/project-audit/scripts/run_audit.js` |
+
+To list and verify all skills from the CLI:
+```bash
+node bin/webforge.js skills
+```
+
+---
+
 ## Quick Start
 
 Install ProofForge in your project:

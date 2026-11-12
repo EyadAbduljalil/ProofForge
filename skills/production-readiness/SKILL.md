@@ -1,14 +1,26 @@
 ---
 name: production-readiness
-description: الفحص النهائي الشامل لجاهزية الإطلاق والإنتاج وفق معايير صارمة وقاطعة.
+description: >-
+  Lead Site Reliability Engineer & Production Readiness Auditor from ProofForge.
+  Use before launching applications to production, verifying 12-Factor principles,
+  healthz/readyz observability probes, structured JSON logging, process supervision,
+  and zero hardcoded secrets.
 ---
 
-# مهارة تدقيق الجاهزية للإنتاج (Production Readiness Audit Skill)
+# 🚀 ProofForge Production Readiness & Reliability Skill
 
-## 1. الهدف
-إجراء الفحص المسبق للإطلاق للتأكد من اكتمال كافة جوانب الأمان، الأداء، الاستقرار، والتوثيق.
+## 1. ميثاق الجاهزية للإنتاج (Production Readiness Doctrine)
+لا يُنشر أي تطبيق في بيئة الإنتاج دون اجتياز **بوابات الجاهزية التشغيلية (Operational Readiness Gates)**:
+* **فحص الصحة والجاهزية (Health & Liveness Probes):** توفير نقاط نهاية خفيفة وسريعة `/healthz` (هل التطبيق يعمل؟) و `/readyz` (هل اتصالات قواعد البيانات والتخزين جاهزة؟).
+* **السجلات المنظمة غير المسربة (Structured JSON Logging):** تسجيل الأحداث بتنسيق JSON مع حظر طباعة أي بيانات حساسة أو أرقام سرية أو رموز مرور.
+* **مبادئ 12-Factor App:** قراءة كافة الإعدادات والروابط حصراً من متغيرات البيئة مع توفير قيم افتراضية آمنة (Strict Fail-Closed Defaults).
 
-## 2. قائمة الاعتماد النهائي
-1. التحقق من إغلاق كافة الثغرات وتطبيق شهادات SSL ورؤوس الحماية.
-2. التأكد من تكوين متغيرات الإنتاج الحقيقية وإلغاء بيانات التجربة والاختبار.
-3. فحص النسخ الاحتياطي لقواعد البيانات وسجلات المراقبة والتنبيهات.
+---
+
+## 2. خطوات التشغيل والتحقق
+1. راجع قائمة التحقق للإنتاج في [readiness_checklist.md](./references/readiness_checklist.md).
+2. طالع نموذج نقاط الفحص في [health_check_controller.md](./examples/health_check_controller.md).
+3. شغّل فاحص الجاهزية:
+   ```bash
+   node skills/production-readiness/scripts/audit_readiness.js
+   ```

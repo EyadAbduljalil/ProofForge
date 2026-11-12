@@ -286,6 +286,30 @@ async function main() {
             }
             break;
 
+        case 'skills':
+            console.log('🛡️ WebForge OS — Antigravity Skills Inventory & Status');
+            console.log('======================================================');
+            const skillsDir = path.join(__dirname, '../skills');
+            if (fs.existsSync(skillsDir)) {
+                const list = fs.readdirSync(skillsDir);
+                let validCount = 0;
+                list.forEach(s => {
+                    const skillPath = path.join(skillsDir, s);
+                    if (fs.statSync(skillPath).isDirectory()) {
+                        const hasSkill = fs.existsSync(path.join(skillPath, 'SKILL.md'));
+                        const hasRef = fs.existsSync(path.join(skillPath, 'references'));
+                        const hasEx = fs.existsSync(path.join(skillPath, 'examples'));
+                        const hasScr = fs.existsSync(path.join(skillPath, 'scripts'));
+                        const status = (hasSkill && hasRef && hasEx && hasScr) ? '✓ READY (Antigravity Standard)' : '✗ INCOMPLETE';
+                        if (hasSkill && hasRef && hasEx && hasScr) validCount++;
+                        console.log(`  [${s.padEnd(22)}] -> ${status}`);
+                    }
+                });
+                console.log('======================================================');
+                console.log(`✅ Total Verified Antigravity Skills: ${validCount} / ${list.length}`);
+            }
+            break;
+
         default:
             console.log('الاستخدام:');
             console.log('  webforge serve [port]         تشغيل خادم الإنتاج الموحد وواجهة المستخدم');

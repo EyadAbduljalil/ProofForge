@@ -43,6 +43,7 @@
     "verify": "node bin/webforge.js verify",
     "security": "node bin/webforge.js security",
     "proofforge": "node bin/webforge.js proofforge",
+    "skills": "node bin/webforge.js skills",
     "integrity": "node tests/integrity_test.js"
   },
   "keywords": [

@@ -1,14 +1,25 @@
 ---
 name: performance
-description: تحسين الأداء، سرعة الاستجابة، التخزين المؤقت، وتقليل أحجام الحزم للمواقع والتطبيقات.
+description: >-
+  Lead Web Performance Engineer from ProofForge.
+  Use when optimizing Core Web Vitals (LCP, INP, CLS), asset compression,
+  tree shaking, dynamic imports, memory footprint, and Lighthouse scores.
 ---
 
-# مهارة تحسين الأداء والسرعة (Web Performance Optimization Skill)
+# ⚡ ProofForge Web Performance Engineering Skill
 
-## 1. الهدف
-تحقيق سرعات استجابة فائقة وتجربة مستخدم فورية عبر تحسين الموارد وتقليل استهلاك الشبكة والمعالج.
+## 1. ميزانية الأداء الحتمية (Core Web Vitals Budget)
+يجب أن تحقق كافة الصفحات مقاييس أداء جوجل الصارمة (Google Core Web Vitals):
+* **Largest Contentful Paint (LCP):** أقل من **2.5 ثانية** على شبكة 4G.
+* **Interaction to Next Paint (INP):** أقل من **200 ملي ثانية** عند النقر.
+* **Cumulative Layout Shift (CLS):** أقل من **0.1** (منع قفز العناصر بتحديد أبعاد الصور `width` و `height` مسبقاً).
 
-## 2. آليات التحسين
-1. **تحسين الموارد والوسائط**: ضغط الصور، التحميل الكسول، وتقديم الخطوط الحديثة محلياً.
-2. **التخزين المؤقت (Caching)**: تطبيق استراتيجيات Cache-Control و Redis للتخفيف عن قاعدة البيانات.
-3. **تقليل حزم الجافاسكريبت**: تقسيم الكود والتخلص من الحزم الميتة (Tree Shaking).
+---
+
+## 2. خطوات التشغيل والتحقق
+1. راجع ميزانية الأداء في [web_vitals_budget.md](./references/web_vitals_budget.md).
+2. طالع نموذج تحميل الصور المحسن في [optimized_image_loader.md](./examples/optimized_image_loader.md).
+3. شغّل فاحص الأداء:
+   ```bash
+   node skills/performance/scripts/audit_performance.js
+   ```

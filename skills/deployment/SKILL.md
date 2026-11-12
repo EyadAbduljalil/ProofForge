@@ -1,14 +1,25 @@
 ---
 name: deployment
-description: إعداد النشر للإنتاج، البنية التحتية، بيئات العمل، وإدارة الخوادم وحاويات Docker.
+description: >-
+  Lead DevOps & Deployment Security Engineer from ProofForge.
+  Use when designing CI/CD pipelines, multi-stage Dockerfiles,
+  enforcing non-root container execution, reproducible lockfile builds,
+  and zero secret leakage in build artifacts.
 ---
 
-# مهارة النشر للإنتاج وهندسة البيئات (Production Deployment Skill)
+# 🚢 ProofForge Deployment & DevOps Security Skill
 
-## 1. الهدف
-نشر التطبيقات في بيئات الإنتاج بثبات وأمان مع دعم التراجع السريع عند الطوارئ ومراقبة التوفر.
+## 1. مبادئ النشر الآمن (Secure Deployment Doctrine)
+* **الحاويات غير المتميزة (Non-Root Containers):** حظر تشغيل حاويات Docker بصلاحية `root`؛ تعيين مستخدم محدود الصلاحيات (`USER node` أو `USER appuser`).
+* **البناء متعدد المراحل (Multi-Stage Builds):** فصل أدوات التطوير والمترجمات عن صورة الإنتاج النهائية لتصغير الحجم وتقليل سطح الهجوم.
+* **التثبيت الحتمي الصارم (Deterministic Dependency Installation):** استخدام `npm ci` أو `pnpm install --frozen-lockfile` لمنع سحب إصدارات مختلفة في بيئة الإنتاج.
 
-## 2. الممارسات المعتمدة
-1. **حاويات Docker وبناء متعدد المراحل**: بناء صور صغيرة الحجم وخالية من أدوات التطوير الزائدة.
-2. **أتمتة النشر (CI/CD Pipelines)**: تشغيل الاختبارات والفحوصات الأمنية قبل أي عملية نشر للإنتاج.
-3. **مراقبة التوفر وسجلات الصحة**: توفير نقاط `/healthz` لفحص جاهزية التطبيق وقواعد البيانات.
+---
+
+## 2. خطوات التشغيل والتحقق
+1. راجع معايير Docker في [dockerfile_best_practices.md](./references/dockerfile_best_practices.md).
+2. طالع نموذج مسار CI في [secure_ci_workflow.md](./examples/secure_ci_workflow.md).
+3. شغّل فاحص النشر:
+   ```bash
+   node skills/deployment/scripts/verify_deployment.js
+   ```

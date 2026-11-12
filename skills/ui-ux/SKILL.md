@@ -1,15 +1,34 @@
 ---
 name: ui-ux
-description: تصميم وهندسة تجارب وواجهات مستخدم مذهلة، سهلة الاستخدام، وذات تدفقات وظيفية واضحة.
+description: >-
+  Lead UI/UX Product Designer from ProofForge.
+  Use when designing intuitive user flows, reducing cognitive load,
+  crafting resilient state machines (Idle, Loading, Empty, Error, Success),
+  optimistic UI updates, and actionable error recovery.
 ---
 
-# مهارة تصميم الواجهات وتجربة المستخدم (UI/UX Craftsmanship Skill)
+# 🧭 ProofForge UI/UX Product Design Skill
 
-## 1. الهدف
-بناء واجهات مستخدم متميزة وبديهية تحقق أعلى معايير الجاذبية والراحة البصرية دون الوقوع في النمطية المبتذلة.
+## 1. فلسفة هندسة تجربة المستخدم (User State Completeness)
+لا تكتمل أي واجهة أو مكون برمجي إلا بتغطية **الحالات الخمس الأساسية للمستخدم (The 5 Universal UI States)**:
+1. **الحالة الافتراضية (Idle State):** جاهزية العنصر لاستقبال التفاعل بوضوح ودون تشويش.
+2. **حالة التحميل (Loading / Pending State):** استخدام هياكل تحميل عظمية متناسقة (Skeleton Loaders) بدلاً من الشاشات البيضاء أو دوائر التحميل المزعجة.
+3. **حالة الفراغ (Empty State):** رسالة توضيحية هادفة مع زر إجراء مباشر (Call-to-Action) لإنشاء العنصر الأول.
+4. **حالة الخطأ والتعافي (Error & Recovery State):** رسالة خطأ إنسانية ومفهومة تشرح المشكلة وتقدم زر إعادة المحاولة (`Retry Action`).
+5. **حالة النجاح (Success State):** تأكيد بصري خفيف وإشعار واضح باكتمال الإجراء.
 
-## 2. الممارسات العملية
-1. **التسلسل الهرمي للمعلومات**: تنظيم المحتوى وفق الأهمية مع تباين طباعي ومساحات بيضاء مدروسة.
-2. **التغذية الراجعة الفورية**: تقديم مؤشرات فورية لأي تفاعل من المستخدم (ضغط، تمرير، إدخال بيانات).
-3. **سلاسة التدفقات (Frictionless Flows)**: تقليل خطوات إتمام المهام الحيوية مثل التسجيل والشراء والبحث.
-4. **الاتساق البصري**: استخدام نظام تصميم موحد يشمل الألوان، المسافات، الأزرار، والخطوط.
+---
+
+## 2. تقليل العبء الإدراكي (Cognitive Load Reduction)
+* **المسار الأساسي الواحد (One Primary Action):** لا تضع زرين أساسيين بنفس الثقل اللوني في شاشة واحدة.
+* **التحديث التفاؤلي (Optimistic Updates):** تحديث الواجهة فورياً عند تفاعل المستخدم مع توفير استرجاع تلقائي في حال فشل الخادم.
+
+---
+
+## 3. خطوات التشغيل والتحقق
+1. راجع معايير سهولة الاستخدام في [ux_heuristics.md](./references/ux_heuristics.md).
+2. طالع نماذج الحالات الخمس في [resilient_state_ui.md](./examples/resilient_state_ui.md).
+3. شغّل فاحص تجربة المستخدم:
+   ```bash
+   node skills/ui-ux/scripts/verify_ux.js
+   ```

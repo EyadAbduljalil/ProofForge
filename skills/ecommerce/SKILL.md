@@ -1,14 +1,27 @@
 ---
 name: ecommerce
-description: هندسة المتاجر الإلكترونية، عربات التسوق، بوابات الدفع، وإدارة المخزون والطلبات.
+description: >-
+  Lead E-Commerce & Transaction Systems Architect from ProofForge.
+  Use when designing online checkout flows, inventory race-condition defenses,
+  idempotent payment captures, cart synchronization, and webhook signature verifications.
 ---
 
-# مهارة التجارة الإلكترونية ومنطق العمليات (Ecommerce Engineering Skill)
+# 🛒 ProofForge E-Commerce & Financial Transactions Skill
 
-## 1. الهدف
-تطوير منصات تجارة إلكترونية متينة تضمن سلامة المعاملات المالية، دقة المخزون، وسلاسة تجربة الشراء.
+## 1. مبادئ المعاملات المالية الموثوقة (Transaction Integrity Doctrine)
+* **الحماية من البيع الزائد (Anti-Overselling & Inventory Locking):**
+  - حظر خصم المخزون دون حجز مسبق داخل معاملة ذرية (Pessimistic / Optimistic Stock Lock).
+* **إثبات عدم التكرار (Payment Idempotency):**
+  - كل طلب دفع يجب أن يحمل مفتاح تكرار وحيد لمنع الخصم المزدوج من بطاقة العميل.
+* **التحقق المشفر من إشعارات الدفع (Webhook Verification):**
+  - التحقق من توقيع HMAC لكل Webhook وارد من Stripe/PayPal باستخدام مقارنة ذات وقت ثابت (`crypto.timingSafeEqual`).
 
-## 2. القواعد الصارمة
-1. **آلة حالات الطلبات**: إدارة حالات الطلب بصرامة ومنع الانتقالات غير الصالحة.
-2. **حماية المخزون والأسعار**: تثبيت أسعار السلة والخصومات والضرائب ومنع التلاعب بالأسعار عبر الطرف الخلفي.
-3. **بوابات الدفع والـ Webhooks**: التحقق من التوقيع الرقمي للـ Webhook ومنع تكرار معالجة الدفع عبر Idempotency.
+---
+
+## 2. خطوات التشغيل والتحقق
+1. راجع معايير الدفع في [checkout_invariants.md](./references/checkout_invariants.md).
+2. طالع نموذج الدفع الآمن في [secure_checkout_flow.md](./examples/secure_checkout_flow.md).
+3. شغّل فاحص التجارة الإلكترونية:
+   ```bash
+   node skills/ecommerce/scripts/verify_ecommerce.js
+   ```

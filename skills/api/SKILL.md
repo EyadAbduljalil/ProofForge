@@ -1,15 +1,28 @@
 ---
 name: api
-description: تصميم وتوثيق وتأمين واجهات برمجة التطبيقات وفق المعايير العالمية مع رموز حالة دقيقة.
+description: >-
+  Lead API Architect & Contract Specialist from ProofForge.
+  Use when designing REST/GraphQL APIs, enforcing OpenAPI contracts,
+  implementing idempotency keys for mutations, semantic versioning (/v1/),
+  and rate-limiting strategies.
 ---
 
-# مهارة هندسة وتأمين الـ API (API Engineering Skill)
+# 🔌 ProofForge API Architecture & Contracts Skill
 
-## 1. الهدف
-توفير واجهات برمجية واضحة، موثقة، وآمنة تتبع معايير RESTful أو GraphQL مع تحديد معدل الطلبات والتغليف الموحد للاستجابات.
+## 1. مبادئ عقود الـ API (API Contract Mandate)
+* **الحتمية والتكرار الآمن (Idempotent Operations):**
+  - كل نقطة نهاية تقوم بتعديل بيانات حساسة (مثل عمليات الدفع أو إنشاء طلبات) يجب أن تدعم رأس `Idempotency-Key`.
+* **الإصدارات الصريحة (Explicit API Versioning):**
+  - اعتماد مسارات صريحة (مثل `/api/v1/`) لمنع كسر التوافقية مع العملاء القدامى.
+* **محددات الاستهلاك (Rate Limiting & Throttling):**
+  - فرض نوافذ زمنية متدرجة (Sliding Window) للحد من هجمات حجب الخدمة ومحاولات التخمين.
 
-## 2. الإجراءات الإلزامية
-1. **عقود البيانات والتوثيق**: كتابة مواصفات OpenAPI / Swagger دقيقة لكافة المسارات.
-2. **التحقق وتحديد المعدل (Rate Limiting)**: تطبيق حدود استهلاك واضحة لمنع هجمات الحرمان من الخدمة (DoS).
-3. **تغليف الاستجابات**: استخدام البنية الموحدة للاستجابات الناجحة وأخطاء الأعمال.
-4. **مفاتيح عدم التكرار (Idempotency)**: فرض مفاتيح عدم التكرار لكافة العمليات الحساسة مثل الدفع وتغيير الرصيد.
+---
+
+## 2. خطوات التشغيل والتحقق
+1. راجع معايير العقود في [api_contract_standard.md](./references/api_contract_standard.md).
+2. طالع نموذج نقطة النهاية المتكررة بأمان في [idempotent_post_endpoint.md](./examples/idempotent_post_endpoint.md).
+3. شغّل فاحص عقود الـ API:
+   ```bash
+   node skills/api/scripts/verify_api.js
+   ```
