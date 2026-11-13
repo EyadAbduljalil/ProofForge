@@ -20,5 +20,6 @@ module.exports = {
     AgentHandoffContract: require('./agent-handoff-contract'),
     MultiAgentVerification: require('./multi-agent-verification'),
     PathLoaderGuard: require('./path-loader-guard'),
-    ProofRunEngine: require('./proof-run-engine')
+    ProofRunEngine: require('./proof-run-engine'),
+    VerifierEngine: require('./verifier-engine')
 };

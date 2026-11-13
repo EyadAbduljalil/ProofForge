@@ -45,5 +45,20 @@ jobs:
       - name: ProofForge initialization
         run: npm run proofforge
 
+      - name: System Doctor diagnostic
+        run: node bin/proofforge.js doctor
+
+      - name: Skills validation
+        run: node bin/proofforge.js skills validate
+
+      - name: CLI integration tests
+        run: node tests/cli/cli.test.js
+
+      - name: Skills benchmark
+        run: npm run benchmark:skills
+
+      - name: Realistic scenarios benchmark
+        run: npm run benchmark:scenarios
+
       - name: Full regression
         run: npm test
