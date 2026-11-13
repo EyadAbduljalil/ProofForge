@@ -33,9 +33,9 @@ try {
     console.log('  [PASS] 0. Runtime Guard: Refuses mock execution and returns AGENT_RUNTIME_UNAVAILABLE');
 
     // ----------------------------------------------------
-    // اختبار 1: تنفيذ سيناريو Full-Stack SaaS المتكامل عبر مشغل واعي بسياق المشروع
+    // اختبار 1: تنفيذ سيناريو Full-Stack SaaS المتكامل عبر محول الاختبار المهيكل (Test Harness)
     // ----------------------------------------------------
-    console.log('>>> [1/5] Testing End-to-End Real Tool Execution for Full-Stack SaaS...');
+    console.log('>>> [1/5] Testing End-to-End Orchestration & Artifact Flow (via Structured Test Harness)...');
     const saasPlan = IntelligentSkillRouter.route('fullstack-saas');
     const saasWorkspace = path.join(tempSandboxRoot, 'saas-workspace');
     const agentRuntime = new ProjectAwareExecutionProvider();
@@ -48,7 +48,7 @@ try {
     assert.strictEqual(
         saasExecResult.status,
         'SUCCESS',
-        `يجب أن يكتمل تنفيذ مشروع SaaS بنجاح: ${JSON.stringify(saasExecResult.failureDetails || {})}`
+        `يجب أن يكتمل تنفيذ تدفق SaaS بنجاح: ${JSON.stringify(saasExecResult.failureDetails || {})}`
     );
     assert.strictEqual(saasExecResult.completedStepsCount, saasPlan.steps.length);
     assert(saasExecResult.artifactsCount >= 10, 'يجب توليد كافة عقود الأدلة للمشروع');
@@ -58,7 +58,7 @@ try {
     assert(fs.existsSync(path.join(saasWorkspace, 'apps/server/db/migrations/001_initial.sql')), 'Database migration file must exist physically');
     assert(fs.existsSync(path.join(saasWorkspace, 'apps/server/server.js')), 'Backend server file must exist physically');
     assert(fs.existsSync(path.join(saasWorkspace, 'openapi.json')), 'OpenAPI specification must exist physically');
-    console.log('  [PASS] 1. Full-Stack SaaS: Real sequential execution & physical artifacts verified');
+    console.log('  [PASS] 1. Full-Stack SaaS: Sequential state machine flow & physical artifacts verified via Test Harness');
 
     // ----------------------------------------------------
     // اختبار 2: التحقق من تمرير السياق والمخرجات (Context Passing)

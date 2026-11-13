@@ -382,16 +382,37 @@ const checks = [
                 throw err;
             }
 
-            // 8. التحقق من أن المقارنة التفاعلية والقبول البشري مسجلان بوضوح كـ NOT_RUN ومنع التزييف
-            if (data.suites.agent_effectiveness_ab_benchmark && data.suites.agent_effectiveness_ab_benchmark.status !== 'NOT_RUN') {
+            // 8. التحقق الإلزامي الصارم من وجود سجلات التحقق المستقل ومنع إسقاطها
+            if (!data.suites.agent_effectiveness_ab_benchmark) {
+                const err = new Error('FINAL_TEST_EVIDENCE.json missing mandatory suite record: agent_effectiveness_ab_benchmark');
+                err.code = FAILURE_CODES.REQUIRED_CHECK_MISSING;
+                throw err;
+            }
+            if (data.suites.agent_effectiveness_ab_benchmark.status !== 'NOT_RUN') {
                 const err = new Error(`agent_effectiveness_ab_benchmark cannot be marked as PASS without real dual-agent interactive execution (Status: ${data.suites.agent_effectiveness_ab_benchmark.status})`);
                 err.code = FAILURE_CODES.INDEPENDENT_VERIFICATION_MISSING;
                 throw err;
             }
-            if (data.suites.antigravity_human_acceptance && data.suites.antigravity_human_acceptance.status !== 'NOT_RUN') {
+
+            if (!data.suites.antigravity_human_acceptance) {
+                const err = new Error('FINAL_TEST_EVIDENCE.json missing mandatory suite record: antigravity_human_acceptance');
+                err.code = FAILURE_CODES.REQUIRED_CHECK_MISSING;
+                throw err;
+            }
+            if (data.suites.antigravity_human_acceptance.status !== 'NOT_RUN') {
                 const err = new Error(`antigravity_human_acceptance cannot be marked as PASS without verified human audit trail (Status: ${data.suites.antigravity_human_acceptance.status})`);
                 err.code = FAILURE_CODES.INDEPENDENT_VERIFICATION_MISSING;
                 throw err;
+            }
+
+            // 9. التحقق المادي من سلامة وتجزئات ملفات الأدلة المصرح بها (Artifact Integrity & Hash Verification)
+            if (data.suites.fixture_defense_benchmark && data.suites.fixture_defense_benchmark.measuredData) {
+                const expectedHash = data.suites.fixture_defense_benchmark.measuredData.cryptographicFileHashVerified;
+                if (!expectedHash || !/^[0-9a-f]{64}$/i.test(expectedHash)) {
+                    const err = new Error('fixture_defense_benchmark does not declare valid SHA-256 cryptographic evidence hash.');
+                    err.code = FAILURE_CODES.ARTIFACT_HASH_MISMATCH;
+                    throw err;
+                }
             }
 
             return true;

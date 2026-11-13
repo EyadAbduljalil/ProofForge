@@ -99,8 +99,30 @@ class AntigravityCliRuntimeAdapter {
             providerName: this.name,
             isLive: true,
             cliPath: this.cliPath,
-            supportsNonInteractivePrint: true
+            supportsNonInteractivePrint: true,
+            supportsDifferentialConditions: true
         };
+    }
+
+    /**
+     * تنفيذ الشرط الضابط (Baseline Execution) مع تعطيل مهارات وقواعد ProofForge بالكامل
+     */
+    executeBaseline(request) {
+        return this.submitTask({
+            ...request,
+            enableProofForgeSkills: false,
+            skillInstructions: request.taskSpec?.rawPrompt || `Execute task '${request.taskSpec?.id || 'TASK'}' with default generalist capabilities without external skill governance.`
+        });
+    }
+
+    /**
+     * تنفيذ الشرط المعالج (Governed Execution) مع تفعيل مهارات وقواعد وحوكمة ProofForge بالكامل
+     */
+    executeGoverned(request) {
+        return this.submitTask({
+            ...request,
+            enableProofForgeSkills: true
+        });
     }
 
     /**
@@ -199,8 +221,31 @@ class ControlledTestRuntimeAdapter {
             providerName: this.name,
             isLive: false,
             isTestHarness: true,
-            executionMode: 'UNIT_TEST_HARNESS'
+            executionMode: 'UNIT_TEST_HARNESS',
+            supportsDifferentialConditions: true
         };
+    }
+
+    /**
+     * تنفيذ الشرط الضابط للاختبار الهيكلي (Baseline Condition)
+     */
+    executeBaseline(request) {
+        return this.submitTask({
+            ...request,
+            condition: 'CONTROL',
+            enableProofForgeSkills: false
+        });
+    }
+
+    /**
+     * تنفيذ الشرط المعالج للاختبار الهيكلي (Governed Condition)
+     */
+    executeGoverned(request) {
+        return this.submitTask({
+            ...request,
+            condition: 'TREATMENT',
+            enableProofForgeSkills: true
+        });
     }
 
     submitTask(request) {

@@ -388,6 +388,7 @@ class MultiSkillExecutionEngine {
         }
 
         // تسجيل وربط أدلة المهارة الحتمية عبر مدقق العقود الكنسي الصارم لمنع التخمين الجزئي
+        const producerIdentity = (agentRuntime && agentRuntime.discoverCapabilities().providerName) || 'AGENT_TASK_PRODUCER';
         for (const req of step.evidenceRequired || []) {
             const existingArtifact = artifacts[req];
             const verifiedEvidence = EvidenceContractValidator.validateAndBindEvidence({
@@ -395,7 +396,14 @@ class MultiSkillExecutionEngine {
                 requirementId: req,
                 parsedVerifierOutput: parsedOutput,
                 candidateArtifact: existingArtifact,
-                workspacePath
+                workspacePath,
+                producerIdentity,
+                verifierIdentity: skillSpec.primaryScript,
+                executionProvenance: {
+                    producerId: producerIdentity,
+                    executionId: context.executionId || `EXEC_STEP_${skillId}`,
+                    timestamp: new Date().toISOString()
+                }
             });
 
             artifacts[req] = {

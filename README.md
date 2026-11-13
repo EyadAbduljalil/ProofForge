@@ -424,6 +424,19 @@ ProofForge/
 | `NODE_ENV` | `development` | Runtime environment (`development`, `test`, `production`) |
 | `PORT` | `3000` | Port used by the built-in server (`proofforge serve`) |
 | `CI` | `false` | When `true`, enforces strict fail-closed exit codes in pipelines |
+| `ANTIGRAVITY_AGENTAPI_EXE` | `null` | Path to the genuine Google Antigravity `agy.exe` agent executable |
+| `ANTIGRAVITY_AGENT_RUNTIME` | `null` | Set to `active` to enable live interactive agent orchestration |
+
+---
+
+### Agent Runtime & Execution Architecture
+
+ProofForge operates under a strict distinction between the **Governance & Verification Layer**, the **Structured Test Harness**, and the **Live Agent Runtime**:
+
+1. **Deterministic Verification Layer (Core)**: 28 canonical skills with standalone Node.js verifiers that audit code, architecture, and security invariants locally with zero external dependencies.
+2. **Structured Test Harness (`ControlledTestRuntimeAdapter` / `ProjectAwareExecutionProvider`)**: Used strictly during automated regression testing (`npm test`) to verify state machine transitions, context passing, file isolation, and byte-for-byte physical rollback without fabricating LLM results.
+3. **Live Agent Runtime Adapter (`AntigravityCliRuntimeAdapter`)**: Connects ProofForge to genuine Google Antigravity agents via the `agy` CLI (`ANTIGRAVITY_AGENTAPI_EXE`). Requires an interactive live runtime environment.
+4. **Agent A/B Benchmark Status**: Automated non-interactive CI environments report `NOT_RUN` / `AGENT_AB_EXPERIMENT_PENDING_LIVE_RUNTIME` for the live comparative benchmark, refusing to manufacture synthetic A/B superiority claims without live dual-agent trials.
 
 ---
 

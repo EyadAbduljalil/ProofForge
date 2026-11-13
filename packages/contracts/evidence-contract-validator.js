@@ -506,12 +506,25 @@ class EvidenceContractValidator {
             throw new Error(`[FAIL-CLOSED] العقد الكنسي غير مسجل للمتطلب '${requirementId}' في المهارة '${skillId}'.`);
         }
 
-        // 2. الفصل الإلزامي بين المنتج والمدقق (Producer/Verifier Separation)
-        const finalProducer = producerIdentity || executionProvenance.producerId || 'AGENT_TASK_PRODUCER';
-        const finalVerifier = verifierIdentity || canonicalSpec.verifierScript;
+        // 2. الفصل الإلزامي الصارم بين المنتج والمدقق (Producer/Verifier Separation & Explicit Identity)
+        const finalProducer = (producerIdentity || executionProvenance.producerId || '').trim();
+        const finalVerifier = (verifierIdentity || canonicalSpec.verifierScript || '').trim();
 
-        if (finalProducer && finalVerifier && finalProducer.trim().toLowerCase() === finalVerifier.trim().toLowerCase()) {
+        if (!finalProducer) {
+            throw new Error(`[FAIL-CLOSED] هوية منتج المهمة (producerIdentity) إلزامية لتأكيد استقلالية ومصدر الدليل للمتطلب '${requirementId}'.`);
+        }
+
+        if (!finalVerifier) {
+            throw new Error(`[FAIL-CLOSED] هوية مدقق المهمة (verifierIdentity) إلزامية للمتطلب '${requirementId}'.`);
+        }
+
+        if (finalProducer.toLowerCase() === finalVerifier.toLowerCase()) {
             throw new Error(`[FAIL-CLOSED] انتهاك الفصل بين المنتج والمدقق: لا يمكن للمنتج '${finalProducer}' أن يزكي عمله كمدقق مستقل.`);
+        }
+
+        // التحقق من أن هوية المنتج لا تطابق أداة التحقق المسجلة كنسياً
+        if (canonicalSpec.verifierScript && finalProducer.toLowerCase() === canonicalSpec.verifierScript.trim().toLowerCase()) {
+            throw new Error(`[FAIL-CLOSED] انتهاك استقلالية التدقيق: هوية المنتج لا يمكن أن تكون أداة الفحص '${canonicalSpec.verifierScript}'.`);
         }
 
         // 3. التحقق من سلامة مخرجات المدقق التخصصي المستقل
@@ -595,10 +608,15 @@ class EvidenceContractValidator {
             };
         }
 
-        // 6. التحقق من بصمة المصدر (Provenance) والـ Commit SHA الدقيق
+        // 6. التحقق من بصمة المصدر (Provenance) والـ Commit SHA الدقيق وسلسلة التنفيذ
         const provenanceCommit = executionProvenance.commitSha || null;
         if (expectedCommitSha && provenanceCommit && expectedCommitSha.toLowerCase() !== provenanceCommit.toLowerCase()) {
             throw new Error(`[FAIL-CLOSED] تعارض في بصمة المصدر: الدليل مربوط بـ commit '${provenanceCommit}' بينما المتوقع هو '${expectedCommitSha}'.`);
+        }
+
+        const executionId = executionProvenance.executionId || (expectedCommitSha ? `EXEC_${expectedCommitSha.substring(0, 8)}` : null);
+        if (!executionId) {
+            throw new Error(`[FAIL-CLOSED] بصمة المصدر تفتقر إلى مُعرف تنفيذ صالح (executionId) للمتطلب '${requirementId}'.`);
         }
 
         // 7. بناء كائن الدليل الموحد متكامل الهوية (Explicit Evidence Identity)
