@@ -18,7 +18,7 @@
 - **Realistic Scenarios Benchmark:** `real-scenarios-benchmark.test.js` (5/5 passed).
 - **Multi-Skill Orchestration Routing:** `multi-skill-scenarios.test.js` (6/6 scenarios topological order & cycle defense).
 - **Multi-Skill Real Execution:** `multi-skill-execution.test.js` (5/5 tests: sequential execution, context passing, fail-closed rollback, and physical artifacts).
-- **Empirical Agent A/B Benchmark:** `agent-effectiveness.test.js` (100% measured on real fixtures, zero hardcoded numbers, +82.3% measured advantage).
+- **Automated Fixture Defense Benchmark:** `agent-effectiveness.test.js` (100% measured on real fixtures, zero hardcoded numbers, 100% defense compliance vs 36.4% in unmanaged fixtures).
 - **Deterministic Release Gate:** `bin/release-gate.js` (7/7 gates verified).
 - **Cross-Platform Matrix CI:** `.github/workflows/ci.yml` configured for `[ubuntu-latest, windows-latest]` across Node.js 18, 20, 22 with artifact uploads.
 

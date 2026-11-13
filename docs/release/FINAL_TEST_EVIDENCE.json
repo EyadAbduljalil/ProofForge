@@ -1,8 +1,8 @@
 {
   "generator": "ProofForge Deterministic Evidence Recorder",
   "version": "3.0.0",
-  "commitSha": "CURRENT_GIT_HEAD",
-  "generatedAt": "2026-11-13T01:56:00Z",
+  "commitSha": "d8a4fd62d761adb517229902e42515e5befc2ec5",
+  "generatedAt": "2026-11-13T02:18:00Z",
   "operatingSystem": "Cross-Platform (Windows 11 / Ubuntu Linux)",
   "nodeVersion": "v22.16.0",
   "suites": {
@@ -85,20 +85,24 @@
         "E-commerce idempotent checkout and race condition protection execution"
       ]
     },
-    "empirical_agent_ab_benchmark": {
+    "fixture_defense_benchmark": {
       "path": "tests/benchmark/agent-effectiveness.test.js",
       "status": "PASS",
+      "benchmarkType": "AUTOMATED_FIXTURE_DEFENSE_BENCHMARK",
+      "description": "قياس تجريبي حقيقي لمعدل رصد ومنع العيوب البرمجية في المثبتات الواقعية",
       "isPurelyEmpirical": true,
       "hasZeroHardcodedMetrics": true,
-      "measurements": {
-        "vulnerabilityPreventionRate": { "baseline": 37.5, "proofforge": 100.0 },
-        "zeroPlaceholderCompliance": { "baseline": 0.0, "proofforge": 100.0, "baselinePlaceholdersFound": 5, "proofforgePlaceholdersFound": 0 },
-        "accessibilityComplianceRate": { "baseline": 33.3, "proofforge": 100.0 },
-        "deterministicEvidenceRate": { "baseline": 0.0, "proofforge": 100.0 },
-        "overallScore": { "baseline": 17.7, "proofforge": 100.0 },
-        "measuredAdvantageDelta": "+82.3%",
-        "verdict": "PROOFFORGE_EMPIRICALLY_SUPERIOR"
-      }
+      "measuredData": {
+        "unprotectedFixturesComplianceRate": 36.4,
+        "hardenedImplementationComplianceRate": 100.0,
+        "databaseDefectsDetectedInFixture": 5,
+        "backendDefectsDetectedInFixture": 5,
+        "accessibilityDefectsDetectedInFixture": 4,
+        "placeholdersDetectedInSample": 5,
+        "placeholdersInHardenedCode": 0,
+        "cryptographicFileHashVerified": "0bdc0141a5bedcbfc32d6b6a43fdf982eaf17e4d50c15117b98529e45b47a9dd"
+      },
+      "verdict": "DEFENSE_VERIFIED_AGAINST_FIXTURES"
     },
     "dependency_security_audit": {
       "command": "npm audit --audit-level=high",

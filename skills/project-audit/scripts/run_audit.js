@@ -18,7 +18,7 @@ if (!isJson) {
     console.log('======================================================');
 }
 
-const root = path.resolve(__dirname, '../../../');
+const root = engine.rootDir;
 
 const verifiers = [
     { name: 'Security & ASVS Invariants', script: 'skills/security/scripts/verify_security.js', weight: 20, critical: true },
@@ -42,7 +42,11 @@ let totalWeight = 0;
 
 for (const v of verifiers) {
     totalWeight += v.weight;
-    const scriptPath = path.join(root, v.script);
+    // ابحث أولاً في مساحة العمل المحلية، ثم في الجذر الرئيسي لـ ProofForge كمرجع قياسي
+    let scriptPath = path.join(engine.rootDir, v.script);
+    if (!fs.existsSync(scriptPath)) {
+        scriptPath = path.resolve(__dirname, '../../../', v.script);
+    }
 
     if (!fs.existsSync(scriptPath)) {
         engine.recordCheck(v.name, false, `Verifier script not found: ${v.script}`, v.critical ? 'CRITICAL' : 'HIGH');
@@ -50,7 +54,7 @@ for (const v of verifiers) {
     }
 
     const res = spawnSync(process.execPath, [scriptPath, '--json'], {
-        cwd: root,
+        cwd: engine.rootDir,
         encoding: 'utf8',
         timeout: 10000
     });
