@@ -10,7 +10,7 @@
 
 A deterministic, fail-closed verification framework and engineering skills ecosystem designed for **Google Antigravity** and modern AI coding agents. ProofForge enforces machine verification over unverified assertions, validates architectural and security constraints, detects placeholder code, and provides 28 specialized, machine-audited engineering skills.
 
-[![Release: v2.1.0](https://img.shields.io/badge/Release-v2.1.0-6366f1.svg)](https://github.com/EyadAbduljalil/ProofForge/tree/v2.1.0)
+[![Release: v3.0.0](https://img.shields.io/badge/Release-v3.0.0-6366f1.svg)](https://github.com/EyadAbduljalil/ProofForge/tree/v3.0.0)
 [![Antigravity Skills](https://img.shields.io/badge/Antigravity%20Skills-28%20Canonical-059669.svg)](skills/)
 [![Node.js Runtime](https://img.shields.io/badge/Node.js-%3E%3D18.0.0-339933.svg)](package.json)
 [![Security Standard](https://img.shields.io/badge/Security-OWASP%20ASVS%20Level%202%20Rules-0284c7.svg)](skills/security/references/security_matrix.md)
@@ -53,7 +53,7 @@ A deterministic, fail-closed verification framework and engineering skills ecosy
 
 ```text
 ================================================================================
-           PROOFFORGE V2 — ONE-CLICK AGENT SKILLS ADOPTION DIRECTIVE
+           PROOFFORGE V3 — ONE-CLICK AGENT SKILLS ADOPTION DIRECTIVE
 ================================================================================
 You are the Lead Software & Security Architect for this workspace, governed by ProofForge.
 
@@ -462,6 +462,20 @@ Tests the verification engines against deliberate flaws in `tests/fixtures/` to 
 ---
 
 ## 14. Roadmap
+
+### Completed (v3.0.0)
+- [x] Full P0 & P1 Critical Defect Remediation with deterministic regression suites.
+- [x] Versioned ownership manifest (`.proofforge-manifest.json`) for full resource tracking and safe sync.
+- [x] Isolated benchmark workspaces with explicit ownership markers preventing fixture data loss.
+- [x] Hardened `VerifierEngine` with strict primitive boolean invariants and required/optional check semantics.
+- [x] Symlink-safe write path validation in `PathLoaderGuard` defending against symlink target overwrites and UNC escapes.
+- [x] Behavioral Skills Benchmark Engine with dynamic discovery, independent machine-readable specs, and separate structural/behavioral scoring.
+- [x] Dedicated test suites: `isolated-workspace-safety.test.js`, `behavioral-skills-benchmark-regression.test.js`, `path-loader-guard.test.js`, `verifier-engine.test.js`.
+- [x] Google Antigravity native synchronization (`.agents/skills/`) with differential pruning.
+- [x] 14-domain automated multi-check project audit (`run_audit.js`).
+- [x] Negative-control scenario benchmarks (`broken-frontend`, `insecure-backend`, `flawed-database`).
+- [x] Cross-skill orchestration guide ([`docs/WORKFLOW_COORDINATION.md`](docs/WORKFLOW_COORDINATION.md)).
+- [x] Extended CLI subcommands under `proofforge skills *` and `proofforge doctor`.
 
 ### Completed (v2.1.0)
 - [x] Full restructuring of all 28 canonical Antigravity skills.
