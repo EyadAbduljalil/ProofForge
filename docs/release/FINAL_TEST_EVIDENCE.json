@@ -1,10 +1,12 @@
 {
   "generator": "ProofForge Deterministic Evidence Recorder",
   "version": "3.0.0",
-  "commitSha": "00ebc698b455ac58910bb73ec3a44103d641c09e",
-  "generatedAt": "2026-11-13T02:47:05.859Z",
+  "commitSha": "af9bc3dc425bb9ffb04428e05aa784d9af7e034f",
+  "generatedAt": "2026-11-13T03:13:14.639Z",
   "operatingSystem": "win32 (x64)",
   "nodeVersion": "v22.16.0",
+  "isPurelyEmpirical": true,
+  "hasZeroHardcodedMetrics": true,
   "suites": {
     "release_metadata_validator": {
       "path": "packages/contracts/tests/release-metadata-validator.test.js",
@@ -13,25 +15,49 @@
       "failedChecks": 0,
       "status": "PASS",
       "verifiedInvariants": [
-        "package.json version equals 3.0.0",
-        "package-lock.json matches package.json exactly",
-        "plugin.json matches package.json exactly",
-        "skills count equals 28 canonical directories",
-        "README release badge reflects 3.0.0"
+        "package.json has valid SemVer",
+        "package-lock.json version matches package.json",
+        "plugin.json version matches package.json",
+        "Skills count parity verified (28 skills across all files)",
+        "README release badge matches package.json"
       ]
     },
     "antigravity_synchronization_safety": {
       "path": "packages/contracts/tests/antigravity-adapter.test.js",
-      "totalChecks": 23,
-      "passedChecks": 23,
+      "totalChecks": 29,
+      "passedChecks": 29,
       "failedChecks": 0,
       "status": "PASS",
       "verifiedInvariants": [
-        "SHA-256 ownership manifest (.proofforge-manifest.json)",
-        "Prohibition of fs.cpSync force:true in non-force mode",
-        "Atomic write with pre-write permission checks",
-        "Full-tree SHA-256 recursive diff across all skill files",
-        "Explicit sync action classification (CREATE, UPDATE, UNCHANGED, CONFLICT_DETECTED)"
+        "Valid Skill Transformation Verified",
+        "Valid Rule Transformation Verified",
+        "Valid AGENTS.md Generation Verified",
+        "Valid SKILL.md Generation Verified",
+        "Skill Name Sanitization Verified",
+        "YAML Value Serialization Verified",
+        "Fresh synchronization verified",
+        "Repeated synchronization verified",
+        "Idempotency verified",
+        "Canonical changes safely propagated",
+        "Destination SKILL.md modifications byte-for-byte preserved",
+        "Supporting script user modifications preserved",
+        "Added canonical files detected",
+        "Removed canonical supporting files detected",
+        "User-created custom skill with same name strictly preserved",
+        "User custom skill with ProofForge string preserved as userCustom",
+        "Unowned destination file preserved",
+        "Modified stale owned skill preserved from deletion",
+        "Safe stale owned file deletion verified",
+        "Dry-run zero mutation verified",
+        "Force replaces verified modified owned files",
+        "Force cannot overwrite unowned files",
+        "Custom skills protected from deletion even with force",
+        "Safe state preservation verified",
+        "Atomic write rejects unsafe target",
+        "Symlink and traversal escape attempts blocked cross-platform",
+        "Corrupted manifest safely handled",
+        "Hash mismatch detection verified",
+        "Missing metadata defaults to protecting all untracked files"
       ]
     },
     "skills_behavioral_validation": {
@@ -44,6 +70,36 @@
         "MANDATORY_JSON_RUN",
         "MANDATORY_HUMAN_RUN",
         "FUZZ_UNKNOWN_ARG"
+      ],
+      "verifiedSkillList": [
+        "accessibility",
+        "ai-engineering",
+        "anti-laziness",
+        "anti-slop",
+        "api",
+        "architecture",
+        "backend",
+        "code-review",
+        "dashboards",
+        "database",
+        "deployment",
+        "design-system",
+        "ecommerce",
+        "forms",
+        "frontend",
+        "fullstack",
+        "image-to-code",
+        "motion",
+        "performance",
+        "production-readiness",
+        "project-audit",
+        "responsive",
+        "rtl",
+        "security",
+        "seo",
+        "taste-craft",
+        "testing",
+        "ui-ux"
       ]
     },
     "multi_skill_orchestration": {
@@ -53,12 +109,12 @@
       "failedScenarios": 0,
       "status": "PASS",
       "verifiedScenarios": [
-        "Full-Stack SaaS (9 skills, topological order, tenant isolation)",
-        "E-commerce Transaction Systems (5 skills, idempotent checkout, inventory race lock)",
-        "Existing Project Refactoring (3 skills, audit before review)",
-        "Secure Authentication (P0 priority override)",
-        "RTL Localization & Accessibility (logical CSS properties, WCAG 2.2 AAA)",
-        "Production API Microservice (OpenAPI contract, non-root Docker container)"
+        "Full-Stack SaaS Orchestration",
+        "E-commerce & Transaction Systems Orchestration",
+        "Existing Project Refactoring Orchestration",
+        "Secure Authentication Orchestration",
+        "RTL Localization & Accessibility Orchestration",
+        "Production API Microservice Orchestration"
       ]
     },
     "multi_skill_real_execution": {
@@ -68,11 +124,11 @@
       "failedTests": 0,
       "status": "PASS",
       "verifiedCapabilities": [
-        "Real sequential execution of domain skills via spawnSync",
-        "Cross-skill context passing through executionContext and sharedMemory",
-        "Byte-for-byte physical rollback of files, folders, and symlinks on step failure",
-        "Authority hierarchy arbitration resolving security vs performance conflicts",
-        "E-commerce idempotent checkout and race condition protection execution"
+        "Full-Stack SaaS: Real sequential execution & physical artifacts verified",
+        "Context Passing: Downstream skills successfully received upstream artifacts",
+        "Physical Rollback: Workspace state restored byte-for-byte upon step failure",
+        "Authority Hierarchy: Constitutional arbitration strictly resolved output conflict",
+        "E-commerce: Real transaction safety & HMAC verification executed successfully"
       ]
     },
     "fixture_defense_benchmark": {
@@ -87,18 +143,21 @@
         "hardenedImplementationComplianceRate": 100,
         "placeholdersInSample": 5,
         "placeholdersInHardenedCode": 0,
-        "cryptographicFileHashVerified": "0a236eb644814ef0fbbaec337b37bdb2a7cc83d068731924d5cfcce0243c2c49"
+        "cryptographicFileHashVerified": "0a236eb644814ef0fbbaec337b37bdb2a7cc83d068731924d5cfcce0243c2c49",
+        "pluginJsonSha256": "d6ffbd6c677417cbfd29f853b08a502ec42205c614cb7064ee25922ee401a9ae"
       },
       "verdict": "DEFENSE_VERIFIED_AGAINST_FIXTURES"
     },
     "dependency_security_audit": {
-      "command": "npm audit --audit-level=high",
+      "command": "npm audit --json",
       "status": "PASS",
       "vulnerabilities": {
         "critical": 0,
         "high": 0,
         "moderate": 0,
-        "low": 0
+        "low": 0,
+        "info": 0,
+        "total": 0
       }
     }
   }

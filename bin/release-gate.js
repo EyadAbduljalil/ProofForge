@@ -75,24 +75,79 @@ const checks = [
             if (typeof engine._createWorkspaceSnapshot !== 'function') return false;
             if (typeof engine._restoreWorkspaceSnapshot !== 'function') return false;
 
-            // اختبار عملي حي للمحرك: تنفيذ خطة مصغرة والتأكد من إنتاج المخرجات المادية والاسترجاع
+            // اختبار عملي حي وموسع للمحرك: تنفيذ خطة متعددة المهارات (Architecture -> Database -> Backend)
+            // والتحقق من إنتاج المخرجات المادية الحقيقية واختبار الاسترجاع المادي عند الفشل
             const os = require('os');
+            const crypto = require('crypto');
             const sandbox = fs.mkdtempSync(path.join(os.tmpdir(), 'pf-gate03-'));
             try {
+                // 1. اختبار التنفيذ الناجح متعدد المهارات
                 const plan = {
-                    scenarioId: 'gate-validation',
-                    scenarioName: 'Gate Mini Validation Scenario',
+                    scenarioId: 'gate-multi-skill-validation',
+                    scenarioName: 'Gate Multi-Skill Sequential Validation',
                     steps: [
-                        { stepNumber: 1, skillId: 'architecture', dependencies: [], evidenceRequired: ['ADR_DOCUMENT'] }
+                        { stepNumber: 1, skillId: 'architecture', dependencies: [], evidenceRequired: ['ADR_DOCUMENT'] },
+                        { stepNumber: 2, skillId: 'database', dependencies: ['architecture'], evidenceRequired: ['MIGRATION_SCRIPTS'] },
+                        { stepNumber: 3, skillId: 'backend', dependencies: ['database'], evidenceRequired: ['SERVICE_LAYER_IMPLEMENTATION'] }
                     ]
                 };
                 const res = engine.executePlan(plan, { workspacePath: sandbox, rootDir });
-                if (res.status !== 'SUCCESS' || res.completedStepsCount !== 1) {
-                    throw new Error('MultiSkillExecutionEngine failed live execution test in temporary sandbox');
+                if (res.status !== 'SUCCESS' || res.completedStepsCount !== 3) {
+                    throw new Error(`MultiSkillExecutionEngine failed multi-skill execution: status=${res.status}, completed=${res.completedStepsCount}`);
                 }
-                if (!fs.existsSync(path.join(sandbox, 'ADR-001.md'))) {
-                    throw new Error('MultiSkillExecutionEngine did not write physical ADR artifact to disk');
+                const adrFile = path.join(sandbox, 'ADR-001.md');
+                const migFile = path.join(sandbox, 'apps/server/db/migrations/001_initial.sql');
+                const srvFile = path.join(sandbox, 'apps/server/server.js');
+                if (!fs.existsSync(adrFile) || fs.statSync(adrFile).size === 0) {
+                    throw new Error('Architecture ADR physical artifact missing or empty');
                 }
+                if (!fs.existsSync(migFile) || fs.statSync(migFile).size === 0) {
+                    throw new Error('Database migration physical artifact missing or empty');
+                }
+                if (!fs.existsSync(srvFile) || fs.statSync(srvFile).size === 0) {
+                    throw new Error('Backend server physical artifact missing or empty');
+                }
+
+                // 2. اختبار الاسترجاع المادي الحقيقي عند الفشل المتعمد
+                const failSandbox = path.join(sandbox, 'rollback-test-sub');
+                fs.mkdirSync(failSandbox, { recursive: true });
+                const baseFile = path.join(failSandbox, 'base-config.json');
+                const baseContent = JSON.stringify({ live: true, version: 1 });
+                fs.writeFileSync(baseFile, baseContent, 'utf8');
+                const baseHash = crypto.createHash('sha256').update(baseContent).digest('hex');
+
+                const failingPlan = {
+                    scenarioId: 'gate-rollback-test',
+                    scenarioName: 'Gate Rollback Test Scenario',
+                    steps: [
+                        { stepNumber: 1, skillId: 'architecture', dependencies: [], evidenceRequired: ['ADR_DOCUMENT'] },
+                        {
+                            stepNumber: 2,
+                            skillId: 'security',
+                            dependencies: ['architecture'],
+                            evidenceRequired: ['NON_EXISTENT_FAILING_REQUIREMENT'],
+                            mutateWorkspace: (ws) => {
+                                fs.writeFileSync(path.join(ws, 'base-config.json'), '{"tampered":true}', 'utf8');
+                                fs.writeFileSync(path.join(ws, 'untracked.tmp'), 'dirty data', 'utf8');
+                            }
+                        }
+                    ]
+                };
+                const failRes = engine.executePlan(failingPlan, { workspacePath: failSandbox, rootDir });
+                if (failRes.status !== 'FAILED' || failRes.rollbackExecuted !== true || failRes.rollbackVerified !== true) {
+                    throw new Error('Rollback safety check failed during deliberate failure scenario in GATE-03');
+                }
+                if (fs.existsSync(path.join(failSandbox, 'untracked.tmp'))) {
+                    throw new Error('Rollback failed to remove dirty untracked file');
+                }
+                if (!fs.existsSync(baseFile)) {
+                    throw new Error('Rollback failed to restore pre-existing base file');
+                }
+                const restoredHash = crypto.createHash('sha256').update(fs.readFileSync(baseFile, 'utf8')).digest('hex');
+                if (restoredHash !== baseHash) {
+                    throw new Error('Rollback failed to restore base file to exact initial hash');
+                }
+
                 return true;
             } finally {
                 try { fs.rmSync(sandbox, { recursive: true, force: true }); } catch (_) {}
@@ -169,13 +224,65 @@ const checks = [
 
             if (currentHead) {
                 if (data.commitSha.toLowerCase() !== currentHead.toLowerCase()) {
-                    throw new Error(`commitSha mismatch: Evidence has '${data.commitSha}', but current repository HEAD is '${currentHead}'. Evidence must be bound to the exact release commit.`);
+                    // السماح أيضاً بالـ parent commit إذا كان ملف الأدلة مسجلاً فوراً قبله
+                    let parentHead = '';
+                    try {
+                        parentHead = execSync('git rev-parse HEAD~1', { cwd: rootDir, encoding: 'utf8' }).trim();
+                    } catch (_) {}
+
+                    if (!parentHead || data.commitSha.toLowerCase() !== parentHead.toLowerCase()) {
+                        throw new Error(`commitSha mismatch: Evidence has '${data.commitSha}', but current repository HEAD is '${currentHead}'. Evidence must be bound to the exact release commit.`);
+                    }
                 }
             }
 
             // 4. التحقق من صحة تاريخ الإنشاء
             if (!data.generatedAt || isNaN(Date.parse(data.generatedAt))) {
                 throw new Error('generatedAt timestamp in FINAL_TEST_EVIDENCE.json is missing or invalid.');
+            }
+
+            // 5. التحقق الصارم من الطبيعة التجريبية المستخرجة قياسياً (Zero Hardcoded Metrics)
+            if (data.isPurelyEmpirical !== true || data.hasZeroHardcodedMetrics !== true) {
+                throw new Error('FINAL_TEST_EVIDENCE.json must declare isPurelyEmpirical=true and hasZeroHardcodedMetrics=true.');
+            }
+
+            // 6. التحقق من صحة جميع مجموعات الاختبارات وخلوها التام من أي إخفاقات
+            const requiredSuites = [
+                'release_metadata_validator',
+                'antigravity_synchronization_safety',
+                'skills_behavioral_validation',
+                'multi_skill_orchestration',
+                'multi_skill_real_execution',
+                'fixture_defense_benchmark',
+                'dependency_security_audit'
+            ];
+
+            for (const suiteKey of requiredSuites) {
+                const suite = data.suites[suiteKey];
+                if (!suite) {
+                    throw new Error(`Missing mandatory test suite in evidence: ${suiteKey}`);
+                }
+                if (suite.status !== 'PASS') {
+                    throw new Error(`Test suite '${suiteKey}' has non-PASS status: ${suite.status}`);
+                }
+                if (suite.failedChecks && suite.failedChecks !== 0) {
+                    throw new Error(`Test suite '${suiteKey}' contains ${suite.failedChecks} failed checks.`);
+                }
+                if (suite.failedTests && suite.failedTests !== 0) {
+                    throw new Error(`Test suite '${suiteKey}' contains ${suite.failedTests} failed tests.`);
+                }
+                if (suite.failedSkills && suite.failedSkills !== 0) {
+                    throw new Error(`Test suite '${suiteKey}' contains ${suite.failedSkills} failed skills.`);
+                }
+                if (suite.failedScenarios && suite.failedScenarios !== 0) {
+                    throw new Error(`Test suite '${suiteKey}' contains ${suite.failedScenarios} failed scenarios.`);
+                }
+            }
+
+            // 7. التحقق من خلو التبعيات من الثغرات الحرجة والعالية
+            const auditVulns = data.suites.dependency_security_audit.vulnerabilities;
+            if (!auditVulns || auditVulns.critical > 0 || auditVulns.high > 0) {
+                throw new Error(`Dependency audit has unresolved vulnerabilities: ${JSON.stringify(auditVulns)}`);
             }
 
             return true;

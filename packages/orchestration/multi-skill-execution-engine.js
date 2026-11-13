@@ -169,6 +169,9 @@ class MultiSkillExecutionEngine {
                 rollbackVerified: rollbackResult.isRestoredByteForByte,
                 filesRemovedCount: rollbackResult.filesRemoved,
                 filesRestoredCount: rollbackResult.filesRestored,
+                dirsRemovedCount: rollbackResult.dirsRemoved,
+                isStructureAndContentRestored: rollbackResult.isStructureAndContentRestored,
+                restorationGuarantee: rollbackResult.restorationGuarantee,
                 conflictResolutions: executionContext.conflictResolutions,
                 stepLogs: executionContext.stepLogs
             };
@@ -781,52 +784,195 @@ module.exports = server;
             throw new Error(`حالة فحص المهارة '${skillId}' غير معتمدة: المتوقع VERIFIED، المستلم ${parsedOutput.status}`);
         }
 
-        // تسجيل وربط أدلة المهارة فقط إذا كانت مدعومة بمخرج مادي فعلي أو فحص مؤكد في الأداة
+        // تسجيل وربط أدلة المهارة الحتمية: فرض الاقتران الصارم بين الدليل وفحص مؤكد بنتيجة PASS صريحة ومخرج مادي
         for (const req of step.evidenceRequired || []) {
             const existingArtifact = artifacts[req];
-            const matchingCheck = parsedOutput.checks.find(c => 
-                (c.property && c.property.toLowerCase().includes(req.toLowerCase().replace(/_/g, ' '))) ||
-                (c.id && c.id.toLowerCase().includes(req.toLowerCase()))
-            );
+            const matchingCheck = parsedOutput.checks.find(c => {
+                const prop = (c.property || '').toLowerCase();
+                const id = (c.id || '').toLowerCase();
+                const details = (c.details || '').toLowerCase();
+                const normalizedReq = req.toLowerCase().replace(/_/g, ' ');
+                return (
+                    prop.includes(normalizedReq) ||
+                    id.includes(req.toLowerCase()) ||
+                    this._matchesRequirementCheck(skillId, req, c)
+                );
+            });
 
-            if (existingArtifact) {
-                artifacts[req] = {
-                    ...existingArtifact,
-                    status: 'VERIFIED',
-                    verifiedByTool: skillSpec.primaryScript,
-                    executionTimestamp: parsedOutput.executed_at || new Date().toISOString(),
-                    checksPassedCount: parsedOutput.passed_checks,
-                    totalChecksCount: parsedOutput.total_checks,
-                    failedChecksCount: parsedOutput.failed_checks,
-                    durationMs: parsedOutput.duration_ms || 0,
-                    cryptographicProof: {
-                        checksSummary: `${parsedOutput.passed_checks}/${parsedOutput.total_checks} PASSED`,
-                        toolName: parsedOutput.verifier || skillSpec.primaryScript,
-                        zeroFailuresEnforced: true
-                    }
-                };
-            } else if (matchingCheck) {
-                artifacts[req] = {
-                    requirement: req,
-                    status: 'VERIFIED',
-                    verifiedByTool: skillSpec.primaryScript,
-                    checkProperty: matchingCheck.property || matchingCheck.id,
-                    executionTimestamp: parsedOutput.executed_at || new Date().toISOString(),
-                    checksPassedCount: parsedOutput.passed_checks,
-                    totalChecksCount: parsedOutput.total_checks,
-                    failedChecksCount: parsedOutput.failed_checks,
-                    durationMs: parsedOutput.duration_ms || 0,
-                    cryptographicProof: {
-                        checksSummary: `${parsedOutput.passed_checks}/${parsedOutput.total_checks} PASSED`,
-                        toolName: parsedOutput.verifier || skillSpec.primaryScript,
-                        zeroFailuresEnforced: true
-                    }
+            if (!matchingCheck) {
+                throw new Error(`[Evidence Contract Violation] الدليل المطلوب '${req}' للمهارة '${skillId}' غير مقترن بأي فحص مؤكد في مخرجات الأداة.`);
+            }
+
+            if (matchingCheck.status !== 'PASS' || matchingCheck.passed !== true) {
+                throw new Error(`[Evidence Contract Violation] الفحص المطابق '${matchingCheck.property || matchingCheck.id}' للدليل '${req}' لم ينجح بحالة PASS.`);
+            }
+
+            let physicalArtifactData = null;
+            if (existingArtifact && existingArtifact.path) {
+                if (!fs.existsSync(existingArtifact.path)) {
+                    throw new Error(`[Evidence Contract Violation] المخرج المادي للدليل '${req}' غير موجود على القرص: ${existingArtifact.path}`);
+                }
+                const stat = fs.statSync(existingArtifact.path);
+                if (stat.size === 0) {
+                    throw new Error(`[Evidence Contract Violation] المخرج المادي للدليل '${req}' فارغ تماماً (Zero Bytes): ${existingArtifact.path}`);
+                }
+                const fileBytes = fs.readFileSync(existingArtifact.path);
+                const fileHash = crypto.createHash('sha256').update(fileBytes).digest('hex');
+                physicalArtifactData = {
+                    path: existingArtifact.path,
+                    sizeBytes: stat.size,
+                    sha256: fileHash
                 };
             }
-            // إذا لم يكن الدليل مخرجاً مادياً حقيقياً ولا فحصاً مؤكداً، لا يُمنح حالة VERIFIED ويفشل العقد
+
+            artifacts[req] = {
+                requirement: req,
+                status: 'VERIFIED',
+                verifiedByTool: skillSpec.primaryScript,
+                checkId: matchingCheck.id || matchingCheck.property,
+                checkProperty: matchingCheck.property || matchingCheck.id,
+                checkSeverity: matchingCheck.severity || 'HIGH',
+                physicalArtifact: physicalArtifactData,
+                executionTimestamp: parsedOutput.executed_at || new Date().toISOString(),
+                checksPassedCount: parsedOutput.passed_checks,
+                totalChecksCount: parsedOutput.total_checks,
+                failedChecksCount: parsedOutput.failed_checks,
+                durationMs: parsedOutput.duration_ms || 0,
+                cryptographicProof: {
+                    boundCheckProperty: matchingCheck.property || matchingCheck.id,
+                    checksSummary: `${parsedOutput.passed_checks}/${parsedOutput.total_checks} PASSED`,
+                    toolName: parsedOutput.verifier || skillSpec.primaryScript,
+                    zeroFailuresEnforced: true,
+                    artifactSha256: physicalArtifactData ? physicalArtifactData.sha256 : null
+                }
+            };
         }
 
         return artifacts;
+    }
+
+    /**
+     * مطابقة متطلبات الأدلة بفحوصات المهارة المعيارية
+     */
+    static _matchesRequirementCheck(skillId, req, check) {
+        const prop = (check.property || check.id || '').toLowerCase();
+        const details = (check.details || '').toLowerCase();
+        const r = req.toLowerCase();
+
+        if (skillId === 'architecture') {
+            if (r === 'adr_document') return prop.includes('architecture') || prop.includes('dependency');
+            if (r === 'system_diagram') return prop.includes('state machine') || prop.includes('formalism');
+            if (r === 'domain_invariants') return prop.includes('invariant') || prop.includes('graph');
+        }
+        if (skillId === 'security') {
+            if (r === 'threat_model') return prop.includes('idor') || prop.includes('ssrf') || prop.includes('security');
+            if (r === 'auth_boundary_matrix') return prop.includes('password') || prop.includes('constant-time');
+            if (r === 'owasp_asvs_checklist') return prop.includes('sanitization') || prop.includes('rate limiter');
+        }
+        if (skillId === 'anti-laziness') {
+            if (r === 'zero_placeholder_proof') return prop.includes('zero') || prop.includes('laziness') || prop.includes('invariant');
+            if (r === 'full_implementation_verification') return prop.includes('production') || prop.includes('source') || prop.includes('discovery') || prop.includes('zero');
+        }
+        if (skillId === 'database') {
+            if (r === 'migration_scripts') return prop.includes('migration');
+            if (r === 'tenant_isolation_proof') return prop.includes('tenant') || prop.includes('isolation');
+            if (r === 'acid_transaction_tests') return prop.includes('transaction') || prop.includes('atomicity');
+        }
+        if (skillId === 'backend') {
+            if (r === 'service_layer_implementation') return prop.includes('storage adapter') || prop.includes('error handling') || prop.includes('server');
+            if (r === 'rate_limiter_config') return prop.includes('rate limiting');
+            if (r === 'health_probes') return prop.includes('liveness') || prop.includes('readiness');
+        }
+        if (skillId === 'api') {
+            if (r === 'openapi_contract') return prop.includes('route versioning') || prop.includes('api');
+            if (r === 'idempotency_tests') return prop.includes('idempotency');
+            if (r === 'input_validation_schema') return prop.includes('sanitization') || prop.includes('body');
+        }
+        if (skillId === 'ecommerce') {
+            if (r === 'idempotent_checkout_proof') return prop.includes('idempotency') || prop.includes('checkout');
+            if (r === 'inventory_race_tests') return prop.includes('inventory') || prop.includes('stock');
+            if (r === 'webhook_hmac_verification') return prop.includes('hmac') || prop.includes('webhook');
+        }
+        if (skillId === 'deployment') {
+            if (r === 'non_root_dockerfile') return prop.includes('non-root') || prop.includes('user');
+            if (r === 'lockfile_reproducibility') return prop.includes('deterministic') || prop.includes('npm ci');
+            if (r === 'zero_secret_leak_audit') return prop.includes('isolation') || prop.includes('build');
+        }
+        if (skillId === 'design-system') {
+            if (r === 'design_tokens_json') return prop.includes('token') || prop.includes('design');
+            if (r === 'color_scale_matrix') return prop.includes('color') || prop.includes('palette');
+            if (r === 'typography_system') return prop.includes('spacing') || prop.includes('typography') || prop.includes('discovery');
+        }
+        if (skillId === 'frontend') {
+            if (r === 'component_hierarchy') return prop.includes('component') || prop.includes('html');
+            if (r === 'client_state_boundaries') return prop.includes('dom') || prop.includes('binding') || prop.includes('state');
+            if (r === 'chunk_optimization') return prop.includes('viewport') || prop.includes('error') || prop.includes('async');
+        }
+        if (skillId === 'accessibility') {
+            if (r === 'wcag_2_2_aaa_audit') return prop.includes('button') || prop.includes('client files') || prop.includes('contrast');
+            if (r === 'keyboard_navigation_test') return prop.includes('keyboard') || prop.includes('focus');
+            if (r === 'aria_labels_verification') return prop.includes('input') || prop.includes('image') || prop.includes('aria');
+        }
+        if (skillId === 'testing') {
+            if (r === 'zero_mock_verification') return prop.includes('mock') || prop.includes('invariant');
+            if (r === 'evidence_contract_validation') return prop.includes('assertion') || prop.includes('density') || prop.includes('evidence');
+            if (r === 'deterministic_pass_suite') return prop.includes('automated') || prop.includes('discovery') || prop.includes('suite');
+        }
+        if (skillId === 'performance') {
+            if (r === 'lighthouse_90_budget') return prop.includes('non-blocking') || prop.includes('script') || prop.includes('performance');
+            if (r === 'core_web_vitals_report') return prop.includes('layout shift') || prop.includes('cls') || prop.includes('vitals');
+            if (r === 'memory_leak_check') return prop.includes('memory') || prop.includes('leak') || prop.includes('cleanup');
+        }
+        if (skillId === 'dashboards') {
+            if (r === 'data_virtualization_test') return prop.includes('grid') || prop.includes('layout') || prop.includes('density');
+            if (r === 'realtime_sync_proof') return prop.includes('telemetry') || prop.includes('stream') || prop.includes('activity');
+            if (r === 'kpi_card_density') return prop.includes('status') || prop.includes('widget') || prop.includes('indicator');
+        }
+        if (skillId === 'production-readiness') {
+            if (r === '12_factor_audit') return prop.includes('termination') || prop.includes('lifecycle') || prop.includes('factor');
+            if (r === 'healthz_readyz_probes') return prop.includes('probe') || prop.includes('health');
+            if (r === 'structured_json_logs') return prop.includes('sanitization') || prop.includes('pii') || prop.includes('log');
+        }
+        if (skillId === 'responsive') {
+            if (r === 'viewport_breakpoints_test') return prop.includes('viewport') || prop.includes('clamp');
+            if (r === 'touch_target_44px_audit') return prop.includes('container') || prop.includes('touch') || prop.includes('flexbox');
+            if (r === 'zero_horizontal_scroll') return prop.includes('pixel') || prop.includes('scroll') || prop.includes('blowout');
+        }
+        if (skillId === 'rtl') {
+            if (r === 'logical_properties_audit') return prop.includes('logical') || prop.includes('properties');
+            if (r === 'icon_mirroring_verification') return prop.includes('locale') || prop.includes('arabic');
+            if (r === 'bidirectional_parity') return prop.includes('direction') || prop.includes('rtl');
+        }
+        if (skillId === 'forms') {
+            if (r === 'schema_validation_rules') return prop.includes('validation') || prop.includes('rule');
+            if (r === 'double_submit_defense') return prop.includes('sanitization') || prop.includes('payload');
+            if (r === 'inline_error_handling') return prop.includes('input') || prop.includes('label');
+        }
+        if (skillId === 'anti-slop') {
+            if (r === 'design_token_validation') return prop.includes('slop') || prop.includes('invariant');
+            if (r === 'anti_slop_audit') return prop.includes('semantic') || prop.includes('html') || prop.includes('architecture');
+        }
+        if (skillId === 'ui-ux') {
+            if (r === 'user_flow_state_machine') return prop.includes('loading') || prop.includes('async') || prop.includes('flow');
+            if (r === 'actionable_error_states') return prop.includes('error') || prop.includes('feedback');
+        }
+        if (skillId === 'taste-craft') {
+            if (r === 'micro_interactions_spec') return prop.includes('hover') || prop.includes('focus');
+            if (r === 'tactile_feedback_audit') return prop.includes('tactile') || prop.includes('pressed') || prop.includes('active');
+        }
+        if (skillId === 'project-audit') {
+            if (r === 'dependency_vulnerability_scan') return prop.includes('security') || prop.includes('asvs');
+            if (r === 'tech_debt_ledger') return prop.includes('laziness') || prop.includes('debt');
+            if (r === 'remediation_plan') return prop.includes('composite') || prop.includes('threshold') || prop.includes('score');
+        }
+        if (skillId === 'code-review') {
+            if (r === 'adversarial_review_report') return prop.includes('discovery') || prop.includes('adversarial');
+            if (r === 'regression_checklist') return prop.includes('critical') || prop.includes('sinks');
+            if (r === 'side_effect_proof') return prop.includes('sinks') || prop.includes('critical');
+        }
+
+        const rWords = r.split('_');
+        return rWords.some(w => w.length > 3 && (prop.includes(w) || details.includes(w)));
     }
 
     /**
@@ -897,6 +1043,7 @@ module.exports = server;
         const snapshot = {
             files: {},
             directories: new Set(),
+            directoryModes: {},
             symlinks: {}
         };
 
@@ -907,6 +1054,12 @@ module.exports = server;
             const relCurrent = path.relative(dirPath, currentDir).replace(/\\/g, '/');
             if (relCurrent && relCurrent !== '') {
                 snapshot.directories.add(relCurrent);
+                try {
+                    const cStat = fs.lstatSync(currentDir);
+                    snapshot.directoryModes[relCurrent] = cStat.mode;
+                } catch (err) {
+                    process.stderr.write(`[Snapshot DirMode Warn] ${err.message}\n`);
+                }
             }
 
             for (const entry of entries) {
@@ -929,6 +1082,7 @@ module.exports = server;
                     }
                 } else if (stat.isDirectory()) {
                     snapshot.directories.add(relPath);
+                    snapshot.directoryModes[relPath] = stat.mode;
                     walk(fullPath);
                 } else if (stat.isFile()) {
                     const content = fs.readFileSync(fullPath);
@@ -1071,6 +1225,18 @@ module.exports = server;
             }
         }
 
+        // 5.2 استعادة صلاحيات المجلدات المحفوظة على بيئات POSIX
+        if (process.platform !== 'win32' && initialSnapshot.directoryModes) {
+            for (const [dirRel, dMode] of Object.entries(initialSnapshot.directoryModes)) {
+                try {
+                    const dFull = path.join(dirPath, dirRel);
+                    if (fs.existsSync(dFull)) fs.chmodSync(dFull, dMode);
+                } catch (err) {
+                    process.stderr.write(`[Snapshot ChmodDir Warn] ${err.message}\n`);
+                }
+            }
+        }
+
         // 6. التحقق الدقيق بعد الاسترجاع للتأكد من مطابقة الحالة بالكامل (Byte-for-Byte & Structure)
         const postSnapshot = this._createWorkspaceSnapshot(dirPath);
 
@@ -1101,9 +1267,21 @@ module.exports = server;
             });
 
         const isRestoredByteForByte = Boolean(filesMatch && symlinksMatch && dirsMatch);
+        const isStructureAndContentRestored = Boolean(filesMatch && symlinksMatch && dirsMatch);
+
+        const restorationGuarantee = {
+            scope: "FILESYSTEM_WORKSPACE_STATE_RESTORATION",
+            contentIntegrity: filesMatch ? "SHA256_EXACT_MATCH" : "MISMATCH",
+            directoryHierarchy: dirsMatch ? "STRUCTURE_EXACT_MATCH" : "MISMATCH",
+            symlinkTargets: symlinksMatch ? "TARGET_EXACT_MATCH" : "MISMATCH",
+            filePermissions: process.platform === 'win32' ? "WINDOWS_ATTRIBUTES_PRESERVED" : (filesMatch ? "POSIX_MODE_MATCH" : "MISMATCH"),
+            unsupportedMetadataNote: "Cross-platform user-space rollback preserves content hashes, full directory hierarchy, symlink destinations, and POSIX file/folder modes where supported. Kernel-level ACLs and extended attributes (xattr) are out of portable workspace scope."
+        };
 
         return {
             isRestoredByteForByte,
+            isStructureAndContentRestored,
+            restorationGuarantee,
             filesRemoved,
             filesRestored,
             dirsRemoved

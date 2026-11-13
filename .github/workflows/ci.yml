@@ -75,17 +75,17 @@ jobs:
       - name: Agent A/B effectiveness benchmark
         run: npm run benchmark:effectiveness
 
+      - name: Full regression
+        run: npm test
+
       - name: Record release evidence for commit
         run: node bin/record-evidence.js
 
       - name: Deterministic release gate
         run: npm run release:gate
 
-      - name: Full regression
-        run: npm test
-
       - name: Upload release evidence artifacts
-        if: always()
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: proofforge-evidence-${{ matrix.os }}-node-${{ matrix.node-version }}
