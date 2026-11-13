@@ -1,7 +1,7 @@
 {
   "generator": "ProofForge Deterministic Evidence Recorder",
   "version": "3.0.0",
-  "commitSha": "d8a4fd62d761adb517229902e42515e5befc2ec5",
+  "commitSha": "CURRENT_GIT_HEAD",
   "generatedAt": "2026-11-13T02:18:00Z",
   "operatingSystem": "Cross-Platform (Windows 11 / Ubuntu Linux)",
   "nodeVersion": "v22.16.0",

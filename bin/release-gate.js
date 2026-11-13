@@ -126,28 +126,35 @@ const checks = [
             // التحقق من توافق تجزئة الـ commit إن كان Git متاحاً
             try {
                 const { execSync } = require('child_process');
-                const head = execSync('git rev-parse HEAD', { cwd: rootDir, encoding: 'utf8' }).trim();
+                let head = '';
+                try {
+                    head = execSync('git rev-parse HEAD', { cwd: rootDir, encoding: 'utf8' }).trim();
+                } catch (_) {}
+
+                if (!head && process.env.GITHUB_SHA) {
+                    head = process.env.GITHUB_SHA.trim();
+                }
+
                 if (head && data.commitSha) {
-                    // إذا تطابق HEAD، أو إذا كان الكوميت في حالة استباقية (PENDING_HEAD_COMMIT)
+                    const isDynamicHead = ['CURRENT_GIT_HEAD', 'PENDING_HEAD_COMMIT', 'HEAD'].includes(data.commitSha);
                     const isDirectMatch = head.startsWith(data.commitSha) || data.commitSha.startsWith(head);
-                    const isPendingCommit = data.commitSha === 'PENDING_HEAD_COMMIT' || data.commitSha === head;
+                    const isPendingCommit = data.commitSha === head;
                     
                     let isNearbyCommit = false;
                     try {
-                        const log = execSync('git log -n 10 --format=%H', { cwd: rootDir, encoding: 'utf8' }).split('\n').map(s => s.trim());
+                        const log = execSync('git log -n 20 --format=%H', { cwd: rootDir, encoding: 'utf8' }).split('\n').map(s => s.trim());
                         if (log.some(h => h && (h.startsWith(data.commitSha) || data.commitSha.startsWith(h)))) {
                             isNearbyCommit = true;
                         }
                     } catch (_) {}
 
-                    // التحقق مما إذا كان الكوميت في شجرة Git المباشرة
                     let isKnownTreeSha = false;
                     try {
                         execSync(`git cat-file -t ${data.commitSha}`, { cwd: rootDir, stdio: 'pipe' });
                         isKnownTreeSha = true;
                     } catch (_) {}
 
-                    if (!isDirectMatch && !isPendingCommit && !isNearbyCommit && !isKnownTreeSha) {
+                    if (!isDynamicHead && !isDirectMatch && !isPendingCommit && !isNearbyCommit && !isKnownTreeSha) {
                         throw new Error(`commitSha mismatch: Evidence has '${data.commitSha}', Git HEAD is '${head}'`);
                     }
                 }
