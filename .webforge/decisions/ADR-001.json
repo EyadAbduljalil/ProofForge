@@ -1,6 +1,6 @@
 {
   "id": "ADR-001",
-  "timestamp": "2026-11-13T00:32:05.517Z",
+  "timestamp": "2026-11-13T00:52:32.482Z",
   "title": "Adoption of Zero-Trust Security Middleware Architecture",
   "context": "Need strict server-side authorization across all API layers",
   "options_considered": [],

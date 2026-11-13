@@ -1,28 +1,23 @@
 /**
  * @file antigravity-adapter.js
- * @description محرك محول Google Antigravity الهيكلي الكنسي في نظام ProofForge (V2 Overhaul)
- * ينفذ التحويلات التصريحية الحتمية لأصول ProofForge إلى قطع متوافقة مع هيكلية Google Antigravity.
- * 
- * المبادئ الحاكمة:
- * - Structural & Documentary Transformation ONLY
- * - No Runtime Execution / No Agent Invocation
- * - Complete Path Safety (Anti-Traversal)
- * - Determinism & Byte-for-Byte Idempotency
- * - Provenance & Security Constraint Preservation
- * - Strict Frontmatter & Valid Lowercase Hyphenated Skill Names
+ * @description محرك محول Google Antigravity الهيكلي الكنسي في نظام ProofForge (V3 Hardened Suite)
+ * ينفذ التحويلات التصريحية الحتمية لأصول ProofForge إلى قطع متوافقة مع Google Antigravity
+ * مع تطبيق بيان الملكية الكامل، وقواعد المزامنة الآمنة، وحماية مهارات وتعديلات المستخدمين.
  */
 
 'use strict';
 
 const path = require('path');
 const fs = require('fs');
-const SkillContract = require('./skill-contract');
-const ModelPolicyContract = require('./model-policy-contract');
+const crypto = require('crypto');
+const PathLoaderGuard = require('./path-loader-guard');
 
 class AntigravityAdapter {
-    /**
-     * المسارات الكنسية المسموحة لقطع Antigravity في مساحة العمل
-     */
+    static MANIFEST_SCHEMA_VERSION = '3.0.0';
+    static GENERATOR_VERSION = '3.0.0';
+    static OWNERSHIP_MARKER = 'proofforge-managed';
+    static MANIFEST_FILENAME = '.proofforge-manifest.json';
+
     static ALLOWED_TARGET_PREFIXES = Object.freeze([
         'AGENTS.md',
         '.agents/rules/',
@@ -31,9 +26,7 @@ class AntigravityAdapter {
 
     /**
      * تطهير وضبط اسم المهارة ليتوافق مع معايير Antigravity الصارمة
-     * (أحرف إنجليزية صغيرة وشرطات فقط: lowercase-hyphenated)
-     * @param {string} rawName 
-     * @returns {string}
+     * (أحرف إنجليزية صغيرة وأرقام وشرطات فقط)
      */
     static sanitizeSkillName(rawName) {
         if (!rawName || typeof rawName !== 'string') {
@@ -56,14 +49,10 @@ class AntigravityAdapter {
 
     /**
      * ترميز قيم YAML بأمان مع معالجة الأسطر المتعددة والرموز الخاصة
-     * @param {string} value 
-     * @returns {string}
      */
     static serializeYamlString(value) {
         if (value === null || value === undefined) return '""';
         const str = String(value).replace(/\r\n/g, '\n').trim();
-        
-        // إذا احتوى النص على أسطر متعددة أو رموز خاصة في YAML
         if (str.includes('\n') || /[:#@%`'"\[\]{}|>*\&?!,~\-]/.test(str)) {
             return JSON.stringify(str);
         }
@@ -71,10 +60,23 @@ class AntigravityAdapter {
     }
 
     /**
-     * التحقق الصارم والمغلق من سلامة المسار والوقاية من القفز عبر المسارات (Path Traversal)
-     * @param {string} relativePath المسار النسبي للقطعة الهدف
-     * @param {string} [baseDir] مجلد مساحة العمل الأساسي
-     * @returns {{isValid: boolean, safePath?: string, error?: string}}
+     * حساب تجزئة SHA-256 للمحتوى
+     */
+    static computeHash(content) {
+        return crypto.createHash('sha256').update(content).digest('hex');
+    }
+
+    /**
+     * حساب تجزئة SHA-256 لملف على القرص
+     */
+    static computeFileHash(filePath) {
+        if (!fs.existsSync(filePath)) return null;
+        const buf = fs.readFileSync(filePath);
+        return crypto.createHash('sha256').update(buf).digest('hex');
+    }
+
+    /**
+     * التحقق الصارم من سلامة المسار والوقاية من القفز عبر المسارات
      */
     static validatePath(relativePath, baseDir = process.cwd()) {
         if (!relativePath || typeof relativePath !== 'string') {
@@ -83,17 +85,14 @@ class AntigravityAdapter {
 
         const trimmed = relativePath.trim().replace(/\\/g, '/');
 
-        // كشف محاولات القفز عبر المسارات (Path Traversal)
         if (trimmed.includes('..') || trimmed.startsWith('/') || /^[a-zA-Z]:/.test(trimmed)) {
             return { isValid: false, error: `محاولة قفز مسار غير مصرح بها أو مسار مطلق: '${relativePath}'` };
         }
 
-        // التحقق من الامتداد المصرح
         if (!trimmed.endsWith('.md')) {
             return { isValid: false, error: `امتداد الملف غير مصرح به: '${relativePath}'. يجب أن ينتهي بـ .md` };
         }
 
-        // التحقق من البادئات المسموحة
         const isAllowedPrefix = AntigravityAdapter.ALLOWED_TARGET_PREFIXES.some(prefix => {
             if (prefix.endsWith('/')) {
                 return trimmed.startsWith(prefix);
@@ -104,294 +103,274 @@ class AntigravityAdapter {
         if (!isAllowedPrefix) {
             return {
                 isValid: false,
-                error: `المسار المستهدف '${trimmed}' لا يتبع الهيكلية المعتمدة لقطع Antigravity المصرح بها (${AntigravityAdapter.ALLOWED_TARGET_PREFIXES.join(', ')})`
+                error: `المسار المستهدف '${relativePath}' لا يقع ضمن البادئات المصرح بها لـ Antigravity (${AntigravityAdapter.ALLOWED_TARGET_PREFIXES.join(', ')})`
             };
         }
 
-        // فحص التحليل الفعلي للتأكد من عدم الخروج عن المجلد الأساسي
         const resolvedBase = path.resolve(baseDir);
-        const resolvedTarget = path.resolve(resolvedBase, trimmed);
+        const resolvedPath = path.resolve(resolvedBase, trimmed);
 
-        if (!resolvedTarget.startsWith(resolvedBase + path.sep) && resolvedTarget !== resolvedBase) {
-            return { isValid: false, error: `المسار المستهدف يخرج عن نطاق مجلد العمل الأساسي: '${resolvedTarget}'` };
+        if (!PathLoaderGuard.isInsideRoot(resolvedPath, resolvedBase)) {
+            return { isValid: false, error: 'المسار النهائي يقع خارج مساحة العمل (Path Traversal Detected)' };
         }
 
-        return { isValid: true, safePath: resolvedTarget };
+        return { isValid: true, safePath: resolvedPath };
     }
 
     /**
-     * تحويل عقد المهارة الكنسي إلى ملف SKILL.md متوافق مع نمط مهارات Antigravity الحديث
-     * @param {SkillContract} skillContract عقد المهارة
-     * @param {Object} [options] خيارات إضافية
-     * @returns {{content: string, targetPath: string, provenance: Object}}
+     * مسار ملف بيان الملكية المعتمد
      */
-    static transformSkill(skillContract, options = {}) {
-        if (!skillContract || typeof skillContract !== 'object' || !skillContract.id) {
-            throw new Error('عقد المهارة المصدري غير صالح أو فارغ (Fail-Closed)');
-        }
+    static getManifestPath(targetDir) {
+        return path.join(targetDir, AntigravityAdapter.MANIFEST_FILENAME);
+    }
 
-        if (!skillContract.description || typeof skillContract.description !== 'string' || skillContract.description.trim().length < 10) {
-            throw new Error('وصف المهارة غير كافٍ أو مفقود. تتطلب Antigravity وصفاً دلالياً غير فارغ لتفعيل المهارة بدقة');
-        }
-
-        // استخراج الاسم الدلالي للمهارة للمسار بتنسيق lowercase-hyphenated
-        const skillSlug = AntigravityAdapter.sanitizeSkillName(skillContract.id);
-        const targetPath = `.agents/skills/${skillSlug}/SKILL.md`;
-
-        // التحقق من سلامة المسار المولد
-        const pathCheck = AntigravityAdapter.validatePath(targetPath);
-        if (!pathCheck.isValid) {
-            throw new Error(`فشل التحقق من مسار المهارة الهدف: ${pathCheck.error}`);
-        }
-
-        // الحفاظ على سلسلة النسب والمصدر بشكل حتمي مستقر تماماً (بدون طوابع زمنية متغيرة)
-        const provenance = {
-            source_contract: 'ProofForge SkillContract',
-            source_id: skillContract.id,
-            version: skillContract.version || '2.0.0',
-            transformation_mode: 'STRUCTURAL_DECLARATIVE',
-            transformation_standard: 'ANTIGRAVITY_V2_NATIVE'
-        };
-
-        // إنشاء محتوى SKILL.md بتنسيق حتمي مستقر بنسبة 100%
-        const lines = [];
-
-        // ترويسة YAML متوافقة بدقة مع معايير Google Antigravity
-        lines.push('---');
-        lines.push(`name: ${skillSlug}`);
-        lines.push(`description: ${AntigravityAdapter.serializeYamlString(skillContract.description)}`);
-        lines.push('---');
-        lines.push('');
-        lines.push(`# ${skillContract.name}`);
-        lines.push(`**ProofForge Skill ID:** \`${skillContract.id}\`  `);
-        lines.push(`**Version:** \`${skillContract.version || '2.0.0'}\`  `);
-        lines.push(`**Category:** \`${skillContract.category || 'ENGINEERING'}\`  `);
-        lines.push(`**Status:** \`${skillContract.status || 'ACTIVE'}\`  `);
-        lines.push('');
-        lines.push('## 1. الغرض وحدود الاستخدام (Purpose & Scope)');
-        lines.push(skillContract.purpose || skillContract.description);
-        lines.push('');
-        lines.push('## 2. المحددات الأمنية والامتثال (Security Restrictions)');
-        lines.push('* **الخضوع الأمني:** الامتثال التام لسياسات الأمان `P0_SECURITY_SAFETY` وحاجز الصلاحيات المركزي.');
-        lines.push('* **الامتياز الأدنى:** يُحظر على المهارة تنفيذ أي عمليات خارج نطاق صلاحيات الوكيل المستدعي.');
-        const secList = [
-            ...(skillContract.security_constraints || []),
-            ...(skillContract.security_restrictions || [])
-        ];
-        for (const sec of secList) {
-            lines.push(`* ${sec}`);
-        }
-        lines.push('');
-        lines.push('## 3. متطلبات الأدلة وبوابات التحقق المستقلة (Evidence & CVGF Verification)');
-        lines.push('* **ميثاق الأدلة:** مخرجات المهارة لا تمثل إثباتاً بحد ذاتها دون عبور بوابات التحقق المستقلة:');
-        lines.push('  * `CVGF_GROUNDING_GATE`: التأصيل الصارم للادعاءات في ملفات المستودع.');
-        lines.push('  * `CVGF_CLAIM_VERIFICATION`: التحقق الصوري والمادي من مطابقة الادعاء للكود.');
-        lines.push('  * `CVGF_NON_CONTRADICTION`: خلو المخرجات من أي تناقض منطقي.');
-        lines.push('');
-        lines.push('## 4. شروط الاستنكاف والامتناع الإدراكي (Abstention Conditions)');
-        if (Array.isArray(skillContract.abstention_conditions) && skillContract.abstention_conditions.length > 0) {
-            for (const cond of skillContract.abstention_conditions) {
-                lines.push(`* ${cond}`);
+    /**
+     * قراءة بيان الملكية المعتمد (Ownership Manifest)
+     */
+    static readManifest(targetDir) {
+        const manifestPath = this.getManifestPath(targetDir);
+        if (fs.existsSync(manifestPath)) {
+            try {
+                const parsed = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+                if (parsed && typeof parsed === 'object' && parsed.skills) {
+                    return parsed;
+                }
+            } catch (e) {
+                // بيان تالف: نعيد هيكل جديد مع تسجيل تلف
+                return {
+                    manifestSchemaVersion: AntigravityAdapter.MANIFEST_SCHEMA_VERSION,
+                    generatorVersion: AntigravityAdapter.GENERATOR_VERSION,
+                    ownershipMarker: AntigravityAdapter.OWNERSHIP_MARKER,
+                    managedBy: 'ProofForge AntigravityAdapter',
+                    corrupted: true,
+                    skills: {}
+                };
             }
-        } else {
-            lines.push('* الامتناع الفوري عند نقص الأدلة المادية أو غموض سياق المدخلات.');
         }
-        lines.push('');
-        lines.push('## 5. سلسلة النسب والمصدر الكنسي (Provenance)');
-        lines.push('```json');
-        lines.push(JSON.stringify(provenance, Object.keys(provenance).sort(), 2));
-        lines.push('```');
-        lines.push('');
-
-        const content = lines.join('\n');
         return {
-            content,
-            targetPath,
-            provenance
+            manifestSchemaVersion: AntigravityAdapter.MANIFEST_SCHEMA_VERSION,
+            generatorVersion: AntigravityAdapter.GENERATOR_VERSION,
+            ownershipMarker: AntigravityAdapter.OWNERSHIP_MARKER,
+            managedBy: 'ProofForge AntigravityAdapter',
+            updatedAt: new Date().toISOString(),
+            skills: {}
         };
     }
 
     /**
-     * تحويل قاعدة هندسية أو أمنية إلى ملف Markdown متوافق مع .agents/rules/
-     * @param {Object} ruleDef تعريف القاعدة
-     * @returns {{content: string, targetPath: string, provenance: Object}}
+     * كتابة بيان الملكية المعتمد بأمان وذرية
      */
-    static transformRule(ruleDef) {
-        if (!ruleDef || typeof ruleDef !== 'object' || !ruleDef.rule_id || !ruleDef.name) {
-            throw new Error('تعريف القاعدة المصدري مشوه أو غير مكتمل (Fail-Closed)');
-        }
+    static writeManifest(targetDir, manifest) {
+        manifest.manifestSchemaVersion = AntigravityAdapter.MANIFEST_SCHEMA_VERSION;
+        manifest.generatorVersion = AntigravityAdapter.GENERATOR_VERSION;
+        manifest.ownershipMarker = AntigravityAdapter.OWNERSHIP_MARKER;
+        manifest.managedBy = 'ProofForge AntigravityAdapter';
+        manifest.updatedAt = new Date().toISOString();
 
-        const ruleSlug = ruleDef.rule_id.toLowerCase().replace(/[^a-z0-9_-]/g, '-');
-        const targetPath = `.agents/rules/${ruleSlug}.md`;
-
-        const pathCheck = AntigravityAdapter.validatePath(targetPath);
-        if (!pathCheck.isValid) {
-            throw new Error(`فشل التحقق من مسار القاعدة الهدف: ${pathCheck.error}`);
-        }
-
-        const provenance = {
-            source_contract: 'ProofForge Rule Definition',
-            source_id: ruleDef.rule_id,
-            priority: ruleDef.priority || 'P0',
-            transformation_mode: 'STRUCTURAL_DECLARATIVE',
-            transformation_standard: 'ANTIGRAVITY_V2_NATIVE'
-        };
-
-        const lines = [];
-        lines.push(`# القاعدة الكنسية: ${ruleDef.name}`);
-        lines.push(`**معرف القاعدة:** \`${ruleDef.rule_id}\`  `);
-        lines.push(`**مستوى الأولوية:** \`${ruleDef.priority || 'P0'}\` (الأمان P0 يعلو كل الأولويات)  `);
-        lines.push('');
-        lines.push('## 1. نص القاعدة ومتطلبات الامتثال');
-        lines.push(ruleDef.statement || ruleDef.description || 'يجب الالتزام بمتطلبات القاعدة بدقة.');
-        lines.push('');
-        lines.push('## 2. النطاق والمحددات');
-        lines.push(ruleDef.scope || 'شامل لكافة وكلاء ومهارات وتدفقات العمل في المشروع.');
-        lines.push('');
-        lines.push('## 3. سلسلة النسب والتحقق');
-        lines.push('```json');
-        lines.push(JSON.stringify(provenance, Object.keys(provenance).sort(), 2));
-        lines.push('```');
-        lines.push('');
-
-        return {
-            content: lines.join('\n'),
-            targetPath,
-            provenance
-        };
+        const manifestPath = this.getManifestPath(targetDir);
+        PathLoaderGuard.safeAtomicWrite(manifestPath, JSON.stringify(manifest, null, 2), {
+            projectRoot: targetDir
+        });
     }
 
     /**
-     * توليد مانيفست الوكلاء AGENTS.md متوافقاً مع Antigravity من سجل الوكلاء
-     * @param {Object} agentRegistry كائن سجل الوكلاء
-     * @returns {{content: string, targetPath: string, provenance: Object}}
+     * مسح وحصر كافة الملفات داخل مجلد المهارة وحساب بياناتها وتجزئتها
+     * @param {string} skillDir 
+     * @returns {Object<string, {hash: string, size: number, type: string, relativePath: string}>}
      */
-    static generateAgentsManifest(agentRegistry) {
-        if (!agentRegistry || (typeof agentRegistry.listActiveAgents !== 'function' && typeof agentRegistry.getActiveAgents !== 'function')) {
-            throw new Error('سجل الوكلاء المصدري غير صالح أو فارغ (Fail-Closed)');
-        }
+    static scanSkillInventory(skillDir) {
+        const inventory = {};
+        if (!fs.existsSync(skillDir)) return inventory;
 
-        const targetPath = 'AGENTS.md';
-        const activeAgents = typeof agentRegistry.listActiveAgents === 'function'
-            ? agentRegistry.listActiveAgents()
-            : agentRegistry.getActiveAgents();
+        const walk = (current, rel) => {
+            let entries;
+            try {
+                entries = fs.readdirSync(current, { withFileTypes: true });
+            } catch (e) {
+                return;
+            }
 
-        const provenance = {
-            source_contract: 'ProofForge AgentRegistry',
-            total_active_agents: activeAgents.length,
-            transformation_mode: 'STRUCTURAL_DECLARATIVE',
-            transformation_standard: 'ANTIGRAVITY_V2_NATIVE'
+            for (const entry of entries) {
+                if (entry.name.startsWith('.tmp-') || entry.name === AntigravityAdapter.MANIFEST_FILENAME) continue;
+                if (entry.isSymbolicLink()) continue;
+
+                const fullPath = path.join(current, entry.name);
+                const nextRel = rel ? `${rel}/${entry.name}` : entry.name;
+
+                if (entry.isDirectory()) {
+                    walk(fullPath, nextRel);
+                } else if (entry.isFile()) {
+                    const content = fs.readFileSync(fullPath);
+                    const hash = crypto.createHash('sha256').update(content).digest('hex');
+                    let type = 'other';
+                    if (nextRel === 'SKILL.md') type = 'markdown';
+                    else if (nextRel.startsWith('scripts/')) type = 'script';
+                    else if (nextRel.startsWith('references/')) type = 'reference';
+                    else if (nextRel.startsWith('examples/')) type = 'example';
+                    else if (nextRel.startsWith('assets/')) type = 'asset';
+                    else if (nextRel.startsWith('tests/')) type = 'test';
+
+                    inventory[nextRel] = {
+                        hash,
+                        size: content.length,
+                        type,
+                        relativePath: nextRel
+                    };
+                }
+            }
         };
 
-        const lines = [];
-        lines.push('# دليل وكلاء الذكاء الاصطناعي — نظام ProofForge (AGENTS.md)');
-        lines.push('## مانيفست الوكلاء الكنسي المتوافق مع Google Antigravity');
-        lines.push('');
-        lines.push('> [!IMPORTANT]');
-        lines.push('> هذا المانيفست هو تمثيل هيكلي وتوثيقي تصريحي (Declarative Structural Artifact) مستمد من سجل الوكلاء الكنسي في ProofForge.');
-        lines.push('> وجود الوكيل في هذا المانيفست لا يمنحه أي سلطة تشغيلية ذاتية؛ كافة الصلاحيات مقيدة بحاجز الصلاحيات الأمني المركزي.');
-        lines.push('');
-        lines.push('### جدول الوكلاء النشطين ومجالات الاختصاص:');
-        lines.push('| المعرف الكنسي | الاسم الفني | الدور الهندسي | مجالات المسؤولية | مستوى السلطة |');
-        lines.push('| :--- | :--- | :--- | :--- | :--- |');
-
-        for (const agent of activeAgents) {
-            const role = agent.role || 'مهندس متخصص';
-            const resp = (agent.responsibilities || []).slice(0, 2).join('، ') || 'مسؤوليات معيارية';
-            lines.push(`| \`${agent.id}\` | ${agent.name} | ${role} | ${resp} | مقيد (P2/P3) |`);
-        }
-
-        lines.push('');
-        lines.push('### الحواكم الأمنية المشتركة لكافة الوكلاء:');
-        lines.push('1. **أولوية الأمان المطلقة P0:** حظر تجاوز أو إضعاف سياسات الأمان أو دستور التحقق P1.');
-        lines.push('2. **مبدأ انعدام الثقة في مخرجات الذكاء الاصطناعي:** `AI Output !== Evidence`.');
-        lines.push('3. **الامتثال لبوابات التحقق المستقلة:** إلزامية الخضوع لمحركات التأصيل والتحقق في CVGF.');
-        lines.push('');
-        lines.push('### سلسلة النسب والمصدر:');
-        lines.push('```json');
-        lines.push(JSON.stringify(provenance, Object.keys(provenance).sort(), 2));
-        lines.push('```');
-        lines.push('');
-
-        return {
-            content: lines.join('\n'),
-            targetPath,
-            provenance
-        };
+        walk(skillDir, '');
+        return inventory;
     }
 
     /**
-     * تكامل تحويل تدفق العمل مع سياسة النموذج (Phase 6 ↔ Phase 7 Integration)
-     * يثبت بقاء قيود الأمان وبوابات CVGF ومتطلبات الأدلة دون مساس
-     * @param {Object} workflowContract عقد تدفق العمل
-     * @param {ModelPolicyContract} modelPolicy سياسة النموذج المطبقة
-     * @returns {{content: string, targetPath: string, constraintsSurvive: boolean}}
+     * مقارنة الفروق الكاملة بين المصدر الكنسي والمجلد المثبت بنموذج الملكية الحتمي الشامل
      */
-    static transformWorkflowWithPolicy(workflowContract, modelPolicy) {
-        if (!workflowContract || !workflowContract.workflow_id) {
-            throw new Error('عقد تدفق العمل غير صالح');
-        }
-        if (!modelPolicy || !modelPolicy.policy_id) {
-            throw new Error('سياسة النموذج غير صالحة');
+    static diffSkills(canonicalSkillsDir, targetDir) {
+        if (!fs.existsSync(canonicalSkillsDir)) {
+            throw new Error(`مجلد المهارات الكنسي '${canonicalSkillsDir}' غير موجود.`);
         }
 
-        const wfSlug = workflowContract.workflow_id.toLowerCase().replace(/[^a-z0-9_-]/g, '-');
-        const targetPath = `.agents/skills/wf-${wfSlug}/SKILL.md`;
+        const canonicalEntries = fs.readdirSync(canonicalSkillsDir, { withFileTypes: true })
+            .filter(e => e.isDirectory())
+            .map(e => e.name)
+            .sort();
 
-        const pathCheck = AntigravityAdapter.validatePath(targetPath);
-        if (!pathCheck.isValid) {
-            throw new Error(`مسار التدفق غير آمن: ${pathCheck.error}`);
-        }
+        const targetEntries = fs.existsSync(targetDir)
+            ? fs.readdirSync(targetDir, { withFileTypes: true })
+                .filter(e => e.isDirectory() && !e.name.startsWith('.'))
+                .map(e => e.name)
+                .sort()
+            : [];
 
-        // التحقق من أن قيود السياسة والأمان تظل باقية ولا يتم تخفيضها
-        const constraintsSurvive = (
-            workflowContract.security_constraints &&
-            workflowContract.security_constraints.length > 0 &&
-            modelPolicy.security_requirements &&
-            modelPolicy.security_requirements.length > 0 &&
-            modelPolicy.verification_requirements &&
-            modelPolicy.verification_requirements.includes('CVGF_GROUNDING_GATE')
-        );
+        const manifest = this.readManifest(targetDir);
+        const manifestSkills = manifest.skills || {};
 
-        const lines = [];
-        lines.push('---');
-        lines.push(`name: wf-${wfSlug}`);
-        lines.push(`description: ${AntigravityAdapter.serializeYamlString(workflowContract.description || workflowContract.name)}`);
-        lines.push('---');
-        lines.push('');
-        lines.push(`# ${workflowContract.name}`);
-        lines.push(`**Workflow ID:** \`${workflowContract.workflow_id}\`  `);
-        lines.push(`**Governing Model Policy:** \`${modelPolicy.policy_id}\` (Risk: ${modelPolicy.risk_level})  `);
-        lines.push('');
-        lines.push('## 1. القيود الأمنية الموروثة والباقية (Preserved Security Constraints)');
-        for (const s of (modelPolicy.security_requirements || [])) {
-            lines.push(`* ${s}`);
-        }
-        lines.push('');
-        lines.push('## 2. بوابات التحقق المستقلة الإلزامية في CVGF');
-        for (const v of (modelPolicy.verification_requirements || [])) {
-            lines.push(`* \`${v}\``);
-        }
-        lines.push('');
-        lines.push('## 3. متطلبات الأدلة المؤصلة');
-        for (const e of (modelPolicy.evidence_requirements || [])) {
-            lines.push(`* \`${e}\``);
-        }
-        lines.push('');
-
-        return {
-            content: lines.join('\n'),
-            targetPath,
-            constraintsSurvive
+        const diffReport = {
+            identical: [],
+            missingInTarget: [],
+            modifiedInTarget: [],
+            addedFiles: [],
+            removedFiles: [],
+            canonicalUpdated: [],
+            ownershipConflicts: [],
+            staleProofForge: [],
+            userCustom: []
         };
+
+        for (const skill of canonicalEntries) {
+            const canonicalSkillDir = path.join(canonicalSkillsDir, skill);
+            const targetSkillDir = path.join(targetDir, skill);
+
+            if (!fs.existsSync(targetSkillDir)) {
+                diffReport.missingInTarget.push(skill);
+                continue;
+            }
+
+            // فحص هل المهارة مسجلة في بيان الملكية كمهارة تابعة لـ ProofForge
+            const skillManifest = manifestSkills[skill];
+            if (!skillManifest) {
+                // المجلد موجود في الهدف ولكنه غير مسجل في بيان الملكية -> مهارة مخصصة للمستخدم تحمل نفس الاسم!
+                diffReport.ownershipConflicts.push({
+                    skill,
+                    file: '*',
+                    type: 'UNOWNED_SKILL_COLLISION',
+                    message: `المجلد '${skill}' موجود في الوجهة ولكنه غير مسجل في بيان ملكية ProofForge`
+                });
+                diffReport.userCustom.push(skill);
+                continue;
+            }
+
+            const canonicalFiles = AntigravityAdapter.scanSkillInventory(canonicalSkillDir);
+            const targetFiles = AntigravityAdapter.scanSkillInventory(targetSkillDir);
+            const recordedFiles = skillManifest.files || {};
+
+            let skillFullyIdentical = true;
+
+            // 1. فحص ملفات المصدر الكنسي
+            for (const [relPath, canInfo] of Object.entries(canonicalFiles)) {
+                const tarInfo = targetFiles[relPath];
+                const recInfo = recordedFiles[relPath];
+
+                if (!tarInfo) {
+                    diffReport.addedFiles.push({ skill, file: relPath, canonicalHash: canInfo.hash });
+                    skillFullyIdentical = false;
+                } else if (!recInfo) {
+                    // ملف موجود في الهدف ولكن لم يكن في البيان
+                    diffReport.ownershipConflicts.push({
+                        skill,
+                        file: relPath,
+                        type: 'UNOWNED_FILE',
+                        message: `الملف '${relPath}' موجود على القرص دون تسجيل في بيان الملكية`
+                    });
+                    skillFullyIdentical = false;
+                } else {
+                    // الملف مسجل في البيان وموجود في الهدف
+                    if (tarInfo.hash !== recInfo.hash) {
+                        // المستخدم عدل الملف في الوجهة!
+                        diffReport.modifiedInTarget.push({
+                            skill,
+                            file: relPath,
+                            recordedHash: recInfo.hash,
+                            currentHash: tarInfo.hash
+                        });
+                        skillFullyIdentical = false;
+                    } else if (canInfo.hash !== recInfo.hash) {
+                        // الملف الأصلي تحدث في الكنسي ولكن الهدف لم يتغير عن حالته المسجلة
+                        diffReport.canonicalUpdated.push({
+                            skill,
+                            file: relPath,
+                            canonicalHash: canInfo.hash,
+                            recordedHash: recInfo.hash
+                        });
+                        skillFullyIdentical = false;
+                    }
+                }
+            }
+
+            // 2. فحص الملفات التي أزيلت من الكنسي وكانت مسجلة
+            for (const [relPath, recInfo] of Object.entries(recordedFiles)) {
+                if (!canonicalFiles[relPath]) {
+                    const tarInfo = targetFiles[relPath];
+                    diffReport.removedFiles.push({
+                        skill,
+                        file: relPath,
+                        recordedHash: recInfo.hash,
+                        existsOnDisk: Boolean(tarInfo),
+                        userModified: Boolean(tarInfo && tarInfo.hash !== recInfo.hash)
+                    });
+                    skillFullyIdentical = false;
+                }
+            }
+
+            if (skillFullyIdentical) {
+                diffReport.identical.push(skill);
+            }
+        }
+
+        // 3. فحص المهارات الزائدة في الوجهة
+        for (const targetSkill of targetEntries) {
+            if (!canonicalEntries.includes(targetSkill)) {
+                if (manifestSkills[targetSkill]) {
+                    diffReport.staleProofForge.push(targetSkill);
+                } else {
+                    diffReport.userCustom.push(targetSkill);
+                }
+            }
+        }
+
+        // ترتيب النتائج حتمياً
+        diffReport.identical.sort();
+        diffReport.missingInTarget.sort();
+        diffReport.staleProofForge.sort();
+        diffReport.userCustom.sort();
+
+        return diffReport;
     }
 
     /**
-     * مزامنة المهارات الكنسية إلى مساحة عمل Antigravity بشكل حتمي وآمن
-     * @param {string} canonicalSkillsDir مجلد المهارات الكنسي (skills/)
-     * @param {string} targetDir مجلد الوجهة (.agents/skills)
-     * @param {Object} [options] خيارات المزامنة
-     * @returns {{synced: string[], skipped: string[], errors: string[]}}
+     * مزامنة المهارات الكنسية إلى مساحة عمل Antigravity وفق قواعد الأمان الحتمية وسجل الملكية
      */
     static syncCanonicalSkills(canonicalSkillsDir, targetDir, options = {}) {
         const dryRun = options.dryRun || false;
@@ -399,7 +378,10 @@ class AntigravityAdapter {
 
         const report = {
             synced: [],
+            updated: [],
+            preserved: [],
             skipped: [],
+            conflicts: [],
             errors: []
         };
 
@@ -407,17 +389,23 @@ class AntigravityAdapter {
             throw new Error(`مجلد المهارات الكنسي '${canonicalSkillsDir}' غير موجود.`);
         }
 
-        const entries = fs.readdirSync(canonicalSkillsDir, { withFileTypes: true });
+        // التأكد من أمان مجلد الوجهة
+        PathLoaderGuard.validateSafeWritePath(path.join(targetDir, '.probe'), { projectRoot: targetDir });
+
+        const canonicalEntries = fs.readdirSync(canonicalSkillsDir, { withFileTypes: true })
+            .filter(e => e.isDirectory())
+            .map(e => e.name)
+            .sort();
+
         const manifest = this.readManifest(targetDir);
-        manifest.version = '2.0.0';
-        manifest.updatedAt = new Date().toISOString();
+        manifest.manifestSchemaVersion = AntigravityAdapter.MANIFEST_SCHEMA_VERSION;
+        manifest.generatorVersion = AntigravityAdapter.GENERATOR_VERSION;
         manifest.managedBy = 'ProofForge AntigravityAdapter';
+        manifest.ownershipMarker = AntigravityAdapter.OWNERSHIP_MARKER;
         if (!manifest.skills) manifest.skills = {};
 
-        for (const entry of entries) {
-            if (!entry.isDirectory()) continue;
-
-            const skillName = entry.name;
+        for (const skillName of canonicalEntries) {
+            const sanitizedSlug = AntigravityAdapter.sanitizeSkillName(skillName);
             const sourcePath = path.join(canonicalSkillsDir, skillName);
             const sourceSkillMd = path.join(sourcePath, 'SKILL.md');
 
@@ -426,48 +414,188 @@ class AntigravityAdapter {
                 continue;
             }
 
-            const sanitizedSlug = AntigravityAdapter.sanitizeSkillName(skillName);
             const targetSkillDir = path.join(targetDir, sanitizedSlug);
+            const skillExistsOnDisk = fs.existsSync(targetSkillDir);
+            const isRegisteredInManifest = Boolean(manifest.skills[sanitizedSlug]);
+
+            // القاعدة 1: إذا كان المجلد موجوداً بالفعل على القرص وغير مسجل في بيان الملكية:
+            // هذا مجلد غير مملوك لـ ProofForge (مهارة مخصصة للمستخدم). يُحظر استبدالها قطعياً حتى مع force!
+            if (skillExistsOnDisk && !isRegisteredInManifest) {
+                report.conflicts.push({
+                    skill: sanitizedSlug,
+                    type: 'UNOWNED_CUSTOM_SKILL_EXISTS',
+                    message: `المجلد '${sanitizedSlug}' موجود على القرص وغير مسجل في بيان ملكية ProofForge. تم تطبيق مبدأ حماية بيانات المستخدم ومنع الاستبدال.`
+                });
+                report.preserved.push(sanitizedSlug);
+                continue;
+            }
 
             try {
-                const fileInventory = {};
+                const canonicalFiles = AntigravityAdapter.scanSkillInventory(sourcePath);
+                const recordedFiles = isRegisteredInManifest ? (manifest.skills[sanitizedSlug].files || {}) : {};
+                const currentTargetFiles = skillExistsOnDisk ? AntigravityAdapter.scanSkillInventory(targetSkillDir) : {};
+
+                let hasConflict = false;
+                let filesToWrite = [];
+                let newFileInventory = { ...recordedFiles };
+
+                for (const [relPath, canInfo] of Object.entries(canonicalFiles)) {
+                    const tarInfo = currentTargetFiles[relPath];
+                    const recInfo = recordedFiles[relPath];
+
+                    if (!tarInfo) {
+                        // ملف غير موجود في الهدف: كتابة آمنة جديدة
+                        filesToWrite.push({ relPath, canInfo, action: 'CREATE' });
+                        newFileInventory[relPath] = { ...canInfo };
+                    } else if (!recInfo) {
+                        // ملف موجود على القرص ولكنه غير مسجل في البيان لمهارة مسجلة: ملف غير مملوك
+                        report.conflicts.push({
+                            skill: sanitizedSlug,
+                            file: relPath,
+                            type: 'UNOWNED_DESTINATION_FILE',
+                            message: `الملف '${relPath}' موجود على القرص وغير مسجل في بيان الملكية. يُحظر استبداله.`
+                        });
+                        hasConflict = true;
+                    } else {
+                        // ملف مسجل في البيان
+                        if (tarInfo.hash !== recInfo.hash) {
+                            // الملف تم تعديله من قبل المستخدم في الهدف!
+                            if (force) {
+                                // استبدال مسموح فقط مع التفعيل الصريح للراية force لملف مثبتة ملكيته
+                                filesToWrite.push({ relPath, canInfo, action: 'FORCE_UPDATE' });
+                                newFileInventory[relPath] = { ...canInfo };
+                            } else {
+                                // الحفاظ على تعديلات المستخدم ورفض الاستبدال
+                                report.conflicts.push({
+                                    skill: sanitizedSlug,
+                                    file: relPath,
+                                    type: 'USER_MODIFIED_CONFLICT',
+                                    message: `تم رصد تعديلات للمستخدم في الملف '${relPath}'. تم الحفاظ على الملف المحلي ومنع الاستبدال.`
+                                });
+                                hasConflict = true;
+                            }
+                        } else if (canInfo.hash !== recInfo.hash) {
+                            // المصدر الكنسي تحدث، والمستخدم لم يعدل الملف: تحديث آمن
+                            filesToWrite.push({ relPath, canInfo, action: 'UPDATE' });
+                            newFileInventory[relPath] = { ...canInfo };
+                        }
+                    }
+                }
+
+                if (hasConflict && !force) {
+                    report.preserved.push(sanitizedSlug);
+                    continue;
+                }
 
                 if (!dryRun) {
                     if (!fs.existsSync(targetSkillDir)) {
                         fs.mkdirSync(targetSkillDir, { recursive: true });
                     }
 
-                    // نسخ الملفات الداعمة الشاملة (scripts, examples, references, assets, tests)
-                    const subdirs = ['scripts', 'examples', 'references', 'assets', 'tests'];
-                    for (const sub of subdirs) {
-                        const srcSub = path.join(sourcePath, sub);
-                        const dstSub = path.join(targetSkillDir, sub);
-                        if (fs.existsSync(srcSub)) {
-                            fs.cpSync(srcSub, dstSub, { recursive: true, force: true });
-                        }
+                    // تنفيذ الكتابة الذرية الآمنة للملفات المصرح بها
+                    for (const item of filesToWrite) {
+                        const srcFile = path.join(sourcePath, item.relPath);
+                        const dstFile = path.join(targetSkillDir, item.relPath);
+                        const content = fs.readFileSync(srcFile);
+
+                        PathLoaderGuard.safeAtomicWrite(dstFile, content, {
+                            projectRoot: targetDir
+                        });
                     }
 
-                    // قراءة وكتابة محتوى SKILL.md
-                    let skillMdContent = fs.readFileSync(sourceSkillMd, 'utf8');
-                    fs.writeFileSync(path.join(targetSkillDir, 'SKILL.md'), skillMdContent, 'utf8');
-                    fileInventory['SKILL.md'] = AntigravityAdapter.computeHash(skillMdContent);
+                    manifest.skills[sanitizedSlug] = {
+                        skillId: sanitizedSlug,
+                        canonicalSource: `skills/${skillName}`,
+                        destination: path.relative(process.cwd(), targetSkillDir).replace(/\\/g, '/'),
+                        ownershipMarker: AntigravityAdapter.OWNERSHIP_MARKER,
+                        syncedAt: new Date().toISOString(),
+                        version: '3.0.0',
+                        files: newFileInventory
+                    };
                 }
 
-                manifest.skills[sanitizedSlug] = {
-                    canonicalSource: `skills/${skillName}`,
-                    destination: path.relative(process.cwd(), targetSkillDir).replace(/\\/g, '/'),
-                    syncedAt: new Date().toISOString(),
-                    version: '2.0.0',
-                    files: fileInventory
-                };
-
-                report.synced.push(sanitizedSlug);
+                if (isRegisteredInManifest) {
+                    report.updated.push(sanitizedSlug);
+                } else {
+                    report.synced.push(sanitizedSlug);
+                }
             } catch (err) {
                 report.errors.push(`${skillName}: ${err.message}`);
             }
         }
 
         if (!dryRun && fs.existsSync(targetDir)) {
+            this.writeManifest(targetDir, manifest);
+        }
+
+        return report;
+    }
+
+    /**
+     * تشذيب وتنظيف المهارات المتقادمة مع حماية مهارات المستخدم المخصصة والملفات المعدلة
+     */
+    static pruneSkills(canonicalSkillsDir, targetDir, options = {}) {
+        const dryRun = options.dryRun || false;
+        const force = options.force || false;
+
+        const diff = AntigravityAdapter.diffSkills(canonicalSkillsDir, targetDir);
+        const report = {
+            pruned: [],
+            protectedUserSkills: diff.userCustom,
+            conflicts: [],
+            skippedDryRun: []
+        };
+
+        const manifest = this.readManifest(targetDir);
+
+        for (const stale of diff.staleProofForge) {
+            const staleDir = path.join(targetDir, stale);
+            const staleManifest = manifest.skills ? manifest.skills[stale] : null;
+
+            if (!staleManifest) {
+                // ليس مسجلاً في البيان: حماية فورية
+                report.protectedUserSkills.push(stale);
+                continue;
+            }
+
+            // التحقق مما إذا كان المستخدم قد عدل أي ملف في المهارة المتقادمة
+            const currentFiles = AntigravityAdapter.scanSkillInventory(staleDir);
+            const recordedFiles = staleManifest.files || {};
+            let isUserModified = false;
+
+            for (const [relPath, tarInfo] of Object.entries(currentFiles)) {
+                const recInfo = recordedFiles[relPath];
+                if (!recInfo || tarInfo.hash !== recInfo.hash) {
+                    isUserModified = true;
+                    break;
+                }
+            }
+
+            if (isUserModified) {
+                report.conflicts.push({
+                    skill: stale,
+                    type: 'MODIFIED_STALE_SKILL_PRESERVED',
+                    message: `المهارة المتقادمة '${stale}' تحتوي على تعديلات قام بها المستخدم. تم تطبيق مبدأ الحفظ ومنع الحذف.`
+                });
+                continue;
+            }
+
+            if (dryRun || !force) {
+                report.skippedDryRun.push(stale);
+            } else {
+                const resolvedTargetDir = path.resolve(targetDir);
+                const resolvedStaleDir = path.resolve(staleDir);
+                if (resolvedStaleDir.startsWith(resolvedTargetDir + path.sep)) {
+                    fs.rmSync(resolvedStaleDir, { recursive: true, force: true });
+                    report.pruned.push(stale);
+                    if (manifest.skills && manifest.skills[stale]) {
+                        delete manifest.skills[stale];
+                    }
+                }
+            }
+        }
+
+        if (!dryRun && force && fs.existsSync(targetDir)) {
             this.writeManifest(targetDir, manifest);
         }
 
@@ -582,163 +710,189 @@ class AntigravityAdapter {
     }
 
     /**
-     * حساب تجزئة SHA-256 للمحتوى لضمان نزاهة الملكية
+     * تحويل مهارة مفردة إلى ملف SKILL.md متوافق مع Antigravity
      */
-    static computeHash(content) {
-        const crypto = require('crypto');
-        return crypto.createHash('sha256').update(content).digest('hex');
-    }
-
-    /**
-     * مسار ملف بيان الملكية المعتمد للمهارات في مساحة العمل
-     */
-    static getManifestPath(targetDir) {
-        return path.join(targetDir, '.proofforge-manifest.json');
-    }
-
-    /**
-     * قراءة بيان ملكية المهارات المعتمد (Ownership Manifest)
-     */
-    static readManifest(targetDir) {
-        const manifestPath = this.getManifestPath(targetDir);
-        if (fs.existsSync(manifestPath)) {
-            try {
-                return JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
-            } catch (e) {
-                return { version: '2.0.0', skills: {} };
-            }
-        }
-        return { version: '2.0.0', skills: {} };
-    }
-
-    /**
-     * كتابة وتحديث بيان الملكية المعتمد
-     */
-    static writeManifest(targetDir, manifest) {
-        const manifestPath = this.getManifestPath(targetDir);
-        fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2), 'utf8');
-    }
-
-    /**
-     * مقارنة الفروق بين المصدر الكنسي والمجلد المثبت في مساحة العمل بنموذج الملكية الحتمي
-     * @param {string} canonicalSkillsDir 
-     * @param {string} targetDir 
-     * @returns {Object}
-     */
-    static diffSkills(canonicalSkillsDir, targetDir) {
-        if (!fs.existsSync(canonicalSkillsDir)) {
-            throw new Error(`مجلد المهارات الكنسي '${canonicalSkillsDir}' غير موجود.`);
+    static transformSkill(skillContract) {
+        if (!skillContract || typeof skillContract !== 'object') {
+            throw new Error('عقد المهارة المصدري غير صالح أو فارغ (Fail-Closed)');
         }
 
-        const canonicalEntries = fs.readdirSync(canonicalSkillsDir, { withFileTypes: true })
-            .filter(e => e.isDirectory())
-            .map(e => e.name);
+        const rawName = skillContract.id || skillContract.name || 'unnamed-skill';
+        const sanitizedSlug = AntigravityAdapter.sanitizeSkillName(rawName);
 
-        const targetEntries = fs.existsSync(targetDir)
-            ? fs.readdirSync(targetDir, { withFileTypes: true })
-                .filter(e => e.isDirectory() && !e.name.startsWith('.'))
-                .map(e => e.name)
-            : [];
+        const description = (skillContract.description || skillContract.purpose || '').trim();
+        if (!description || description.length < 10) {
+            throw new Error(`وصف المهارة '${sanitizedSlug}' غير كافٍ أو مفقود (أقل من 10 أحرف)`);
+        }
 
-        const manifest = this.readManifest(targetDir);
-        const manifestSkills = manifest.skills || {};
+        const frontmatter = [
+            '---',
+            `name: ${sanitizedSlug}`,
+            `description: ${AntigravityAdapter.serializeYamlString(description)}`,
+            '---'
+        ].join('\n');
 
-        const diffReport = {
-            identical: [],
-            missingInTarget: [],
-            modifiedInTarget: [],
-            staleProofForge: [],
-            userCustom: []
+        const bodySections = [
+            `# ${skillContract.name || sanitizedSlug}`,
+            '',
+            `> **معرف العقد الكنسي**: \`${skillContract.id || 'N/A'}\` | **الإصدار**: \`${skillContract.version || '1.0.0'}\``,
+            '',
+            '## 1. الغرض وحدود الاستخدام (Purpose & Scope)',
+            skillContract.purpose || description,
+            '',
+            '## 2. المحددات الأمنية والامتثال (Security & Invariants)',
+            Array.isArray(skillContract.security_constraints) && skillContract.security_constraints.length > 0
+                ? skillContract.security_constraints.map(c => `- ${c}`).join('\n')
+                : '- لا توجد قيود أمنية استثنائية محددة.',
+            '',
+            '## 3. منهجية التنفيذ (Methodology & Workflow)',
+            Array.isArray(skillContract.responsibilities) && skillContract.responsibilities.length > 0
+                ? skillContract.responsibilities.map((r, i) => `${i + 1}. ${r}`).join('\n')
+                : '1. تنفيذ الفحوصات وفق العقد الكنسي.',
+            '',
+            '## 4. الأدلة والتحقق (Evidence & QA Gate)',
+            Array.isArray(skillContract.verification_requirements) && skillContract.verification_requirements.length > 0
+                ? skillContract.verification_requirements.map(v => `- متطلب تحقق: \`${v}\``).join('\n')
+                : '- التحقق الحتمي عبر محرك ProofForge.'
+        ].join('\n');
+
+        const fullContent = `${frontmatter}\n\n${bodySections}\n`;
+        const targetPath = `.agents/skills/${sanitizedSlug}/SKILL.md`;
+
+        return {
+            content: fullContent,
+            targetPath,
+            skillSlug: sanitizedSlug
         };
-
-        for (const skill of canonicalEntries) {
-            const canonicalSkillMd = path.join(canonicalSkillsDir, skill, 'SKILL.md');
-            const targetSkillMd = path.join(targetDir, skill, 'SKILL.md');
-
-            if (!fs.existsSync(targetSkillMd)) {
-                diffReport.missingInTarget.push(skill);
-            } else {
-                const canContent = fs.readFileSync(canonicalSkillMd, 'utf8');
-                const tarContent = fs.readFileSync(targetSkillMd, 'utf8');
-                if (canContent === tarContent) {
-                    diffReport.identical.push(skill);
-                } else {
-                    diffReport.modifiedInTarget.push(skill);
-                }
-            }
-        }
-
-        for (const targetSkill of targetEntries) {
-            if (!canonicalEntries.includes(targetSkill)) {
-                // التحقق الحتمي من الملكية عبر بيان الملكية أولاً
-                if (manifestSkills[targetSkill]) {
-                    diffReport.staleProofForge.push(targetSkill);
-                } else {
-                    // فحص احتياطي للترويسة في حال تم التثبيت قبل تفعيل نظام البيان أو وجود علامات كنسية
-                    const tarSkillMd = path.join(targetDir, targetSkill, 'SKILL.md');
-                    let isProofForgeOwned = false;
-                    if (fs.existsSync(tarSkillMd)) {
-                        const content = fs.readFileSync(tarSkillMd, 'utf8');
-                        if (content.includes('ProofForge') || content.includes('pf-skill')) {
-                            isProofForgeOwned = true;
-                        }
-                    }
-
-                    if (isProofForgeOwned) {
-                        diffReport.staleProofForge.push(targetSkill);
-                    } else {
-                        diffReport.userCustom.push(targetSkill);
-                    }
-                }
-            }
-        }
-
-        return diffReport;
     }
 
     /**
-     * تشذيب وتنظيف المهارات المتقادمة مع حماية مهارات المستخدم المخصصة ونظام الملفات
-     * @param {string} canonicalSkillsDir 
-     * @param {string} targetDir 
-     * @param {Object} [options]
-     * @returns {Object}
+     * تحويل قاعدة كنسية إلى مستند Markdown
      */
-    static pruneSkills(canonicalSkillsDir, targetDir, options = {}) {
-        const dryRun = options.dryRun || false;
-        const force = options.force || false;
+    static transformRule(ruleContract) {
+        if (!ruleContract || typeof ruleContract !== 'object') {
+            throw new Error('عقد القاعدة المصدري غير صالح أو فارغ (Fail-Closed)');
+        }
 
-        const diff = AntigravityAdapter.diffSkills(canonicalSkillsDir, targetDir);
-        const report = {
-            pruned: [],
-            protectedUserSkills: diff.userCustom,
-            skippedDryRun: []
-        };
+        const ruleId = (ruleContract.rule_id || ruleContract.id || 'unnamed-rule').toLowerCase();
+        const priority = ruleContract.priority || 'P1';
 
-        const manifest = this.readManifest(targetDir);
+        const content = [
+            `# قاعدة هندسية: ${ruleContract.name || ruleId}`,
+            '',
+            `- **معرف القاعدة**: \`${ruleContract.rule_id || ruleId}\``,
+            `- **مستوى الأولوية**: \`${priority}\``,
+            `- **النطاق**: ${ruleContract.scope || 'شامل'}`,
+            '',
+            '## نص القاعدة',
+            ruleContract.statement || ruleContract.description || 'لا يوجد نص محدد.',
+            ''
+        ].join('\n');
 
-        for (const stale of diff.staleProofForge) {
-            const staleDir = path.join(targetDir, stale);
-            if (dryRun || !force) {
-                report.skippedDryRun.push(stale);
-            } else {
-                // التأكد الصارم من المسار لمنع القفز
-                const resolvedTargetDir = path.resolve(targetDir);
-                const resolvedStaleDir = path.resolve(staleDir);
-                if (resolvedStaleDir.startsWith(resolvedTargetDir + path.sep)) {
-                    fs.rmSync(resolvedStaleDir, { recursive: true, force: true });
-                    report.pruned.push(stale);
-                    if (manifest.skills && manifest.skills[stale]) {
-                        delete manifest.skills[stale];
-                    }
-                }
+        const targetPath = `.agents/rules/${ruleId}.md`;
+        return { content, targetPath, ruleId };
+    }
+
+    /**
+     * توليد ملف AGENTS.md المجمع لسجل الوكلاء
+     */
+    static generateAgentsManifest(agentRegistry) {
+        if (!agentRegistry || (typeof agentRegistry.listAllAgents !== 'function' && typeof agentRegistry.getAll !== 'function')) {
+            throw new Error('سجل الوكلاء الممرر غير صالح (Invalid AgentRegistry)');
+        }
+
+        const agents = typeof agentRegistry.listAllAgents === 'function'
+            ? agentRegistry.listAllAgents()
+            : agentRegistry.getAll();
+
+        const lines = [
+            '# مانيفست الوكلاء الكنسي لمنظومة ProofForge في Google Antigravity',
+            '',
+            'يوثق هذا المستند كافة الوكلاء المصرح لهم بالعمل وفق مبادئ ProofForge.',
+            '',
+            '## الوكلاء المسجلون',
+            ''
+        ];
+
+        for (const agent of agents) {
+            const agentId = agent.id || agent.agent_id;
+            lines.push(`### ${agentId}: ${agent.role || agent.role_title || agent.name}`);
+            lines.push(`- **المعرف**: \`${agentId}\``);
+            lines.push(`- **مستوى الثقة**: \`${agent.trust_boundary || agent.authority_level || 'STANDARD'}\``);
+            lines.push(`- **المسؤوليات**: ${(agent.responsibilities || []).join('، ') || 'عام'}`);
+            lines.push('');
+        }
+
+        return {
+            content: lines.join('\n'),
+            targetPath: 'AGENTS.md',
+            provenance: {
+                source_contract: 'ProofForge AgentRegistry',
+                generated_by: 'AntigravityAdapter',
+                version: '3.0.0'
             }
+        };
+    }
+
+    /**
+     * تكامل تحويل تدفق العمل مع سياسة النموذج (Phase 6 ↔ Phase 7 Integration)
+     * يثبت بقاء قيود الأمان وبوابات CVGF ومتطلبات الأدلة دون مساس
+     * @param {Object} workflowContract عقد تدفق العمل
+     * @param {Object} modelPolicy سياسة النموذج المطبقة
+     * @returns {{content: string, targetPath: string, constraintsSurvive: boolean}}
+     */
+    static transformWorkflowWithPolicy(workflowContract, modelPolicy) {
+        if (!workflowContract || !workflowContract.workflow_id) {
+            throw new Error('عقد تدفق العمل غير صالح');
+        }
+        if (!modelPolicy || !modelPolicy.policy_id) {
+            throw new Error('سياسة النموذج غير صالحة');
         }
 
-        if (!dryRun && force && fs.existsSync(targetDir)) {
-            this.writeManifest(targetDir, manifest);
+        const targetPath = `.agents/skills/wf-${workflowContract.workflow_id.toLowerCase().replace(/[^a-z0-9_-]/g, '-')}/SKILL.md`;
+
+        const pathCheck = AntigravityAdapter.validatePath(targetPath);
+        if (!pathCheck.isValid) {
+            throw new Error(`مسار التدفق غير آمن: ${pathCheck.error}`);
         }
 
-        return report;
+        const constraintsSurvive = (
+            workflowContract.security_constraints && workflowContract.security_constraints.length > 0 &&
+            modelPolicy.security_requirements && modelPolicy.security_requirements.length > 0 &&
+            modelPolicy.verification_requirements && modelPolicy.verification_requirements.includes('CVGF_GROUNDING_GATE')
+        );
+
+        const lines = [];
+        lines.push('---');
+        lines.push(`name: ${workflowContract.name}`);
+        lines.push(`description: ${workflowContract.description}`);
+        lines.push('---');
+        lines.push('');
+        lines.push(`# ${workflowContract.name}`);
+        lines.push(`**Workflow ID:** \`${workflowContract.workflow_id}\`  `);
+        lines.push(`**Governing Model Policy:** \`${modelPolicy.policy_id}\` (Risk: ${modelPolicy.risk_level})  `);
+        lines.push('');
+        lines.push('## 1. القيود الأمنية الموروثة والباقية (Preserved Security Constraints)');
+        for (const s of (modelPolicy.security_requirements || [])) {
+            lines.push(`* ${s}`);
+        }
+        lines.push('');
+        lines.push('## 2. بوابات التحقق المستقلة الإلزامية في CVGF');
+        for (const v of (modelPolicy.verification_requirements || [])) {
+            lines.push(`* \`${v}\``);
+        }
+        lines.push('');
+        lines.push('## 3. متطلبات الأدلة المؤصلة');
+        for (const e of (modelPolicy.evidence_requirements || [])) {
+            lines.push(`* \`${e}\``);
+        }
+        lines.push('');
+
+        return {
+            content: lines.join('\n'),
+            targetPath,
+            constraintsSurvive
+        };
     }
 }
 

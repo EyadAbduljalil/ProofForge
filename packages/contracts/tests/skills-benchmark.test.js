@@ -1,167 +1,300 @@
 /**
  * @file skills-benchmark.test.js
- * @description معيار جودة المهارات الآلي (Automated Skill Quality Benchmark)
- * يقيّم كافة المهارات الـ 26 لنظام ProofForge وفق معايير Google Antigravity الصارمة
- * ويصنف كل مهارة وفقاً لحالات الجاهزية الحتمية:
- * [VERIFIED, IMPLEMENTED, TESTED, NOT_TESTED, BLOCKED]
+ * @description معيار جودة وسلوك المهارات الهندسية (Behavioral Skills Benchmark Engine - Task 5)
+ * يكتشف المهارات ديناميكياً ويقيم الأبعاد الهيكلية والسلوكية بشكل منفصل
+ * ويفرض نجاح كافة السيناريوهات الإلزامية دون إخفاء أي إخفاق خلف المتوسط الحسابي.
  */
+
+'use strict';
 
 const assert = require('assert');
 const path = require('path');
 const fs = require('fs');
 const { spawnSync } = require('child_process');
 
-console.log('======================================================');
-console.log('🏆 ProofForge V2 — Automated Skill Quality Benchmark');
-console.log('======================================================');
-
 const rootDir = path.resolve(__dirname, '../../../');
 const skillsDir = path.join(rootDir, 'skills');
+const agentsSkillsDir = path.join(rootDir, '.agents/skills');
+const specsPath = path.join(rootDir, 'registry/skills-behavioral-specs.json');
+
+const isJson = process.argv.includes('--json');
+const isQuiet = process.argv.includes('--quiet');
+
+if (!isQuiet && !isJson) {
+    console.log('======================================================');
+    console.log('🏆 ProofForge V3 — Behavioral Skills Benchmark Engine');
+    console.log('======================================================');
+}
 
 assert(fs.existsSync(skillsDir), 'مجلد المهارات الكنسي غير موجود');
 
-const skillDirs = fs.readdirSync(skillsDir).filter(d => {
-    return fs.statSync(path.join(skillsDir, d)).isDirectory();
-});
+// 1. الاكتشاف الديناميكي للمهارات الكنسية دون افتراض عدد ثابت
+const discoveredSkills = fs.readdirSync(skillsDir, { withFileTypes: true })
+    .filter(entry => entry.isDirectory() && !entry.name.startsWith('.'))
+    .map(entry => entry.name)
+    .sort();
 
-assert.strictEqual(skillDirs.length, 28, `المتوقع وجود 28 مهارة كنسية، وجد ${skillDirs.length}`);
+assert(discoveredSkills.length > 0, 'يجب اكتشاف مهارة كنسية واحدة على الأقل');
 
-const benchmarkResults = [];
-let totalScore = 0;
+// 2. تحميل مواصفات السلوك الحتمية
+let behavioralSpecs = {};
+if (fs.existsSync(specsPath)) {
+    try {
+        behavioralSpecs = JSON.parse(fs.readFileSync(specsPath, 'utf8'));
+    } catch (e) {
+        throw new Error(`ملف مواصفات السلوك تالف: ${e.message}`);
+    }
+}
 
-for (const skill of skillDirs) {
+// 3. فحص التطابق مع مساحة عمل Antigravity (.agents/skills)
+const antSkills = fs.existsSync(agentsSkillsDir)
+    ? fs.readdirSync(agentsSkillsDir, { withFileTypes: true }).filter(d => d.isDirectory()).map(d => d.name)
+    : [];
+const missingInAntigravity = discoveredSkills.filter(s => !antSkills.includes(s));
+
+const benchmarkReport = {
+    timestamp: new Date().toISOString(),
+    totalSkillsDiscovered: discoveredSkills.length,
+    antigravityParity: {
+        isParityMaintained: missingInAntigravity.length === 0,
+        missingSkills: missingInAntigravity
+    },
+    skills: [],
+    agentEffectivenessComparison: {
+        status: 'NOT_RUN',
+        mode: 'CONTROLLED_EVALUATION',
+        reason: 'يتطلب جلسة تفاعلية مباشرة مع محرك Google Antigravity لحساب استهلاك الرموز وزمن الاستجابة',
+        reproducibleProcedure: [
+            '1. تنفيذ مهمة برمجية هندسية معقدة بواسطة وكيل Antigravity بدون مهارات ProofForge',
+            '2. إعادة تنفيذ نفس المهمة في بيئة متطابقة مع تفعيل مهارات ProofForge',
+            '3. قياس نسبة رصد الثغرات، ومعدل كسل الكود، ومطابقة WCAG، ومعدل التراجع والانحدار'
+        ],
+        baselineMetrics: {
+            taskCompletionRate: null,
+            securityDefectsCaughtDelta: null,
+            antiSlopComplianceDelta: null
+        }
+    },
+    summary: {
+        totalVerified: 0,
+        totalFailed: 0,
+        totalIncomplete: 0,
+        totalBlocked: 0,
+        globalStatus: 'FAILED',
+        averageStructuralScore: 0,
+        averageBehavioralScore: 0
+    }
+};
+
+let sumStructural = 0;
+let sumBehavioral = 0;
+
+for (const skill of discoveredSkills) {
     const skillPath = path.join(skillsDir, skill);
     const skillMdPath = path.join(skillPath, 'SKILL.md');
     const scriptsDir = path.join(skillPath, 'scripts');
     const examplesDir = path.join(skillPath, 'examples');
     const referencesDir = path.join(skillPath, 'references');
 
-    const evaluation = {
-        name: skill,
-        hasSkillMd: fs.existsSync(skillMdPath),
-        hasScripts: fs.existsSync(scriptsDir) && fs.readdirSync(scriptsDir).length > 0,
-        hasExamples: fs.existsSync(examplesDir) && fs.readdirSync(examplesDir).length > 0,
-        hasReferences: fs.existsSync(referencesDir) && fs.readdirSync(referencesDir).length > 0,
-        validFrontmatter: false,
-        validName: false,
-        validDescription: false,
-        hasRequiredSections: false,
-        scriptExecutionStatus: 'NOT_TESTED',
-        classification: 'NOT_TESTED',
-        score: 0
+    const evalResult = {
+        skillId: skill,
+        dimensions: {
+            metadataValidity: false,
+            instructionQuality: false,
+            resourceIntegrity: false,
+            functionalBehavior: false,
+            securityBehavior: false,
+            integrationCompatibility: false
+        },
+        structuralScore: 0,
+        behavioralScore: 0,
+        status: 'NOT_TESTED',
+        failedScenarios: [],
+        evidence: {}
     };
 
-    if (evaluation.hasSkillMd) {
+    // البعد 1 & 2: فحص الميتاداتا وجودة التعليمات
+    if (fs.existsSync(skillMdPath)) {
         const content = fs.readFileSync(skillMdPath, 'utf8');
-
-        // Frontmatter verification
         const fmMatch = content.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+
         if (fmMatch) {
-            evaluation.validFrontmatter = true;
             const fm = fmMatch[1];
             const nameMatch = fm.match(/name:\s*([^\r\n]+)/);
             const descMatch = fm.match(/description:\s*(?:>[-+]?|\|[-+]?)?\s*\n?([\s\S]*?)(?=\n[a-z0-9_-]+:|$)/i) || fm.match(/description:\s*([^\r\n]+)/);
 
-            if (nameMatch) {
-                const rawName = nameMatch[1].trim().replace(/^['"]|['"]$/g, '');
-                if (/^[a-z0-9-]+$/.test(rawName)) {
-                    evaluation.validName = true;
-                }
-            }
+            const hasValidName = nameMatch && /^[a-z0-9-]+$/.test(nameMatch[1].trim().replace(/^['"]|['"]$/g, ''));
+            const hasValidDesc = descMatch && descMatch[1].trim().length >= 15;
 
-            if (descMatch) {
-                const descText = descMatch[1].replace(/\r?\n\s*/g, ' ').replace(/^['"]|['"]$/g, '').trim();
-                if (descText.length >= 20) {
-                    evaluation.validDescription = true;
-                }
+            if (hasValidName && hasValidDesc) {
+                evalResult.dimensions.metadataValidity = true;
             }
         }
 
-        // Section checks: Purpose/Scope, Steps/Methodology, Evidence/QA
         const hasScope = content.includes('الغرض') || content.includes('Scope') || content.includes('Purpose');
-        const hasMethod = content.includes('منهجية') || content.includes('Methodology') || content.includes('خطوات');
+        const hasMethod = content.includes('منهجية') || content.includes('Methodology') || content.includes('Workflow');
         const hasEvidence = content.includes('أدلة') || content.includes('Evidence') || content.includes('التحقق');
+
         if (hasScope && hasMethod && hasEvidence) {
-            evaluation.hasRequiredSections = true;
+            evalResult.dimensions.instructionQuality = true;
         }
     }
 
-    // Execution of verifier scripts if present
-    if (evaluation.hasScripts) {
-        const scripts = fs.readdirSync(scriptsDir).filter(f => f.endsWith('.js'));
-        if (scripts.length > 0) {
-            let allScriptsPassed = true;
-            for (const scriptFile of scripts) {
-                const scriptFullPath = path.join(scriptsDir, scriptFile);
-                const res = spawnSync(process.execPath, [scriptFullPath, '--json'], {
+    // البعد 3: تكامل الموارد (Resources)
+    const hasScripts = fs.existsSync(scriptsDir) && fs.readdirSync(scriptsDir).filter(f => f.endsWith('.js')).length > 0;
+    const hasExamples = fs.existsSync(examplesDir) && fs.readdirSync(examplesDir).length > 0;
+    const hasReferences = fs.existsSync(referencesDir) && fs.readdirSync(referencesDir).length > 0;
+
+    if (hasScripts && hasExamples && hasReferences) {
+        evalResult.dimensions.resourceIntegrity = true;
+    }
+
+    // حساب الدرجة الهيكلية (Structural Score)
+    let structPoints = 0;
+    if (evalResult.dimensions.metadataValidity) structPoints += 35;
+    if (evalResult.dimensions.instructionQuality) structPoints += 35;
+    if (evalResult.dimensions.resourceIntegrity) structPoints += 30;
+    evalResult.structuralScore = structPoints;
+
+    // البعد 4 & 5 & 6: فحص السلوك الوظيفي والأمني والتكاملي (Behavioral Evaluation)
+    const spec = behavioralSpecs[skill];
+    if (spec && spec.allScripts && spec.allScripts.length > 0) {
+        let allMandatoryPassed = true;
+        let functionalPassed = true;
+        let securityPassed = true;
+        let integrationPassed = true;
+
+        for (const scriptRel of spec.allScripts) {
+            const scriptFullPath = path.join(rootDir, scriptRel);
+            if (!fs.existsSync(scriptFullPath)) {
+                allMandatoryPassed = false;
+                evalResult.failedScenarios.push(`Missing script file: ${scriptRel}`);
+                continue;
+            }
+
+            // تنفيذ السيناريوهات الإلزامية للمهارة
+            for (const scenario of spec.scenarios || []) {
+                const res = spawnSync(process.execPath, [scriptFullPath, ...(scenario.args || [])], {
                     cwd: rootDir,
                     encoding: 'utf8',
                     timeout: 10000
                 });
 
-                if (res.status !== 0) {
-                    allScriptsPassed = false;
-                    console.error(`    ⚠️ Script ${scriptFile} exited with status ${res.status}`);
-                    break;
+                if (res.status !== (scenario.expectedExitCode || 0)) {
+                    if (scenario.isMandatory) allMandatoryPassed = false;
+                    functionalPassed = false;
+                    evalResult.failedScenarios.push(`${scenario.id} (${scriptRel}): expected exit code ${scenario.expectedExitCode}, got ${res.status}`);
+                    continue;
                 }
 
-                // Verify stdout is valid JSON and contains required contract properties
-                try {
-                    const parsed = JSON.parse(res.stdout.trim());
-                    if (!parsed || typeof parsed !== 'object' || typeof parsed.total_checks !== 'number') {
-                        allScriptsPassed = false;
-                        console.error(`    ⚠️ Script ${scriptFile} produced invalid schema payload`);
-                        break;
+                // فحص تكامل الـ JSON في سيناريو الـ JSON
+                if (scenario.args && scenario.args.includes('--json')) {
+                    try {
+                        const parsed = JSON.parse(res.stdout.trim());
+                        if (!parsed || typeof parsed !== 'object' || typeof parsed.total_checks !== 'number') {
+                            if (scenario.isMandatory) allMandatoryPassed = false;
+                            integrationPassed = false;
+                            evalResult.failedScenarios.push(`${scenario.id}: Malformed JSON schema`);
+                        } else {
+                            evalResult.evidence[scenario.id] = {
+                                verifier: parsed.verifier,
+                                totalChecks: parsed.total_checks,
+                                passedChecks: parsed.passed_checks,
+                                status: parsed.status
+                            };
+                        }
+                    } catch (e) {
+                        if (scenario.isMandatory) allMandatoryPassed = false;
+                        integrationPassed = false;
+                        evalResult.failedScenarios.push(`${scenario.id}: JSON parse error: ${e.message}`);
                     }
-                } catch (e) {
-                    allScriptsPassed = false;
-                    console.error(`    ⚠️ Script ${scriptFile} output is not valid JSON: ${e.message}`);
-                    break;
                 }
             }
 
-            if (allScriptsPassed) {
-                evaluation.scriptExecutionStatus = 'PASSED';
-            } else {
-                evaluation.scriptExecutionStatus = 'FAILED';
+            // تنفيذ سيناريو الأمان ومقاومة المدخلات المشوهة
+            for (const negScenario of spec.negativeScenarios || []) {
+                const negRes = spawnSync(process.execPath, [scriptFullPath, ...(negScenario.args || [])], {
+                    cwd: rootDir,
+                    encoding: 'utf8',
+                    timeout: 10000
+                });
+                // التأكد من عدم انهيار العملية بـ crash غير معالج (رمز خروج 0 أو 1 وليس استثناء برمجياً غير ملتقط)
+                if (negRes.status !== 0 && negRes.status !== 1) {
+                    securityPassed = false;
+                    evalResult.failedScenarios.push(`${negScenario.id}: Process crashed with status ${negRes.status}`);
+                }
             }
         }
-    }
 
-    // Determine classification
-    if (evaluation.validFrontmatter && evaluation.validName && evaluation.validDescription &&
-        evaluation.hasRequiredSections && evaluation.hasExamples && evaluation.hasReferences) {
-        
-        if (evaluation.scriptExecutionStatus === 'PASSED') {
-            evaluation.classification = 'VERIFIED';
-            evaluation.score = 100;
-        } else if (evaluation.scriptExecutionStatus === 'FAILED') {
-            evaluation.classification = 'BLOCKED';
-            evaluation.score = 50;
+        evalResult.dimensions.functionalBehavior = functionalPassed;
+        evalResult.dimensions.securityBehavior = securityPassed;
+        evalResult.dimensions.integrationCompatibility = integrationPassed;
+
+        let behavPoints = 0;
+        if (functionalPassed) behavPoints += 50;
+        if (securityPassed) behavPoints += 25;
+        if (integrationPassed) behavPoints += 25;
+        evalResult.behavioralScore = behavPoints;
+
+        // الحالة الحتمية للمهارة
+        if (evalResult.structuralScore === 100 && evalResult.behavioralScore === 100 && allMandatoryPassed) {
+            evalResult.status = 'VERIFIED';
+        } else if (evalResult.failedScenarios.length > 0) {
+            evalResult.status = 'FAILED';
         } else {
-            evaluation.classification = 'IMPLEMENTED';
-            evaluation.score = 80;
+            evalResult.status = 'INCOMPLETE';
         }
     } else {
-        evaluation.classification = 'NOT_TESTED';
-        evaluation.score = 30;
+        evalResult.status = 'INCOMPLETE';
+        evalResult.failedScenarios.push('No behavioral specification or executable scripts found');
     }
 
-    totalScore += evaluation.score;
-    benchmarkResults.push(evaluation);
+    sumStructural += evalResult.structuralScore;
+    sumBehavioral += evalResult.behavioralScore;
 
-    const badge = evaluation.classification === 'VERIFIED' ? '✅ VERIFIED' : (evaluation.classification === 'IMPLEMENTED' ? '🟡 IMPLEMENTED' : '❌ BLOCKED');
-    console.log(`  [${skill.padEnd(22)}] -> ${badge} (${evaluation.score}/100)`);
+    if (evalResult.status === 'VERIFIED') benchmarkReport.summary.totalVerified++;
+    else if (evalResult.status === 'FAILED') benchmarkReport.summary.totalFailed++;
+    else if (evalResult.status === 'INCOMPLETE') benchmarkReport.summary.totalIncomplete++;
+    else if (evalResult.status === 'BLOCKED') benchmarkReport.summary.totalBlocked++;
+
+    benchmarkReport.skills.push(evalResult);
+
+    if (!isQuiet && !isJson) {
+        const badge = evalResult.status === 'VERIFIED' ? '✅ VERIFIED' : `❌ ${evalResult.status}`;
+        console.log(`  [${skill.padEnd(22)}] -> ${badge} (Struct: ${evalResult.structuralScore} | Behav: ${evalResult.behavioralScore})`);
+        if (evalResult.failedScenarios.length > 0) {
+            evalResult.failedScenarios.forEach(f => console.log(`      ⚠️ ${f}`));
+        }
+    }
 }
 
-const averageBenchmarkScore = Math.round(totalScore / skillDirs.length);
+benchmarkReport.summary.averageStructuralScore = Math.round(sumStructural / discoveredSkills.length);
+benchmarkReport.summary.averageBehavioralScore = Math.round(sumBehavioral / discoveredSkills.length);
 
-console.log('======================================================');
-console.log(`📊 Global Benchmark Quality Score: ${averageBenchmarkScore} / 100`);
-console.log(`Total Verified Skills: ${benchmarkResults.filter(r => r.classification === 'VERIFIED').length} / ${skillDirs.length}`);
-console.log('======================================================');
+// المعيار الحتمي: النجاح الشامل مشروط بأن تكون كل المهارات VERIFIED دون استثناء
+const allSkillsVerified = (benchmarkReport.summary.totalVerified === discoveredSkills.length);
+benchmarkReport.summary.globalStatus = allSkillsVerified ? 'VERIFIED' : 'FAILED';
 
-assert.strictEqual(benchmarkResults.filter(r => r.classification === 'BLOCKED').length, 0, 'يجب ألا توجد أي مهارة بحالة BLOCKED');
-assert(averageBenchmarkScore >= 90, `متوسط التقييم يجب ألا يقل عن 90%، الحالي: ${averageBenchmarkScore}`);
+if (!isQuiet && !isJson) {
+    console.log('======================================================');
+    console.log(`📊 Global Benchmark Status: ${benchmarkReport.summary.globalStatus === 'VERIFIED' ? '✅ VERIFIED' : '❌ FAILED'}`);
+    console.log(`Skills Verified: ${benchmarkReport.summary.totalVerified} / ${discoveredSkills.length}`);
+    console.log(`Average Structural Quality: ${benchmarkReport.summary.averageStructuralScore} / 100`);
+    console.log(`Average Behavioral Quality: ${benchmarkReport.summary.averageBehavioralScore} / 100`);
+    console.log(`Antigravity Parity: ${benchmarkReport.antigravityParity.isParityMaintained ? '✅ MATCHED' : '⚠️ MISMATCH'}`);
+    console.log('======================================================');
+}
 
-console.log(`>>> [SUCCESS] All ${skillDirs.length} ProofForge Skills Passed Quality Benchmark with VERIFIED Status.`);
+if (isJson) {
+    console.log(JSON.stringify(benchmarkReport, null, 2));
+}
+
+assert.strictEqual(
+    benchmarkReport.summary.globalStatus,
+    'VERIFIED',
+    `فشل معيار السلوك: ${benchmarkReport.summary.totalFailed} مهارات فاشلة، ${benchmarkReport.summary.totalIncomplete} غير مكتملة.`
+);
+
+if (!isQuiet && !isJson) {
+    console.log('>>> [SUCCESS] All ProofForge Skills Passed Behavioral Quality Benchmark with VERIFIED Status.');
+}

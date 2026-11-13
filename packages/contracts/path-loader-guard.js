@@ -110,12 +110,12 @@ class PathLoaderGuard {
         }
 
         if (!this.isInsideRoot(realPath, realRoot)) {
-            const err = new Error('محظور: تم رصد رابط رمزي يشير إلى خارج حدود مساحة العمل المعتمدة (Symlink Escape Detected)');
+            const err = new Error('محظور: الملف المطلوب يشير عبر رابط رمزي إلى خارج حدود مساحة العمل (Symlink Escape)');
             err.code = 'SYMLINK_ESCAPE_DETECTED';
             throw err;
         }
 
-        // 8. التحقق من أن المسار يمثل ملفاً عادياً وليس مجلداً أو مقبساً أو جهازاً
+        // 8. التأكد من أن المسار يمثل ملفاً حقيقياً وليس مجلداً أو ملفاً خاصاً
         const stats = fs.statSync(realPath);
         if (!stats.isFile()) {
             const err = new Error(`المسار المحدد لا يمثل ملفاً عادياً: '${resolvedPath}'`);
@@ -127,8 +127,7 @@ class PathLoaderGuard {
     }
 
     /**
-     * التحقق الصارم من مسار كتابة ملف جديد أو تحديثه (حتى لو لم يكن الملف موجوداً بعد)
-     * يفحص أقرب مجلد أصل موجود فعلياً ويتأكد من بقائه داخل الجذر
+     * التحقق الصارم من مسار كتابة ملف جديد أو تحديثه مع التدقيق الكامل في الروابط الرمزية للهدف وأصوله
      * @param {string} destinationPath مسار الملف المراد إنشاؤه أو الكتابة إليه
      * @param {Object} options 
      * @returns {string} المسار المطلق المحلول الآمن للكتابة
@@ -158,35 +157,149 @@ class PathLoaderGuard {
         const resolvedTarget = path.resolve(projectRoot, trimmed);
         const resolvedRoot = path.resolve(projectRoot);
 
+        // 1. التحقق المعجمي من الاحتواء داخل الجذر
         if (!this.isInsideRoot(resolvedTarget, resolvedRoot)) {
             const err = new Error(`محظور: مسار الكتابة يقع خارج حدود مساحة العمل المسموحة: '${resolvedTarget}'`);
             err.code = 'PATH_TRAVERSAL_DETECTED';
             throw err;
         }
 
-        // البحث عن أقرب مجلد أصل موجود فعلياً لفحص الروابط الرمزية
-        let currentDir = path.dirname(resolvedTarget);
-        while (!fs.existsSync(currentDir) && currentDir !== path.dirname(currentDir)) {
-            currentDir = path.dirname(currentDir);
+        let realRoot;
+        try {
+            realRoot = fs.realpathSync(resolvedRoot);
+        } catch (e) {
+            realRoot = resolvedRoot;
         }
 
-        if (fs.existsSync(currentDir)) {
-            const realAncestor = fs.realpathSync(currentDir);
-            let realRoot;
-            try {
-                realRoot = fs.realpathSync(resolvedRoot);
-            } catch (e) {
-                realRoot = resolvedRoot;
+        // 2. إذا كان الملف الهدف موجوداً بالفعل على القرص: فحصه مباشرة وبشكل مستقل عبر lstat
+        let targetExists = false;
+        let targetLstat = null;
+        try {
+            targetLstat = fs.lstatSync(resolvedTarget);
+            targetExists = true;
+        } catch (e) {
+            targetExists = false;
+        }
+
+        if (targetExists && targetLstat) {
+            // رفض الكتابة المباشرة إلى الروابط الرمزية (Symlink Target Bypass Prevention)
+            if (targetLstat.isSymbolicLink()) {
+                let symlinkTargetReal;
+                try {
+                    symlinkTargetReal = fs.realpathSync(resolvedTarget);
+                } catch (e) {
+                    symlinkTargetReal = null;
+                }
+
+                if (!symlinkTargetReal || !this.isInsideRoot(symlinkTargetReal, realRoot)) {
+                    const err = new Error(`محظور: ملف الهدف رابط رمزي يشير إلى خارج مساحة العمل الموثوقة: '${resolvedTarget}'`);
+                    err.code = 'SYMLINK_ESCAPE_DETECTED';
+                    throw err;
+                }
+
+                if (!options.allowSymlinks) {
+                    const err = new Error(`محظور: لا يمكن الكتابة فوق رابط رمزي موجود: '${resolvedTarget}'`);
+                    err.code = 'SYMLINK_TARGET_REJECTED';
+                    throw err;
+                }
             }
 
-            if (!this.isInsideRoot(realAncestor, realRoot)) {
-                const err = new Error('محظور: المجلد الأصل لمسار الكتابة يشير عبر رابط رمزي إلى خارج مساحة العمل');
+            if (targetLstat.isDirectory()) {
+                const err = new Error(`محظور: الهدف المحدد يمثل مجلداً وليس ملفاً: '${resolvedTarget}'`);
+                err.code = 'IS_A_DIRECTORY';
+                throw err;
+            }
+
+            if (!targetLstat.isFile() && !targetLstat.isSymbolicLink()) {
+                const err = new Error(`محظور: الهدف المحدد يمثل كائناً خاصاً غير مصرح بالكتابة إليه: '${resolvedTarget}'`);
+                err.code = 'NOT_A_REGULAR_FILE';
+                throw err;
+            }
+
+            // فحص المسار الحقيقي للهدف والتأكد من بقائه داخل الجذر الحقيقي
+            let realTarget;
+            try {
+                realTarget = fs.realpathSync(resolvedTarget);
+            } catch (e) {
+                const err = new Error(`فشل حل المسار الحقيقي للهدف: ${e.message}`);
+                err.code = 'REALPATH_RESOLUTION_FAILED';
+                throw err;
+            }
+
+            if (!this.isInsideRoot(realTarget, realRoot)) {
+                const err = new Error(`محظور: المسار الحقيقي للهدف يقع خارج الجذر الموثوق: '${realTarget}'`);
                 err.code = 'SYMLINK_ESCAPE_DETECTED';
                 throw err;
             }
         }
 
+        // 3. فحص كافة المجلدات الأصلية الموجودة داخل مساحة العمل للتأكد من عدم وجود روابط رمزية هاربة
+        let currentDir = path.dirname(resolvedTarget);
+        while (currentDir !== path.dirname(currentDir)) {
+            if (!this.isInsideRoot(currentDir, realRoot)) {
+                break;
+            }
+
+            let dirLstat = null;
+            try {
+                dirLstat = fs.lstatSync(currentDir);
+            } catch (e) {
+                dirLstat = null;
+            }
+
+            if (dirLstat && dirLstat.isSymbolicLink()) {
+                let realDir;
+                try {
+                    realDir = fs.realpathSync(currentDir);
+                } catch (e) {
+                    const err = new Error(`فشل حل المسار الحقيقي للرابط الرمزي: ${e.message}`);
+                    err.code = 'REALPATH_RESOLUTION_FAILED';
+                    throw err;
+                }
+                if (!this.isInsideRoot(realDir, realRoot)) {
+                    const err = new Error(`محظور: أحد المجلدات الأصلية يشير عبر رابط رمزي إلى خارج مساحة العمل: '${currentDir}'`);
+                    err.code = 'SYMLINK_ESCAPE_DETECTED';
+                    throw err;
+                }
+            }
+
+            if (currentDir === realRoot) break;
+            currentDir = path.dirname(currentDir);
+        }
+
         return resolvedTarget;
+    }
+
+    /**
+     * كتابة ذرية آمنة للمحتوى مع فحص المسارات واستخدام ملف مؤقت داخل المجلد نفسه
+     * @param {string} destinationPath 
+     * @param {string|Buffer} content 
+     * @param {Object} options 
+     */
+    static safeAtomicWrite(destinationPath, content, options = {}) {
+        const safePath = this.validateSafeWritePath(destinationPath, options);
+        const parentDir = path.dirname(safePath);
+
+        if (!fs.existsSync(parentDir)) {
+            fs.mkdirSync(parentDir, { recursive: true });
+        }
+
+        // إنشاء ملف مؤقت في نفس المجلد لضمان نفس وحدة التخزين (Filesystem Volume)
+        const tmpFile = path.join(parentDir, `.tmp-${path.basename(safePath)}-${Date.now()}-${process.pid}-${Math.random().toString(36).slice(2)}`);
+
+        try {
+            fs.writeFileSync(tmpFile, content, { encoding: options.encoding || 'utf8', mode: options.mode || 0o644 });
+            // استبدال ذري آمن
+            fs.renameSync(tmpFile, safePath);
+            return safePath;
+        } catch (err) {
+            try {
+                if (fs.existsSync(tmpFile)) fs.unlinkSync(tmpFile);
+            } catch (cleanupErr) {
+                // تجاهل أخطاء التنظيف في مسار الفشل
+            }
+            throw err;
+        }
     }
 
     /**

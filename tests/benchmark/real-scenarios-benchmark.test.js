@@ -85,15 +85,13 @@ console.log('  [PASS] Hardened Production: All 14 domain verifiers confirmed wit
 // ==========================================
 // السيناريو 5: اختبار دورة حياة تثبيت ومزامنة وتشذيب المهارات (Installation, Sync, Diff & Safe Pruning)
 // ==========================================
-console.log('>>> [Scenario 5/5] Testing Antigravity Skills Sync, Diff, User Protection & Pruning...');
+console.log('>>> [Scenario 5/5] Testing Antigravity Skills Sync, Diff, User Protection & Pruning in Isolated Workspace...');
 const fs = require('fs');
 const AntigravityAdapter = require(path.join(rootDir, 'packages/contracts/antigravity-adapter'));
-const sandboxDir = path.join(rootDir, 'tests/fixtures/sandbox-workspace/.agents/skills');
+const IsolatedBenchmarkWorkspace = require('./helpers/isolated-benchmark-workspace');
 
-if (fs.existsSync(sandboxDir)) {
-    fs.rmSync(sandboxDir, { recursive: true, force: true });
-}
-fs.mkdirSync(sandboxDir, { recursive: true });
+const allocated = IsolatedBenchmarkWorkspace.allocate('pf-real-benchmark-');
+const sandboxDir = allocated.skillsDir;
 
 try {
     // 5.1 مزامنة نظيفة لكافة المهارات الـ 28
@@ -111,9 +109,17 @@ try {
     fs.mkdirSync(userCustomSkillDir, { recursive: true });
     fs.writeFileSync(path.join(userCustomSkillDir, 'SKILL.md'), '---\nname: my-team-custom-skill\ndescription: Custom user skill\n---\n# My Custom Skill', 'utf8');
 
+    // تسجيل مهارة متقادمة في بيان الملكية كمهارة تابعة لـ ProofForge لمحاكاة مهارة تم سحبها من الكنسي
+    const manifest = AntigravityAdapter.readManifest(sandboxDir);
     const staleSkillDir = path.join(sandboxDir, 'stale-old-proof-skill');
     fs.mkdirSync(staleSkillDir, { recursive: true });
     fs.writeFileSync(path.join(staleSkillDir, 'SKILL.md'), '---\nname: stale-old-proof-skill\ndescription: Legacy ProofForge skill\n---\n# Stale ProofForge Skill', 'utf8');
+    const staleHash = AntigravityAdapter.computeHash(fs.readFileSync(path.join(staleSkillDir, 'SKILL.md'), 'utf8'));
+    manifest.skills['stale-old-proof-skill'] = {
+        skillId: 'stale-old-proof-skill',
+        files: { 'SKILL.md': { hash: staleHash, relativePath: 'SKILL.md' } }
+    };
+    AntigravityAdapter.writeManifest(sandboxDir, manifest);
 
     // 5.4 فحص التمييز بين مهارات المستخدم والمهارات المتقادمة
     const diff2 = AntigravityAdapter.diffSkills(path.join(rootDir, 'skills'), sandboxDir);
@@ -126,9 +132,7 @@ try {
     assert(fs.existsSync(userCustomSkillDir), 'مهارة المستخدم المخصصة يجب أن تبقى محمية تماماً');
     console.log('  [PASS] Installation & Sync: Full 28 skills sync, diffing, user skill protection and pruning verified');
 } finally {
-    if (fs.existsSync(sandboxDir)) {
-        fs.rmSync(path.join(rootDir, 'tests/fixtures/sandbox-workspace'), { recursive: true, force: true });
-    }
+    allocated.cleanup();
 }
 
 console.log('======================================================');

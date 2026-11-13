@@ -1,0 +1,1374 @@
+{
+  "accessibility": {
+    "skillId": "accessibility",
+    "primaryScript": "skills/accessibility/scripts/audit_a11y.js",
+    "allScripts": [
+      "skills/accessibility/scripts/audit_a11y.js"
+    ],
+    "scenarios": [
+      {
+        "id": "MANDATORY_JSON_RUN",
+        "name": "Standard JSON Verification Run",
+        "args": [
+          "--json"
+        ],
+        "isMandatory": true,
+        "expectedExitCode": 0,
+        "expectedStatus": "VERIFIED"
+      },
+      {
+        "id": "MANDATORY_HUMAN_RUN",
+        "name": "Standard Human Output Verification Run",
+        "args": [],
+        "isMandatory": true,
+        "expectedExitCode": 0,
+        "expectedStatus": "VERIFIED"
+      }
+    ],
+    "negativeScenarios": [
+      {
+        "id": "FUZZ_UNKNOWN_ARG",
+        "name": "Fuzzing with Unknown Safe Args",
+        "args": [
+          "--safe-fuzz-arg-test"
+        ],
+        "isMandatory": false,
+        "expectedExitCode": 0
+      }
+    ],
+    "evidenceRequirements": [
+      "total_checks",
+      "checks",
+      "status",
+      "exit_code"
+    ],
+    "failureConditions": [
+      "exit_code !== 0",
+      "malformed_json",
+      "failed_checks > 0"
+    ]
+  },
+  "ai-engineering": {
+    "skillId": "ai-engineering",
+    "primaryScript": "skills/ai-engineering/scripts/verify_ai_engineering.js",
+    "allScripts": [
+      "skills/ai-engineering/scripts/verify_ai_engineering.js"
+    ],
+    "scenarios": [
+      {
+        "id": "MANDATORY_JSON_RUN",
+        "name": "Standard JSON Verification Run",
+        "args": [
+          "--json"
+        ],
+        "isMandatory": true,
+        "expectedExitCode": 0,
+        "expectedStatus": "VERIFIED"
+      },
+      {
+        "id": "MANDATORY_HUMAN_RUN",
+        "name": "Standard Human Output Verification Run",
+        "args": [],
+        "isMandatory": true,
+        "expectedExitCode": 0,
+        "expectedStatus": "VERIFIED"
+      }
+    ],
+    "negativeScenarios": [
+      {
+        "id": "FUZZ_UNKNOWN_ARG",
+        "name": "Fuzzing with Unknown Safe Args",
+        "args": [
+          "--safe-fuzz-arg-test"
+        ],
+        "isMandatory": false,
+        "expectedExitCode": 0
+      }
+    ],
+    "evidenceRequirements": [
+      "total_checks",
+      "checks",
+      "status",
+      "exit_code"
+    ],
+    "failureConditions": [
+      "exit_code !== 0",
+      "malformed_json",
+      "failed_checks > 0"
+    ]
+  },
+  "anti-laziness": {
+    "skillId": "anti-laziness",
+    "primaryScript": "skills/anti-laziness/scripts/scan_laziness.js",
+    "allScripts": [
+      "skills/anti-laziness/scripts/scan_laziness.js"
+    ],
+    "scenarios": [
+      {
+        "id": "MANDATORY_JSON_RUN",
+        "name": "Standard JSON Verification Run",
+        "args": [
+          "--json"
+        ],
+        "isMandatory": true,
+        "expectedExitCode": 0,
+        "expectedStatus": "VERIFIED"
+      },
+      {
+        "id": "MANDATORY_HUMAN_RUN",
+        "name": "Standard Human Output Verification Run",
+        "args": [],
+        "isMandatory": true,
+        "expectedExitCode": 0,
+        "expectedStatus": "VERIFIED"
+      }
+    ],
+    "negativeScenarios": [
+      {
+        "id": "FUZZ_UNKNOWN_ARG",
+        "name": "Fuzzing with Unknown Safe Args",
+        "args": [
+          "--safe-fuzz-arg-test"
+        ],
+        "isMandatory": false,
+        "expectedExitCode": 0
+      }
+    ],
+    "evidenceRequirements": [
+      "total_checks",
+      "checks",
+      "status",
+      "exit_code"
+    ],
+    "failureConditions": [
+      "exit_code !== 0",
+      "malformed_json",
+      "failed_checks > 0"
+    ]
+  },
+  "anti-slop": {
+    "skillId": "anti-slop",
+    "primaryScript": "skills/anti-slop/scripts/audit_slop.js",
+    "allScripts": [
+      "skills/anti-slop/scripts/audit_slop.js"
+    ],
+    "scenarios": [
+      {
+        "id": "MANDATORY_JSON_RUN",
+        "name": "Standard JSON Verification Run",
+        "args": [
+          "--json"
+        ],
+        "isMandatory": true,
+        "expectedExitCode": 0,
+        "expectedStatus": "VERIFIED"
+      },
+      {
+        "id": "MANDATORY_HUMAN_RUN",
+        "name": "Standard Human Output Verification Run",
+        "args": [],
+        "isMandatory": true,
+        "expectedExitCode": 0,
+        "expectedStatus": "VERIFIED"
+      }
+    ],
+    "negativeScenarios": [
+      {
+        "id": "FUZZ_UNKNOWN_ARG",
+        "name": "Fuzzing with Unknown Safe Args",
+        "args": [
+          "--safe-fuzz-arg-test"
+        ],
+        "isMandatory": false,
+        "expectedExitCode": 0
+      }
+    ],
+    "evidenceRequirements": [
+      "total_checks",
+      "checks",
+      "status",
+      "exit_code"
+    ],
+    "failureConditions": [
+      "exit_code !== 0",
+      "malformed_json",
+      "failed_checks > 0"
+    ]
+  },
+  "api": {
+    "skillId": "api",
+    "primaryScript": "skills/api/scripts/verify_api.js",
+    "allScripts": [
+      "skills/api/scripts/verify_api.js"
+    ],
+    "scenarios": [
+      {
+        "id": "MANDATORY_JSON_RUN",
+        "name": "Standard JSON Verification Run",
+        "args": [
+          "--json"
+        ],
+        "isMandatory": true,
+        "expectedExitCode": 0,
+        "expectedStatus": "VERIFIED"
+      },
+      {
+        "id": "MANDATORY_HUMAN_RUN",
+        "name": "Standard Human Output Verification Run",
+        "args": [],
+        "isMandatory": true,
+        "expectedExitCode": 0,
+        "expectedStatus": "VERIFIED"
+      }
+    ],
+    "negativeScenarios": [
+      {
+        "id": "FUZZ_UNKNOWN_ARG",
+        "name": "Fuzzing with Unknown Safe Args",
+        "args": [
+          "--safe-fuzz-arg-test"
+        ],
+        "isMandatory": false,
+        "expectedExitCode": 0
+      }
+    ],
+    "evidenceRequirements": [
+      "total_checks",
+      "checks",
+      "status",
+      "exit_code"
+    ],
+    "failureConditions": [
+      "exit_code !== 0",
+      "malformed_json",
+      "failed_checks > 0"
+    ]
+  },
+  "architecture": {
+    "skillId": "architecture",
+    "primaryScript": "skills/architecture/scripts/verify_architecture.js",
+    "allScripts": [
+      "skills/architecture/scripts/verify_architecture.js"
+    ],
+    "scenarios": [
+      {
+        "id": "MANDATORY_JSON_RUN",
+        "name": "Standard JSON Verification Run",
+        "args": [
+          "--json"
+        ],
+        "isMandatory": true,
+        "expectedExitCode": 0,
+        "expectedStatus": "VERIFIED"
+      },
+      {
+        "id": "MANDATORY_HUMAN_RUN",
+        "name": "Standard Human Output Verification Run",
+        "args": [],
+        "isMandatory": true,
+        "expectedExitCode": 0,
+        "expectedStatus": "VERIFIED"
+      }
+    ],
+    "negativeScenarios": [
+      {
+        "id": "FUZZ_UNKNOWN_ARG",
+        "name": "Fuzzing with Unknown Safe Args",
+        "args": [
+          "--safe-fuzz-arg-test"
+        ],
+        "isMandatory": false,
+        "expectedExitCode": 0
+      }
+    ],
+    "evidenceRequirements": [
+      "total_checks",
+      "checks",
+      "status",
+      "exit_code"
+    ],
+    "failureConditions": [
+      "exit_code !== 0",
+      "malformed_json",
+      "failed_checks > 0"
+    ]
+  },
+  "backend": {
+    "skillId": "backend",
+    "primaryScript": "skills/backend/scripts/verify_backend.js",
+    "allScripts": [
+      "skills/backend/scripts/verify_backend.js"
+    ],
+    "scenarios": [
+      {
+        "id": "MANDATORY_JSON_RUN",
+        "name": "Standard JSON Verification Run",
+        "args": [
+          "--json"
+        ],
+        "isMandatory": true,
+        "expectedExitCode": 0,
+        "expectedStatus": "VERIFIED"
+      },
+      {
+        "id": "MANDATORY_HUMAN_RUN",
+        "name": "Standard Human Output Verification Run",
+        "args": [],
+        "isMandatory": true,
+        "expectedExitCode": 0,
+        "expectedStatus": "VERIFIED"
+      }
+    ],
+    "negativeScenarios": [
+      {
+        "id": "FUZZ_UNKNOWN_ARG",
+        "name": "Fuzzing with Unknown Safe Args",
+        "args": [
+          "--safe-fuzz-arg-test"
+        ],
+        "isMandatory": false,
+        "expectedExitCode": 0
+      }
+    ],
+    "evidenceRequirements": [
+      "total_checks",
+      "checks",
+      "status",
+      "exit_code"
+    ],
+    "failureConditions": [
+      "exit_code !== 0",
+      "malformed_json",
+      "failed_checks > 0"
+    ]
+  },
+  "code-review": {
+    "skillId": "code-review",
+    "primaryScript": "skills/code-review/scripts/review_code.js",
+    "allScripts": [
+      "skills/code-review/scripts/review_code.js"
+    ],
+    "scenarios": [
+      {
+        "id": "MANDATORY_JSON_RUN",
+        "name": "Standard JSON Verification Run",
+        "args": [
+          "--json"
+        ],
+        "isMandatory": true,
+        "expectedExitCode": 0,
+        "expectedStatus": "VERIFIED"
+      },
+      {
+        "id": "MANDATORY_HUMAN_RUN",
+        "name": "Standard Human Output Verification Run",
+        "args": [],
+        "isMandatory": true,
+        "expectedExitCode": 0,
+        "expectedStatus": "VERIFIED"
+      }
+    ],
+    "negativeScenarios": [
+      {
+        "id": "FUZZ_UNKNOWN_ARG",
+        "name": "Fuzzing with Unknown Safe Args",
+        "args": [
+          "--safe-fuzz-arg-test"
+        ],
+        "isMandatory": false,
+        "expectedExitCode": 0
+      }
+    ],
+    "evidenceRequirements": [
+      "total_checks",
+      "checks",
+      "status",
+      "exit_code"
+    ],
+    "failureConditions": [
+      "exit_code !== 0",
+      "malformed_json",
+      "failed_checks > 0"
+    ]
+  },
+  "dashboards": {
+    "skillId": "dashboards",
+    "primaryScript": "skills/dashboards/scripts/verify_dashboards.js",
+    "allScripts": [
+      "skills/dashboards/scripts/verify_dashboards.js"
+    ],
+    "scenarios": [
+      {
+        "id": "MANDATORY_JSON_RUN",
+        "name": "Standard JSON Verification Run",
+        "args": [
+          "--json"
+        ],
+        "isMandatory": true,
+        "expectedExitCode": 0,
+        "expectedStatus": "VERIFIED"
+      },
+      {
+        "id": "MANDATORY_HUMAN_RUN",
+        "name": "Standard Human Output Verification Run",
+        "args": [],
+        "isMandatory": true,
+        "expectedExitCode": 0,
+        "expectedStatus": "VERIFIED"
+      }
+    ],
+    "negativeScenarios": [
+      {
+        "id": "FUZZ_UNKNOWN_ARG",
+        "name": "Fuzzing with Unknown Safe Args",
+        "args": [
+          "--safe-fuzz-arg-test"
+        ],
+        "isMandatory": false,
+        "expectedExitCode": 0
+      }
+    ],
+    "evidenceRequirements": [
+      "total_checks",
+      "checks",
+      "status",
+      "exit_code"
+    ],
+    "failureConditions": [
+      "exit_code !== 0",
+      "malformed_json",
+      "failed_checks > 0"
+    ]
+  },
+  "database": {
+    "skillId": "database",
+    "primaryScript": "skills/database/scripts/verify_database.js",
+    "allScripts": [
+      "skills/database/scripts/verify_database.js"
+    ],
+    "scenarios": [
+      {
+        "id": "MANDATORY_JSON_RUN",
+        "name": "Standard JSON Verification Run",
+        "args": [
+          "--json"
+        ],
+        "isMandatory": true,
+        "expectedExitCode": 0,
+        "expectedStatus": "VERIFIED"
+      },
+      {
+        "id": "MANDATORY_HUMAN_RUN",
+        "name": "Standard Human Output Verification Run",
+        "args": [],
+        "isMandatory": true,
+        "expectedExitCode": 0,
+        "expectedStatus": "VERIFIED"
+      }
+    ],
+    "negativeScenarios": [
+      {
+        "id": "FUZZ_UNKNOWN_ARG",
+        "name": "Fuzzing with Unknown Safe Args",
+        "args": [
+          "--safe-fuzz-arg-test"
+        ],
+        "isMandatory": false,
+        "expectedExitCode": 0
+      }
+    ],
+    "evidenceRequirements": [
+      "total_checks",
+      "checks",
+      "status",
+      "exit_code"
+    ],
+    "failureConditions": [
+      "exit_code !== 0",
+      "malformed_json",
+      "failed_checks > 0"
+    ]
+  },
+  "deployment": {
+    "skillId": "deployment",
+    "primaryScript": "skills/deployment/scripts/verify_deployment.js",
+    "allScripts": [
+      "skills/deployment/scripts/verify_deployment.js"
+    ],
+    "scenarios": [
+      {
+        "id": "MANDATORY_JSON_RUN",
+        "name": "Standard JSON Verification Run",
+        "args": [
+          "--json"
+        ],
+        "isMandatory": true,
+        "expectedExitCode": 0,
+        "expectedStatus": "VERIFIED"
+      },
+      {
+        "id": "MANDATORY_HUMAN_RUN",
+        "name": "Standard Human Output Verification Run",
+        "args": [],
+        "isMandatory": true,
+        "expectedExitCode": 0,
+        "expectedStatus": "VERIFIED"
+      }
+    ],
+    "negativeScenarios": [
+      {
+        "id": "FUZZ_UNKNOWN_ARG",
+        "name": "Fuzzing with Unknown Safe Args",
+        "args": [
+          "--safe-fuzz-arg-test"
+        ],
+        "isMandatory": false,
+        "expectedExitCode": 0
+      }
+    ],
+    "evidenceRequirements": [
+      "total_checks",
+      "checks",
+      "status",
+      "exit_code"
+    ],
+    "failureConditions": [
+      "exit_code !== 0",
+      "malformed_json",
+      "failed_checks > 0"
+    ]
+  },
+  "design-system": {
+    "skillId": "design-system",
+    "primaryScript": "skills/design-system/scripts/verify_tokens.js",
+    "allScripts": [
+      "skills/design-system/scripts/verify_tokens.js"
+    ],
+    "scenarios": [
+      {
+        "id": "MANDATORY_JSON_RUN",
+        "name": "Standard JSON Verification Run",
+        "args": [
+          "--json"
+        ],
+        "isMandatory": true,
+        "expectedExitCode": 0,
+        "expectedStatus": "VERIFIED"
+      },
+      {
+        "id": "MANDATORY_HUMAN_RUN",
+        "name": "Standard Human Output Verification Run",
+        "args": [],
+        "isMandatory": true,
+        "expectedExitCode": 0,
+        "expectedStatus": "VERIFIED"
+      }
+    ],
+    "negativeScenarios": [
+      {
+        "id": "FUZZ_UNKNOWN_ARG",
+        "name": "Fuzzing with Unknown Safe Args",
+        "args": [
+          "--safe-fuzz-arg-test"
+        ],
+        "isMandatory": false,
+        "expectedExitCode": 0
+      }
+    ],
+    "evidenceRequirements": [
+      "total_checks",
+      "checks",
+      "status",
+      "exit_code"
+    ],
+    "failureConditions": [
+      "exit_code !== 0",
+      "malformed_json",
+      "failed_checks > 0"
+    ]
+  },
+  "ecommerce": {
+    "skillId": "ecommerce",
+    "primaryScript": "skills/ecommerce/scripts/verify_ecommerce.js",
+    "allScripts": [
+      "skills/ecommerce/scripts/verify_ecommerce.js"
+    ],
+    "scenarios": [
+      {
+        "id": "MANDATORY_JSON_RUN",
+        "name": "Standard JSON Verification Run",
+        "args": [
+          "--json"
+        ],
+        "isMandatory": true,
+        "expectedExitCode": 0,
+        "expectedStatus": "VERIFIED"
+      },
+      {
+        "id": "MANDATORY_HUMAN_RUN",
+        "name": "Standard Human Output Verification Run",
+        "args": [],
+        "isMandatory": true,
+        "expectedExitCode": 0,
+        "expectedStatus": "VERIFIED"
+      }
+    ],
+    "negativeScenarios": [
+      {
+        "id": "FUZZ_UNKNOWN_ARG",
+        "name": "Fuzzing with Unknown Safe Args",
+        "args": [
+          "--safe-fuzz-arg-test"
+        ],
+        "isMandatory": false,
+        "expectedExitCode": 0
+      }
+    ],
+    "evidenceRequirements": [
+      "total_checks",
+      "checks",
+      "status",
+      "exit_code"
+    ],
+    "failureConditions": [
+      "exit_code !== 0",
+      "malformed_json",
+      "failed_checks > 0"
+    ]
+  },
+  "forms": {
+    "skillId": "forms",
+    "primaryScript": "skills/forms/scripts/verify_forms.js",
+    "allScripts": [
+      "skills/forms/scripts/verify_forms.js"
+    ],
+    "scenarios": [
+      {
+        "id": "MANDATORY_JSON_RUN",
+        "name": "Standard JSON Verification Run",
+        "args": [
+          "--json"
+        ],
+        "isMandatory": true,
+        "expectedExitCode": 0,
+        "expectedStatus": "VERIFIED"
+      },
+      {
+        "id": "MANDATORY_HUMAN_RUN",
+        "name": "Standard Human Output Verification Run",
+        "args": [],
+        "isMandatory": true,
+        "expectedExitCode": 0,
+        "expectedStatus": "VERIFIED"
+      }
+    ],
+    "negativeScenarios": [
+      {
+        "id": "FUZZ_UNKNOWN_ARG",
+        "name": "Fuzzing with Unknown Safe Args",
+        "args": [
+          "--safe-fuzz-arg-test"
+        ],
+        "isMandatory": false,
+        "expectedExitCode": 0
+      }
+    ],
+    "evidenceRequirements": [
+      "total_checks",
+      "checks",
+      "status",
+      "exit_code"
+    ],
+    "failureConditions": [
+      "exit_code !== 0",
+      "malformed_json",
+      "failed_checks > 0"
+    ]
+  },
+  "frontend": {
+    "skillId": "frontend",
+    "primaryScript": "skills/frontend/scripts/verify_frontend.js",
+    "allScripts": [
+      "skills/frontend/scripts/verify_frontend.js"
+    ],
+    "scenarios": [
+      {
+        "id": "MANDATORY_JSON_RUN",
+        "name": "Standard JSON Verification Run",
+        "args": [
+          "--json"
+        ],
+        "isMandatory": true,
+        "expectedExitCode": 0,
+        "expectedStatus": "VERIFIED"
+      },
+      {
+        "id": "MANDATORY_HUMAN_RUN",
+        "name": "Standard Human Output Verification Run",
+        "args": [],
+        "isMandatory": true,
+        "expectedExitCode": 0,
+        "expectedStatus": "VERIFIED"
+      }
+    ],
+    "negativeScenarios": [
+      {
+        "id": "FUZZ_UNKNOWN_ARG",
+        "name": "Fuzzing with Unknown Safe Args",
+        "args": [
+          "--safe-fuzz-arg-test"
+        ],
+        "isMandatory": false,
+        "expectedExitCode": 0
+      }
+    ],
+    "evidenceRequirements": [
+      "total_checks",
+      "checks",
+      "status",
+      "exit_code"
+    ],
+    "failureConditions": [
+      "exit_code !== 0",
+      "malformed_json",
+      "failed_checks > 0"
+    ]
+  },
+  "fullstack": {
+    "skillId": "fullstack",
+    "primaryScript": "skills/fullstack/scripts/verify_fullstack.js",
+    "allScripts": [
+      "skills/fullstack/scripts/verify_fullstack.js"
+    ],
+    "scenarios": [
+      {
+        "id": "MANDATORY_JSON_RUN",
+        "name": "Standard JSON Verification Run",
+        "args": [
+          "--json"
+        ],
+        "isMandatory": true,
+        "expectedExitCode": 0,
+        "expectedStatus": "VERIFIED"
+      },
+      {
+        "id": "MANDATORY_HUMAN_RUN",
+        "name": "Standard Human Output Verification Run",
+        "args": [],
+        "isMandatory": true,
+        "expectedExitCode": 0,
+        "expectedStatus": "VERIFIED"
+      }
+    ],
+    "negativeScenarios": [
+      {
+        "id": "FUZZ_UNKNOWN_ARG",
+        "name": "Fuzzing with Unknown Safe Args",
+        "args": [
+          "--safe-fuzz-arg-test"
+        ],
+        "isMandatory": false,
+        "expectedExitCode": 0
+      }
+    ],
+    "evidenceRequirements": [
+      "total_checks",
+      "checks",
+      "status",
+      "exit_code"
+    ],
+    "failureConditions": [
+      "exit_code !== 0",
+      "malformed_json",
+      "failed_checks > 0"
+    ]
+  },
+  "image-to-code": {
+    "skillId": "image-to-code",
+    "primaryScript": "skills/image-to-code/scripts/verify_image_code.js",
+    "allScripts": [
+      "skills/image-to-code/scripts/verify_image_code.js"
+    ],
+    "scenarios": [
+      {
+        "id": "MANDATORY_JSON_RUN",
+        "name": "Standard JSON Verification Run",
+        "args": [
+          "--json"
+        ],
+        "isMandatory": true,
+        "expectedExitCode": 0,
+        "expectedStatus": "VERIFIED"
+      },
+      {
+        "id": "MANDATORY_HUMAN_RUN",
+        "name": "Standard Human Output Verification Run",
+        "args": [],
+        "isMandatory": true,
+        "expectedExitCode": 0,
+        "expectedStatus": "VERIFIED"
+      }
+    ],
+    "negativeScenarios": [
+      {
+        "id": "FUZZ_UNKNOWN_ARG",
+        "name": "Fuzzing with Unknown Safe Args",
+        "args": [
+          "--safe-fuzz-arg-test"
+        ],
+        "isMandatory": false,
+        "expectedExitCode": 0
+      }
+    ],
+    "evidenceRequirements": [
+      "total_checks",
+      "checks",
+      "status",
+      "exit_code"
+    ],
+    "failureConditions": [
+      "exit_code !== 0",
+      "malformed_json",
+      "failed_checks > 0"
+    ]
+  },
+  "motion": {
+    "skillId": "motion",
+    "primaryScript": "skills/motion/scripts/audit_motion.js",
+    "allScripts": [
+      "skills/motion/scripts/audit_motion.js"
+    ],
+    "scenarios": [
+      {
+        "id": "MANDATORY_JSON_RUN",
+        "name": "Standard JSON Verification Run",
+        "args": [
+          "--json"
+        ],
+        "isMandatory": true,
+        "expectedExitCode": 0,
+        "expectedStatus": "VERIFIED"
+      },
+      {
+        "id": "MANDATORY_HUMAN_RUN",
+        "name": "Standard Human Output Verification Run",
+        "args": [],
+        "isMandatory": true,
+        "expectedExitCode": 0,
+        "expectedStatus": "VERIFIED"
+      }
+    ],
+    "negativeScenarios": [
+      {
+        "id": "FUZZ_UNKNOWN_ARG",
+        "name": "Fuzzing with Unknown Safe Args",
+        "args": [
+          "--safe-fuzz-arg-test"
+        ],
+        "isMandatory": false,
+        "expectedExitCode": 0
+      }
+    ],
+    "evidenceRequirements": [
+      "total_checks",
+      "checks",
+      "status",
+      "exit_code"
+    ],
+    "failureConditions": [
+      "exit_code !== 0",
+      "malformed_json",
+      "failed_checks > 0"
+    ]
+  },
+  "performance": {
+    "skillId": "performance",
+    "primaryScript": "skills/performance/scripts/audit_performance.js",
+    "allScripts": [
+      "skills/performance/scripts/audit_performance.js"
+    ],
+    "scenarios": [
+      {
+        "id": "MANDATORY_JSON_RUN",
+        "name": "Standard JSON Verification Run",
+        "args": [
+          "--json"
+        ],
+        "isMandatory": true,
+        "expectedExitCode": 0,
+        "expectedStatus": "VERIFIED"
+      },
+      {
+        "id": "MANDATORY_HUMAN_RUN",
+        "name": "Standard Human Output Verification Run",
+        "args": [],
+        "isMandatory": true,
+        "expectedExitCode": 0,
+        "expectedStatus": "VERIFIED"
+      }
+    ],
+    "negativeScenarios": [
+      {
+        "id": "FUZZ_UNKNOWN_ARG",
+        "name": "Fuzzing with Unknown Safe Args",
+        "args": [
+          "--safe-fuzz-arg-test"
+        ],
+        "isMandatory": false,
+        "expectedExitCode": 0
+      }
+    ],
+    "evidenceRequirements": [
+      "total_checks",
+      "checks",
+      "status",
+      "exit_code"
+    ],
+    "failureConditions": [
+      "exit_code !== 0",
+      "malformed_json",
+      "failed_checks > 0"
+    ]
+  },
+  "production-readiness": {
+    "skillId": "production-readiness",
+    "primaryScript": "skills/production-readiness/scripts/audit_readiness.js",
+    "allScripts": [
+      "skills/production-readiness/scripts/audit_readiness.js"
+    ],
+    "scenarios": [
+      {
+        "id": "MANDATORY_JSON_RUN",
+        "name": "Standard JSON Verification Run",
+        "args": [
+          "--json"
+        ],
+        "isMandatory": true,
+        "expectedExitCode": 0,
+        "expectedStatus": "VERIFIED"
+      },
+      {
+        "id": "MANDATORY_HUMAN_RUN",
+        "name": "Standard Human Output Verification Run",
+        "args": [],
+        "isMandatory": true,
+        "expectedExitCode": 0,
+        "expectedStatus": "VERIFIED"
+      }
+    ],
+    "negativeScenarios": [
+      {
+        "id": "FUZZ_UNKNOWN_ARG",
+        "name": "Fuzzing with Unknown Safe Args",
+        "args": [
+          "--safe-fuzz-arg-test"
+        ],
+        "isMandatory": false,
+        "expectedExitCode": 0
+      }
+    ],
+    "evidenceRequirements": [
+      "total_checks",
+      "checks",
+      "status",
+      "exit_code"
+    ],
+    "failureConditions": [
+      "exit_code !== 0",
+      "malformed_json",
+      "failed_checks > 0"
+    ]
+  },
+  "project-audit": {
+    "skillId": "project-audit",
+    "primaryScript": "skills/project-audit/scripts/run_audit.js",
+    "allScripts": [
+      "skills/project-audit/scripts/run_audit.js"
+    ],
+    "scenarios": [
+      {
+        "id": "MANDATORY_JSON_RUN",
+        "name": "Standard JSON Verification Run",
+        "args": [
+          "--json"
+        ],
+        "isMandatory": true,
+        "expectedExitCode": 0,
+        "expectedStatus": "VERIFIED"
+      },
+      {
+        "id": "MANDATORY_HUMAN_RUN",
+        "name": "Standard Human Output Verification Run",
+        "args": [],
+        "isMandatory": true,
+        "expectedExitCode": 0,
+        "expectedStatus": "VERIFIED"
+      }
+    ],
+    "negativeScenarios": [
+      {
+        "id": "FUZZ_UNKNOWN_ARG",
+        "name": "Fuzzing with Unknown Safe Args",
+        "args": [
+          "--safe-fuzz-arg-test"
+        ],
+        "isMandatory": false,
+        "expectedExitCode": 0
+      }
+    ],
+    "evidenceRequirements": [
+      "total_checks",
+      "checks",
+      "status",
+      "exit_code"
+    ],
+    "failureConditions": [
+      "exit_code !== 0",
+      "malformed_json",
+      "failed_checks > 0"
+    ]
+  },
+  "responsive": {
+    "skillId": "responsive",
+    "primaryScript": "skills/responsive/scripts/verify_responsive.js",
+    "allScripts": [
+      "skills/responsive/scripts/verify_responsive.js"
+    ],
+    "scenarios": [
+      {
+        "id": "MANDATORY_JSON_RUN",
+        "name": "Standard JSON Verification Run",
+        "args": [
+          "--json"
+        ],
+        "isMandatory": true,
+        "expectedExitCode": 0,
+        "expectedStatus": "VERIFIED"
+      },
+      {
+        "id": "MANDATORY_HUMAN_RUN",
+        "name": "Standard Human Output Verification Run",
+        "args": [],
+        "isMandatory": true,
+        "expectedExitCode": 0,
+        "expectedStatus": "VERIFIED"
+      }
+    ],
+    "negativeScenarios": [
+      {
+        "id": "FUZZ_UNKNOWN_ARG",
+        "name": "Fuzzing with Unknown Safe Args",
+        "args": [
+          "--safe-fuzz-arg-test"
+        ],
+        "isMandatory": false,
+        "expectedExitCode": 0
+      }
+    ],
+    "evidenceRequirements": [
+      "total_checks",
+      "checks",
+      "status",
+      "exit_code"
+    ],
+    "failureConditions": [
+      "exit_code !== 0",
+      "malformed_json",
+      "failed_checks > 0"
+    ]
+  },
+  "rtl": {
+    "skillId": "rtl",
+    "primaryScript": "skills/rtl/scripts/verify_rtl.js",
+    "allScripts": [
+      "skills/rtl/scripts/verify_rtl.js"
+    ],
+    "scenarios": [
+      {
+        "id": "MANDATORY_JSON_RUN",
+        "name": "Standard JSON Verification Run",
+        "args": [
+          "--json"
+        ],
+        "isMandatory": true,
+        "expectedExitCode": 0,
+        "expectedStatus": "VERIFIED"
+      },
+      {
+        "id": "MANDATORY_HUMAN_RUN",
+        "name": "Standard Human Output Verification Run",
+        "args": [],
+        "isMandatory": true,
+        "expectedExitCode": 0,
+        "expectedStatus": "VERIFIED"
+      }
+    ],
+    "negativeScenarios": [
+      {
+        "id": "FUZZ_UNKNOWN_ARG",
+        "name": "Fuzzing with Unknown Safe Args",
+        "args": [
+          "--safe-fuzz-arg-test"
+        ],
+        "isMandatory": false,
+        "expectedExitCode": 0
+      }
+    ],
+    "evidenceRequirements": [
+      "total_checks",
+      "checks",
+      "status",
+      "exit_code"
+    ],
+    "failureConditions": [
+      "exit_code !== 0",
+      "malformed_json",
+      "failed_checks > 0"
+    ]
+  },
+  "security": {
+    "skillId": "security",
+    "primaryScript": "skills/security/scripts/verify_security.js",
+    "allScripts": [
+      "skills/security/scripts/verify_security.js"
+    ],
+    "scenarios": [
+      {
+        "id": "MANDATORY_JSON_RUN",
+        "name": "Standard JSON Verification Run",
+        "args": [
+          "--json"
+        ],
+        "isMandatory": true,
+        "expectedExitCode": 0,
+        "expectedStatus": "VERIFIED"
+      },
+      {
+        "id": "MANDATORY_HUMAN_RUN",
+        "name": "Standard Human Output Verification Run",
+        "args": [],
+        "isMandatory": true,
+        "expectedExitCode": 0,
+        "expectedStatus": "VERIFIED"
+      }
+    ],
+    "negativeScenarios": [
+      {
+        "id": "FUZZ_UNKNOWN_ARG",
+        "name": "Fuzzing with Unknown Safe Args",
+        "args": [
+          "--safe-fuzz-arg-test"
+        ],
+        "isMandatory": false,
+        "expectedExitCode": 0
+      }
+    ],
+    "evidenceRequirements": [
+      "total_checks",
+      "checks",
+      "status",
+      "exit_code"
+    ],
+    "failureConditions": [
+      "exit_code !== 0",
+      "malformed_json",
+      "failed_checks > 0"
+    ]
+  },
+  "seo": {
+    "skillId": "seo",
+    "primaryScript": "skills/seo/scripts/verify_seo.js",
+    "allScripts": [
+      "skills/seo/scripts/verify_seo.js"
+    ],
+    "scenarios": [
+      {
+        "id": "MANDATORY_JSON_RUN",
+        "name": "Standard JSON Verification Run",
+        "args": [
+          "--json"
+        ],
+        "isMandatory": true,
+        "expectedExitCode": 0,
+        "expectedStatus": "VERIFIED"
+      },
+      {
+        "id": "MANDATORY_HUMAN_RUN",
+        "name": "Standard Human Output Verification Run",
+        "args": [],
+        "isMandatory": true,
+        "expectedExitCode": 0,
+        "expectedStatus": "VERIFIED"
+      }
+    ],
+    "negativeScenarios": [
+      {
+        "id": "FUZZ_UNKNOWN_ARG",
+        "name": "Fuzzing with Unknown Safe Args",
+        "args": [
+          "--safe-fuzz-arg-test"
+        ],
+        "isMandatory": false,
+        "expectedExitCode": 0
+      }
+    ],
+    "evidenceRequirements": [
+      "total_checks",
+      "checks",
+      "status",
+      "exit_code"
+    ],
+    "failureConditions": [
+      "exit_code !== 0",
+      "malformed_json",
+      "failed_checks > 0"
+    ]
+  },
+  "taste-craft": {
+    "skillId": "taste-craft",
+    "primaryScript": "skills/taste-craft/scripts/audit_craft.js",
+    "allScripts": [
+      "skills/taste-craft/scripts/audit_craft.js"
+    ],
+    "scenarios": [
+      {
+        "id": "MANDATORY_JSON_RUN",
+        "name": "Standard JSON Verification Run",
+        "args": [
+          "--json"
+        ],
+        "isMandatory": true,
+        "expectedExitCode": 0,
+        "expectedStatus": "VERIFIED"
+      },
+      {
+        "id": "MANDATORY_HUMAN_RUN",
+        "name": "Standard Human Output Verification Run",
+        "args": [],
+        "isMandatory": true,
+        "expectedExitCode": 0,
+        "expectedStatus": "VERIFIED"
+      }
+    ],
+    "negativeScenarios": [
+      {
+        "id": "FUZZ_UNKNOWN_ARG",
+        "name": "Fuzzing with Unknown Safe Args",
+        "args": [
+          "--safe-fuzz-arg-test"
+        ],
+        "isMandatory": false,
+        "expectedExitCode": 0
+      }
+    ],
+    "evidenceRequirements": [
+      "total_checks",
+      "checks",
+      "status",
+      "exit_code"
+    ],
+    "failureConditions": [
+      "exit_code !== 0",
+      "malformed_json",
+      "failed_checks > 0"
+    ]
+  },
+  "testing": {
+    "skillId": "testing",
+    "primaryScript": "skills/testing/scripts/verify_evidence.js",
+    "allScripts": [
+      "skills/testing/scripts/verify_evidence.js"
+    ],
+    "scenarios": [
+      {
+        "id": "MANDATORY_JSON_RUN",
+        "name": "Standard JSON Verification Run",
+        "args": [
+          "--json"
+        ],
+        "isMandatory": true,
+        "expectedExitCode": 0,
+        "expectedStatus": "VERIFIED"
+      },
+      {
+        "id": "MANDATORY_HUMAN_RUN",
+        "name": "Standard Human Output Verification Run",
+        "args": [],
+        "isMandatory": true,
+        "expectedExitCode": 0,
+        "expectedStatus": "VERIFIED"
+      }
+    ],
+    "negativeScenarios": [
+      {
+        "id": "FUZZ_UNKNOWN_ARG",
+        "name": "Fuzzing with Unknown Safe Args",
+        "args": [
+          "--safe-fuzz-arg-test"
+        ],
+        "isMandatory": false,
+        "expectedExitCode": 0
+      }
+    ],
+    "evidenceRequirements": [
+      "total_checks",
+      "checks",
+      "status",
+      "exit_code"
+    ],
+    "failureConditions": [
+      "exit_code !== 0",
+      "malformed_json",
+      "failed_checks > 0"
+    ]
+  },
+  "ui-ux": {
+    "skillId": "ui-ux",
+    "primaryScript": "skills/ui-ux/scripts/verify_ux.js",
+    "allScripts": [
+      "skills/ui-ux/scripts/verify_ux.js"
+    ],
+    "scenarios": [
+      {
+        "id": "MANDATORY_JSON_RUN",
+        "name": "Standard JSON Verification Run",
+        "args": [
+          "--json"
+        ],
+        "isMandatory": true,
+        "expectedExitCode": 0,
+        "expectedStatus": "VERIFIED"
+      },
+      {
+        "id": "MANDATORY_HUMAN_RUN",
+        "name": "Standard Human Output Verification Run",
+        "args": [],
+        "isMandatory": true,
+        "expectedExitCode": 0,
+        "expectedStatus": "VERIFIED"
+      }
+    ],
+    "negativeScenarios": [
+      {
+        "id": "FUZZ_UNKNOWN_ARG",
+        "name": "Fuzzing with Unknown Safe Args",
+        "args": [
+          "--safe-fuzz-arg-test"
+        ],
+        "isMandatory": false,
+        "expectedExitCode": 0
+      }
+    ],
+    "evidenceRequirements": [
+      "total_checks",
+      "checks",
+      "status",
+      "exit_code"
+    ],
+    "failureConditions": [
+      "exit_code !== 0",
+      "malformed_json",
+      "failed_checks > 0"
+    ]
+  }
+}
