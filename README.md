@@ -8,16 +8,16 @@
 
 **Build with AI. Verify with Evidence.**
 
-A deterministic, fail-closed engineering and verification ecosystem optimized for **Google Antigravity** and modern AI coding agents. ProofForge enforces mathematical proof over unverified assertion, validates security invariants, eliminates AI slop and placeholder code, and provides 28 specialized, machine-auditable engineering skills.
+A deterministic, fail-closed verification framework and engineering skills ecosystem designed for **Google Antigravity** and modern AI coding agents. ProofForge enforces machine verification over unverified assertions, validates architectural and security constraints, detects placeholder code, and provides 28 specialized, machine-audited engineering skills.
 
-[![Release: v2.0.0](https://img.shields.io/badge/Release-v2.0.0-6366f1.svg)](https://github.com/EyadAbduljalil/ProofForge/releases/tag/v2.0.0)
-[![Antigravity Skills](https://img.shields.io/badge/Antigravity%20Skills-28%20Verified-059669.svg)](skills/)
-[![Security Standard](https://img.shields.io/badge/Security-OWASP%20ASVS%20Level%202-0284c7.svg)](skills/security/references/security_matrix.md)
+[![Release: v2.1.0](https://img.shields.io/badge/Release-v2.1.0-6366f1.svg)](https://github.com/EyadAbduljalil/ProofForge/tree/v2.1.0)
+[![Antigravity Skills](https://img.shields.io/badge/Antigravity%20Skills-28%20Canonical-059669.svg)](skills/)
 [![Node.js Runtime](https://img.shields.io/badge/Node.js-%3E%3D18.0.0-339933.svg)](package.json)
+[![Security Standard](https://img.shields.io/badge/Security-OWASP%20ASVS%20Level%202%20Rules-0284c7.svg)](skills/security/references/security_matrix.md)
+[![CI Pipeline](https://img.shields.io/badge/CI-GitHub%20Actions-2088FF.svg)](https://github.com/EyadAbduljalil/ProofForge/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![CI Pipeline](https://img.shields.io/badge/CI-GitHub%20Actions-2088FF.svg)](https://github.com/EyadAbduljalil/ProofForge/actions)
 
-**Repository:** [github.com/EyadAbduljalil/ProofForge](https://github.com/EyadAbduljalil/ProofForge) &nbsp;|&nbsp; **Architecture Guide:** [`docs/WORKFLOW_COORDINATION.md`](docs/WORKFLOW_COORDINATION.md)
+**Repository:** [github.com/EyadAbduljalil/ProofForge](https://github.com/EyadAbduljalil/ProofForge) &nbsp;|&nbsp; **Workflow Guide:** [`docs/WORKFLOW_COORDINATION.md`](docs/WORKFLOW_COORDINATION.md)
 
 </div>
 
@@ -26,28 +26,30 @@ A deterministic, fail-closed engineering and verification ecosystem optimized fo
 ## 📌 Table of Contents
 
 - [⚡ One-Click AI Skills Adoption Directive](#-one-click-ai-skills-adoption-directive)
-- [Overview](#-overview)
-- [Key Features](#-key-features)
-- [System Architecture](#-system-architecture)
-- [The 28 Antigravity Engineering Skills](#-the-28-antigravity-engineering-skills)
-- [Verification Model & Evidence Contract](#-verification-model--evidence-contract)
-- [Installation & Quick Start](#-installation--quick-start)
-- [CLI Reference](#-cli-reference)
-- [Programmatic API](#-programmatic-api)
-- [Project Structure](#-project-structure)
-- [Configuration & Environment](#-configuration--environment)
-- [Testing & Quality Assurance](#-testing--quality-assurance)
-- [Realistic Scenario Benchmarks](#-realistic-scenario-benchmarks)
-- [Roadmap](#-roadmap)
-- [Contributing & Governance](#-contributing--governance)
-- [License](#-license)
+- [1. Overview](#1-overview)
+- [2. Why ProofForge?](#2-why-proofforge)
+- [3. Key Features](#3-key-features)
+- [4. System Architecture](#4-system-architecture)
+- [5. Skills Ecosystem](#5-skills-ecosystem)
+- [6. Verification Model & Evidence Hierarchy](#6-verification-model--evidence-hierarchy)
+- [7. Installation](#7-installation)
+- [8. Quick Start](#8-quick-start)
+- [9. CLI Reference](#9-cli-reference)
+- [10. Programmatic API](#10-programmatic-api)
+- [11. Project Structure](#11-project-structure)
+- [12. Configuration & Environment](#12-configuration--environment)
+- [13. Testing and Benchmarks](#13-testing-and-benchmarks)
+- [14. Roadmap](#14-roadmap)
+- [15. Contributing](#15-contributing)
+- [16. Security Policy](#16-security-policy)
+- [17. License](#17-license)
 
 ---
 
 ## ⚡ One-Click AI Skills Adoption Directive
 
 > 💡 **For Google Antigravity, Claude Code, Cursor, Windsurf, Codex, and ChatGPT:**  
-> Copy and send this prompt to your AI coding agent to immediately adopt ProofForge's 28 engineering skills, deterministic verification gates, and OWASP ASVS L2 security governance in **any** project:
+> Copy and paste this prompt to your AI coding agent to immediately activate ProofForge's 28 engineering skills, deterministic verification gates, and security governance in **any** workspace:
 
 ```text
 ================================================================================
@@ -57,7 +59,7 @@ You are the Lead Software & Security Architect for this workspace, governed by P
 
 MANDATORY FIRST STEP:
 Clone and activate the official ProofForge 28 engineering skills suite:
-git clone https://github.com/EyadAbduljalil/ProofForge.git .proofforge && npx proofforge skills sync
+git clone https://github.com/EyadAbduljalil/ProofForge.git .proofforge && node .proofforge/bin/proofforge.js skills sync
 
 CORE GOVERNANCE RULES (FAIL-CLOSED):
 1. [Security (P0)]: Zero-trust, server-side authorization, anti-IDOR/BOLA, sanitize I/O, validate tenant_id on all queries, timing-safe crypto, and default-deny.
@@ -87,251 +89,236 @@ If any check fails (exit code 1), fix the root cause immediately. Conclude every
 
 ---
 
-## 💡 Overview
+## 1. Overview
 
-Modern generative AI assistants write code at blistering speed, but production engineering environments cannot rely on unverified claims. AI-generated solutions frequently suffer from:
+**ProofForge** is a deterministic verification framework and modular skills repository for AI-assisted software engineering.
 
-1. **Unverified Claims:** Declaring tasks "complete" without executing real tests, leaving unhandled edge cases.
-2. **Subtle Security Flaws:** Introducing Broken Object Level Authorization (BOLA/IDOR), missing rate limits, and client-trusted inputs.
-3. **AI Slop & Laziness:** Generating generic purple gradients, bloated card grids, and leaving `// TODO: implement later` mocks.
+Modern generative AI coding tools produce code rapidly, but they lack built-in mechanisms to verify that their changes adhere to system invariants, maintain database atomicity, or satisfy security requirements. ProofForge bridges this gap: it translates engineering rules and architectural standards into executable, fail-closed verification scripts that audit agent modifications before they reach production.
 
-**ProofForge solves this by establishing a deterministic, fail-closed verification layer.**
-
-Instead of blindly trusting model output, ProofForge bridges the gap between natural language prompts and verifiable production code. Every engineering change must satisfy automated, terminal-backed checks, strict AST inspection, and runtime evidence before being marked as verified.
-
-```
-AI Prompt / Task ──> ProofForge Skill ──> Automated Verifier Engine ──> Deterministic Evidence (Pass/Fail)
-```
+ProofForge can run as an interactive CLI, execute automated CI checks, or provide native skills directly to **Google Antigravity** via `.agents/skills/`.
 
 ---
 
-## ✨ Key Features
+## 2. Why ProofForge?
 
-### 🛡️ P0 Security & OWASP ASVS Level 2
-* **Server-Side Enforcement:** Zero trust toward client controls; mandatory server-side parameter validation and role checks.
-* **Anti-IDOR & Multi-Tenancy:** Hardened ownership validation ensuring every query and mutation is scoped by `tenant_id`.
-* **Safe Cryptography:** Constant-time hash verification, timing-safe webhook HMAC checks, and automatic secret scrubbing in audit logs.
+AI coding assistants frequently encounter three systematic failure modes:
 
-### 🧪 Deterministic Verifier Engine (Fail-Closed)
-* **Real Static & AST Inspection:** Zero hardcoded success messages; every verifier scans actual project files using AST and regex inspectors.
-* **Strict Exit Code Semantics:** Verifiers exit with code `0` solely when properties are proven; any flaw immediately produces exit code `1`.
-* **Zero Lazy Placeholders:** Scans codebases to block `// TODO`, `/* FIXME */`, and empty catch blocks.
-
-### 🎨 Anti-Slop Visual Intelligence & BiDi Parity
-* **Restrained Craft:** Rejects repetitive AI design tropes (excessive purple gradients, fake metric cards) in favor of semantic design tokens.
-* **4px/8px Spatial Rhythm:** Enforces consistent typography scales, subtle borders, and accessible color contrast (WCAG AAA).
-* **RTL/LTR Parity:** First-class support for Arabic and bidirectional interfaces using CSS logical properties (`ms-`, `me-`, `inline-start`).
-
-### 🤖 Google Antigravity Native Integration
-* **Canonical Synchronization:** Synchronizes modular skills directly into `.agents/skills/` with clean `lowercase-hyphenated` frontmatter.
-* **Progressive Disclosure:** Structured into `SKILL.md`, `scripts/`, `examples/`, and `references/` for efficient agent context utilization.
-* **Safe Differential Pruning:** Safely updates core framework skills while protecting custom user-defined skills.
+| Failure Mode | Manifestation | How ProofForge Solves It |
+|---|---|---|
+| **Unverified Completion** | Declaring tasks "fixed" without running test suites or checking exit codes. | **Deterministic Evidence Gate:** Claims require executable terminal checks (`exit code 0`). |
+| **Silent Authorization Flaws** | Introducing IDOR/BOLA, unparameterized database queries, or trusting client-supplied IDs. | **Server-Side Security Invariants:** Scans and verifies multi-tenant isolation and strict role checks. |
+| **Code Laziness & Slop** | Inserting `// TODO: implement later` mocks, generic purple gradients, and bloated card grids. | **Automated AST & Pattern Scanners:** Zero-tolerance scanners that fail builds on placeholder comments or design slop. |
 
 ---
 
-## 🏛️ System Architecture
+## 3. Key Features
 
-ProofForge is organized into decoupled, specialized modules governed by a centralized verification pipeline:
+* **Deterministic Fail-Closed Verifiers:** Written in zero-dependency Node.js. Verifiers return exit code `0` solely when properties are verified, and exit code `1` immediately on defects.
+* **28 Antigravity-Native Skills:** Formatted to the Google Antigravity Agent Skills specification, featuring progressive disclosure (`SKILL.md`, `scripts/`, `examples/`, `references/`).
+* **Security & ASVS Level 2 Rules:** Automated checks for server-side authorization, timing-safe crypto, CORS/CSRF headers, and tenant isolation keys.
+* **Evidence Graph Traceability:** Tracks code modifications, test execution results, and validation claims within an internal structured Evidence Graph.
+* **Anti-Slop Visual Intelligence:** Design system rules and linters enforcing WCAG AAA contrast, semantic design tokens, 4px/8px spatial rhythm, and full RTL/LTR bidirectional parity.
+* **Differential Skill Synchronization:** Synchronizes canonical skills into local workspace `.agents/skills/` while protecting user-created custom skills from accidental pruning.
+
+---
+
+## 4. System Architecture
+
+ProofForge structures autonomous development into three decoupled tiers:
 
 ```mermaid
-graph TD
-    UserReq[User Request / Agent Task] --> CLI[ProofForge CLI / Adapter]
-    CLI --> SkillRegistry[28 Antigravity Skills]
+flowchart TD
+    Task[Agent Task / Prompt] --> CLI[ProofForge CLI / Adapter]
+    CLI --> Registry[Canonical Skill Registry]
     
-    subgraph Execution & Domain Layer
-        SkillRegistry --> FE[Frontend & UI/UX]
-        SkillRegistry --> BE[Backend & API Contracts]
-        SkillRegistry --> DB[Database & ACID Storage]
-        SkillRegistry --> SEC[Security & Governance]
-        SkillRegistry --> AI[AI Systems & Guardrails]
-    end
-    
-    subgraph Verification Engine
-        FE --> VerifierEngine[VerifierEngine / Static AST Analyzers]
-        BE --> VerifierEngine
-        DB --> VerifierEngine
-        SEC --> VerifierEngine
-        AI --> VerifierEngine
+    subgraph Skills [28 Specialized Skills]
+        Registry --> FE[Frontend / UX / Design]
+        Registry --> BE[Backend / API / DB]
+        Registry --> QA[Testing / Code Review]
+        Registry --> SEC[Security / SRE / DevOps]
+        Registry --> AI[AI Systems / Governance]
     end
 
-    subgraph Evidence & Output
-        VerifierEngine -->|Defect Found| Exit1[Exit Code 1 / Fail-Closed Report]
-        VerifierEngine -->|Verified| Exit0[Exit Code 0 / Signed Evidence Package]
+    subgraph Verification [Deterministic Verifier Engine]
+        FE --> Engine[VerifierEngine / Static Scanners]
+        BE --> Engine
+        QA --> Engine
+        SEC --> Engine
+        AI --> Engine
+    end
+
+    subgraph Outcomes [Fail-Closed Execution Gate]
+        Engine -->|Defect Detected| Fail[Exit Code 1 / Build Blocked]
+        Engine -->|Verified| Pass[Exit Code 0 / Evidence Recorded]
     end
 ```
 
 ---
 
-## 🛡️ The 28 Antigravity Engineering Skills
+## 5. Skills Ecosystem
 
-ProofForge provides **28 specialized, production-ready skills** mapped across the 8 core engineering disciplines. Each skill implements the **5-Part Skill Quality Contract** (Identity & Scope, Context Discovery, Execution Methodology, Quality Assurance, Evidence Contract).
+The repository provides **28 canonical engineering skills** organized across 8 core disciplines. Each skill contains an Antigravity-compliant `SKILL.md`, practical implementation examples, reference guides, and executable verification scripts:
 
-### 1. Frontend Engineering
-| Skill | Description | Automated Verifier |
-|---|---|---|
-| [`frontend`](skills/frontend/SKILL.md) | Client-side state architecture, error boundary containment, and chunk splitting. | `node skills/frontend/scripts/verify_frontend.js` |
-| [`forms`](skills/forms/SKILL.md) | Schema-validated forms (Zod), double-submission prevention, and accessible errors. | `node skills/forms/scripts/verify_forms.js` |
-| [`ui-ux`](skills/ui-ux/SKILL.md) | Resilient 5-state UI machines (Idle, Loading, Empty, Error, Success). | `node skills/ui-ux/scripts/verify_ux.js` |
-| [`responsive`](skills/responsive/SKILL.md) | Mobile-first layouts (320px to 4K), 44x44px touch targets, zero horizontal scroll. | `node skills/responsive/scripts/verify_responsive.js` |
-| [`rtl`](skills/rtl/SKILL.md) | Arabic and Hebrew bidirectional layouts, CSS logical properties, icon mirroring. | `node skills/rtl/scripts/audit_rtl.js` |
-| [`dashboards`](skills/dashboards/SKILL.md) | High-density data dashboards, real-time metrics, and virtualized tables. | `node skills/dashboards/scripts/verify_dashboards.js` |
+### A. Frontend Engineering
+* [`frontend`](skills/frontend/SKILL.md) — State management, error boundary containment, chunk splitting (< 200KB). *(Verifier: `node skills/frontend/scripts/verify_frontend.js`)*
+* [`forms`](skills/forms/SKILL.md) — Zod schema validation, double-submission protection, and accessible inline errors. *(Verifier: `node skills/forms/scripts/verify_forms.js`)*
+* [`ui-ux`](skills/ui-ux/SKILL.md) — Five-state UI machine (Idle, Loading, Empty, Error, Success). *(Verifier: `node skills/ui-ux/scripts/verify_ux.js`)*
+* [`responsive`](skills/responsive/SKILL.md) — Mobile-first adaptive viewports (320px to 4K), 44x44px touch targets. *(Verifier: `node skills/responsive/scripts/verify_responsive.js`)*
+* [`rtl`](skills/rtl/SKILL.md) — Arabic/Hebrew bidirectional layout, CSS logical properties, icon mirroring. *(Verifier: `node skills/rtl/scripts/audit_rtl.js`)*
+* [`dashboards`](skills/dashboards/SKILL.md) — High-density analytics, monospace alignment, table virtualization. *(Verifier: `node skills/dashboards/scripts/verify_dashboards.js`)*
 
-### 2. Backend Engineering
-| Skill | Description | Automated Verifier |
-|---|---|---|
-| [`backend`](skills/backend/SKILL.md) | Express/Node.js architecture, `/healthz` & `/readyz` probes, and rate-limiting. | `node skills/backend/scripts/verify_backend.js` |
-| [`api`](skills/api/SKILL.md) | REST/GraphQL contracts, standardized response envelopes, and idempotent mutations. | `node skills/api/scripts/verify_api.js` |
+### B. Backend Engineering
+* [`backend`](skills/backend/SKILL.md) — Routing architecture, `/healthz` & `/readyz` probes, sliding rate-limits. *(Verifier: `node skills/backend/scripts/verify_backend.js`)*
+* [`api`](skills/api/SKILL.md) — REST/GraphQL contracts, unified response envelopes (`ApiResponse`), idempotent mutations. *(Verifier: `node skills/api/scripts/verify_api.js`)*
 
-### 3. Database Engineering
-| Skill | Description | Automated Verifier |
-|---|---|---|
-| [`database`](skills/database/SKILL.md) | Relational/NoSQL schemas, multi-tenant isolation (`tenant_id`), and ACID transactions. | `node skills/database/scripts/verify_database.js` |
+### C. Database Engineering
+* [`database`](skills/database/SKILL.md) — ACID transactions, multi-tenant row isolation (`tenant_id`), migration integrity. *(Verifier: `node skills/database/scripts/verify_database.js`)*
 
-### 4. Full-Stack & Feature Engineering
-| Skill | Description | Automated Verifier |
-|---|---|---|
-| [`fullstack`](skills/fullstack/SKILL.md) | End-to-end feature lifecycles, API-to-DB integration, and cross-tier invariants. | `node skills/fullstack/scripts/verify_fullstack.js` |
-| [`ecommerce`](skills/ecommerce/SKILL.md) | Atomic inventory locks, double-spend prevention, and timing-safe webhook HMAC. | `node skills/ecommerce/scripts/verify_ecommerce.js` |
-| [`image-to-code`](skills/image-to-code/SKILL.md) | Transforming UI designs to production Tailwind/React without hallucination. | `node skills/image-to-code/scripts/verify_image_code.js` |
+### D. Full-Stack & Systems Integration
+* [`fullstack`](skills/fullstack/SKILL.md) — Cross-tier feature lifecycles, API-to-DB integration, end-to-end consistency. *(Verifier: `node skills/fullstack/scripts/verify_fullstack.js`)*
+* [`ecommerce`](skills/ecommerce/SKILL.md) — Atomic stock reservation, double-spend prevention, timing-safe webhook HMAC. *(Verifier: `node skills/ecommerce/scripts/verify_ecommerce.js`)*
+* [`image-to-code`](skills/image-to-code/SKILL.md) — Converting UI mockups into production React/Tailwind without visual hallucination. *(Verifier: `node skills/image-to-code/scripts/verify_image_code.js`)*
 
-### 5. Software Quality & Verification
-| Skill | Description | Automated Verifier |
-|---|---|---|
-| [`testing`](skills/testing/SKILL.md) | Deterministic unit/integration/E2E test suites, fuzzing, and Evidence Contracts. | `node skills/testing/scripts/verify_evidence.js` |
-| [`code-review`](skills/code-review/SKILL.md) | Adversarial code review, vulnerability detection, and regression analysis. | `node skills/code-review/scripts/review_code.js` |
-| [`anti-laziness`](skills/anti-laziness/SKILL.md) | Scanning and banning `// TODO` placeholders, mocked logic, and truncation. | `node skills/anti-laziness/scripts/scan_laziness.js` |
-| [`project-audit`](skills/project-audit/SKILL.md) | Composite multi-domain diagnostic executing 14 real verification engines. | `node skills/project-audit/scripts/run_audit.js` |
+### E. Software Quality Engineering
+* [`testing`](skills/testing/SKILL.md) — Deterministic unit/integration/E2E testing and Evidence Contract enforcement. *(Verifier: `node skills/testing/scripts/verify_evidence.js`)*
+* [`code-review`](skills/code-review/SKILL.md) — Adversarial review, dangerous API detection, side-effect checking. *(Verifier: `node skills/code-review/scripts/review_code.js`)*
+* [`anti-laziness`](skills/anti-laziness/SKILL.md) — Scanning and banning `// TODO` placeholders, empty catch blocks, and mocked logic. *(Verifier: `node skills/anti-laziness/scripts/scan_laziness.js`)*
+* [`project-audit`](skills/project-audit/SKILL.md) — Composite multi-domain diagnostic executing 14 verifiers in sequence. *(Verifier: `node skills/project-audit/scripts/run_audit.js`)*
 
-### 6. Performance & Visual Craft
-| Skill | Description | Automated Verifier |
-|---|---|---|
-| [`performance`](skills/performance/SKILL.md) | Google Core Web Vitals optimization (< 2.5s LCP, < 200ms INP, < 0.1 CLS). | `node skills/performance/scripts/audit_performance.js` |
-| [`motion`](skills/motion/SKILL.md) | 60fps GPU-accelerated transforms, zero layout reflows, and reduced-motion support. | `node skills/motion/scripts/audit_motion.js` |
-| [`taste-craft`](skills/taste-craft/SKILL.md) | High tactile polish, micro-interactions, active states, and refined typography. | `node skills/taste-craft/scripts/audit_craft.js` |
-| [`anti-slop`](skills/anti-slop/SKILL.md) | Banning generic purple gradients, bloated cards, and fake trust badges. | `node skills/anti-slop/scripts/audit_slop.js` |
-| [`design-system`](skills/design-system/SKILL.md) | CSS design tokens, 4px/8px spatial rhythm, and WCAG AAA contrast scales. | `node skills/design-system/scripts/verify_tokens.js` |
+### F. Performance & Visual Craft
+* [`performance`](skills/performance/SKILL.md) — Google Core Web Vitals optimization (< 2.5s LCP, < 200ms INP, < 0.1 CLS). *(Verifier: `node skills/performance/scripts/audit_performance.js`)*
+* [`motion`](skills/motion/SKILL.md) — 60fps GPU-accelerated transforms (`translate/opacity`), reduced-motion support. *(Verifier: `node skills/motion/scripts/audit_motion.js`)*
+* [`taste-craft`](skills/taste-craft/SKILL.md) — Tactile button states (`:active`), subtle borders, refined micro-interactions. *(Verifier: `node skills/taste-craft/scripts/audit_craft.js`)*
+* [`anti-slop`](skills/anti-slop/SKILL.md) — Elimination of generic AI visual tropes (purple gradients, bloated cards). *(Verifier: `node skills/anti-slop/scripts/audit_slop.js`)*
+* [`design-system`](skills/design-system/SKILL.md) — 4px/8px spatial rhythm, design tokens, WCAG AAA contrast scales. *(Verifier: `node skills/design-system/scripts/verify_tokens.js`)*
 
-### 7. DevOps & Production Reliability
-| Skill | Description | Automated Verifier |
-|---|---|---|
-| [`accessibility`](skills/accessibility/SKILL.md) | WCAG 2.2 AA/AAA compliance, screen reader ARIA labels, and focus traps. | `node skills/accessibility/scripts/audit_a11y.js` |
-| [`security`](skills/security/SKILL.md) | OWASP ASVS L2 verification, anti-IDOR checks, and cryptographic storage. | `node skills/security/scripts/verify_security.js` |
-| [`deployment`](skills/deployment/SKILL.md) | Multi-stage non-root Dockerfiles, reproducible builds, and zero leaked secrets. | `node skills/deployment/scripts/verify_deployment.js` |
-| [`production-readiness`](skills/production-readiness/SKILL.md) | 12-Factor principles, structured JSON logging, and container health probes. | `node skills/production-readiness/scripts/audit_readiness.js` |
-| [`architecture`](skills/architecture/SKILL.md) | Clean Architecture boundaries, domain invariants, and Architecture Decision Records. | `node skills/architecture/scripts/verify_architecture.js` |
-| [`seo`](skills/seo/SKILL.md) | Semantic HTML5 structure, OpenGraph protocols, and JSON-LD schema markup. | `node skills/seo/scripts/verify_seo.js` |
+### G. DevOps & Production Reliability
+* [`accessibility`](skills/accessibility/SKILL.md) — WCAG 2.2 AA/AAA compliance, screen reader ARIA labels, focus traps. *(Verifier: `node skills/accessibility/scripts/audit_a11y.js`)*
+* [`security`](skills/security/SKILL.md) — OWASP ASVS L2 rules, input sanitization, CSRF tokens, timing-safe crypto. *(Verifier: `node skills/security/scripts/verify_security.js`)*
+* [`deployment`](skills/deployment/SKILL.md) — Multi-stage non-root Dockerfiles, frozen lockfile builds, zero leaked secrets. *(Verifier: `node skills/deployment/scripts/verify_deployment.js`)*
+* [`production-readiness`](skills/production-readiness/SKILL.md) — 12-Factor compliance, structured JSON logging, process supervision. *(Verifier: `node skills/production-readiness/scripts/audit_readiness.js`)*
+* [`architecture`](skills/architecture/SKILL.md) — Clean Architecture boundaries and Architecture Decision Records (ADR). *(Verifier: `node skills/architecture/scripts/verify_architecture.js`)*
+* [`seo`](skills/seo/SKILL.md) — Semantic HTML5 headings, OpenGraph metadata, JSON-LD structured schemas. *(Verifier: `node skills/seo/scripts/verify_seo.js`)*
 
-### 8. AI Engineering & Agent Systems
-| Skill | Description | Automated Verifier |
-|---|---|---|
-| [`ai-engineering`](skills/ai-engineering/SKILL.md) | AI agent tool governance, prompt injection defense, and structured JSON schemas. | `node skills/ai-engineering/scripts/verify_ai_engineering.js` |
+### H. AI Engineering & Agent Systems
+* [`ai-engineering`](skills/ai-engineering/SKILL.md) — AI agent tool permission governance, prompt injection defense, structured JSON outputs. *(Verifier: `node skills/ai-engineering/scripts/verify_ai_engineering.js`)*
 
 ---
 
-## 🔬 Verification Model & Evidence Contract
+## 6. Verification Model & Evidence Hierarchy
 
-ProofForge strictly enforces a 5-tier evidence hierarchy. Natural language claims alone are untrusted:
+ProofForge enforces a strict distinction between natural language claims and machine evidence:
 
 ```
-[State 0] AI_CLAIMED         → Agent claims a bug is fixed (Untrusted / Rejected)
+[State 0] AI_CLAIMED         → Agent asserts an issue was resolved (Untrusted / Rejected)
     ↓
-[State 1] CODE_CHANGED       → File modification verified on disk via AST inspection
+[State 1] CODE_CHANGED       → File modification verified on disk via static inspection
     ↓
-[State 2] TEST_PASSED        → Automated test suite passes with exit code 0
+[State 2] TEST_PASSED        → Automated test suite passes with terminal exit code 0
     ↓
-[State 3] EVIDENCE_CAPTURED  → Real terminal output and file diffs recorded
+[State 3] EVIDENCE_CAPTURED  → Real terminal output, file hashes, and AST traces recorded
     ↓
-[State 4] PROOFFORGE_VERIFIED → Validated against domain contract and machine-certified
+[State 4] PROOFFORGE_VERIFIED → Machine-certified and appended to the Evidence Graph
 ```
 
-**Fail-Closed Rule:** If any check fails, the process exits with `code 1`. The agent must remediate the actual root cause instead of claiming completion.
+**Fail-Closed Rule:** If any check fails, the process exits with `code 1`. The agent must resolve the defect rather than assuming completion.
 
 ---
 
-## 🚀 Installation & Quick Start
+## 7. Installation
 
-### Prerequisites
-* **Node.js:** `>= 18.0.0`
-* **Package Manager:** `npm` (bundled with Node.js)
-* **Git:** Installed and available on system `PATH`
+### Option A: Local Clone (Recommended for Antigravity & v2.x Features)
+The canonical v2.x source code, complete 28-skill library, and scenario benchmark suite are maintained directly in the Git repository:
 
-### 1. Clone the Repository
 ```bash
+# 1. Clone the repository
 git clone https://github.com/EyadAbduljalil/ProofForge.git
 cd ProofForge
-```
 
-### 2. Install Dependencies
-```bash
+# 2. Install development dependencies
 npm install
+
+# 3. Synchronize skills to Google Antigravity (.agents/skills/)
+node bin/proofforge.js skills sync
 ```
 
-### 3. Verify Framework Integrity
-Execute the comprehensive test suite to confirm all 14 security and orchestration packages pass:
+### Option B: npm Package Installation
+ProofForge is also published on npm (base package version `1.0.4`):
+```bash
+npm install proofforge
+```
+*(Note: To use the complete v2.x Antigravity skills suite and realistic scenario benchmarks, clone directly from GitHub).*
+
+---
+
+## 8. Quick Start
+
+### 1. Verify Project Installation
+Confirm that your local environment passes the complete package and E2E regression suite:
 ```bash
 npm test
 ```
 
-### 4. Run the Project Audit
-Audit your codebase using the multi-domain verification runner:
+### 2. Run the Multi-Domain Project Audit
+Execute all 14 domain verifiers against your workspace:
 ```bash
-npm run verify
+node bin/proofforge.js verify
 ```
 
-### 5. Synchronize & Activate Skills in Google Antigravity
-To install and activate all 28 canonical skills into your Antigravity workspace:
+### 3. List and Inspect Available Skills
 ```bash
-node bin/proofforge.js skills sync
+# List all 28 canonical skills
+node bin/proofforge.js skills list
+
+# Inspect a specific skill
+node bin/proofforge.js skills inspect frontend
 ```
-This deploys the 28 validated skills directly into `.agents/skills/` where Google Antigravity discovers and progressively loads them as needed.
 
 ---
 
-## 💻 CLI Reference
+## 9. CLI Reference
 
-ProofForge includes a unified command-line interface under `proofforge` (and `webforge`):
+ProofForge exposes its command-line interface through `bin/proofforge.js` (and `bin/webforge.js`):
 
-### Skill Management Commands
-
+### Skill Management
 ```bash
-# List all 28 canonical engineering skills and their verification status
+# List all canonical skills and their validity status
 node bin/proofforge.js skills list
 
-# Inspect a specific skill's frontmatter, scripts, and examples
-node bin/proofforge.js skills inspect frontend
+# Inspect detailed frontmatter, scripts, examples, and references
+node bin/proofforge.js skills inspect <skill-name>
 
-# Validate structural integrity and Antigravity specification compliance
+# Validate structural integrity and YAML frontmatter against Antigravity specs
 node bin/proofforge.js skills validate
 
-# Execute the automated 28-skill quality benchmark
+# Execute the 28-skill structural & script quality benchmark
 node bin/proofforge.js skills benchmark
 
-# Synchronize canonical skills to Google Antigravity (.agents/skills/)
-node bin/proofforge.js skills sync
+# Synchronize canonical skills to .agents/skills/ in the current workspace
+node bin/proofforge.js skills sync [targetDir]
 
-# Preview synchronization without modifying files
+# Preview synchronization without copying files
 node bin/proofforge.js skills sync -- --dry-run
 
-# Compare differences between canonical skills and installed workspace skills
-node bin/proofforge.js skills diff
+# Diff installed workspace skills against the canonical repository
+node bin/proofforge.js skills diff [targetDir]
 
-# Clean up stale ProofForge skills while protecting custom user-defined skills
-node bin/proofforge.js skills prune --force
+# Prune stale ProofForge skills while preserving custom user skills
+node bin/proofforge.js skills prune [targetDir] --force
 ```
 
-### Verification & Testing Commands
-
+### Verification & Testing
 ```bash
-# Execute the comprehensive multi-domain project diagnostic
+# Run the composite multi-domain project diagnostic
 node bin/proofforge.js verify
 
 # Output machine-readable JSON verification results for CI pipelines
 node bin/proofforge.js verify --json
 
-# Run all unit, integration, and E2E security test suites
+# Run all automated test suites
 node bin/proofforge.js test
 
-# Run the realistic scenarios benchmark runner (tests/benchmark/)
+# Run the realistic scenario benchmark runner
 node bin/proofforge.js benchmark:scenarios
 
 # Display the latest certified verification report
@@ -340,62 +327,86 @@ node bin/proofforge.js report
 
 ---
 
-## 📦 Programmatic API
+## 10. Programmatic API
 
-ProofForge provides programmatic APIs for CI/CD pipelines, custom runners, and automated security gates:
+ProofForge exports its core contracts, path guards, and execution engines for integration into custom harnesses:
 
 ```javascript
-const { VerifierEngine } = require('proofforge/packages/contracts');
+const {
+    ProofRunEngine,
+    PathLoaderGuard,
+    AntigravityAdapter
+} = require('./packages/contracts');
 
-// Initialize the deterministic verifier engine
-const engine = new VerifierEngine('custom-security-verifier', {
-    rootDir: process.cwd(),
-    strict: true
+// 1. Execute a Bounded Verification Run
+const engine = new ProofRunEngine();
+const result = engine.executeBoundedRun({
+    request: 'Verify user authentication & tenant isolation',
+    projectName: 'CoreAPI'
 });
 
-// Run file inspection checks
-engine.inspectFile('apps/server/server.js', (content, filePath) => {
-    if (!content.includes('/healthz')) {
-        engine.recordFinding({
-            severity: 'CRITICAL',
-            check: 'HEALTH_PROBE_CHECK',
-            file: filePath,
-            message: 'Server is missing mandatory /healthz liveness probe'
-        });
-    }
+console.log('Run Status:', result.status);       // 'VERIFIED'
+console.log('Exit Code:', result.exit_code);     // 0
+
+// 2. Validate Paths Securely (Anti-Path Traversal)
+const pathCheck = PathLoaderGuard.validateSafePath('registry/agents.json', process.cwd());
+console.log('Safe Path:', pathCheck);
+
+// 3. Programmatic Antigravity Skill Synchronization
+const syncReport = AntigravityAdapter.syncCanonicalSkills('skills', '.agents/skills', {
+    dryRun: false,
+    force: true
+});
+console.log(`Synced ${syncReport.synced.length} skills into Antigravity.`);
+```
+
+### Custom Verifiers via `VerifierEngine`
+
+You can build custom static verifiers using the internal `VerifierEngine`:
+
+```javascript
+const VerifierEngine = require('./packages/contracts/verifier-engine');
+
+const verifier = new VerifierEngine('custom-security-audit');
+const serverFiles = verifier.findFiles('apps/server', ['.js']);
+
+// Perform real file checks
+serverFiles.forEach(file => {
+    const content = verifier.readFile(file);
+    const hasHealthProbe = content.includes('/healthz');
+    verifier.recordCheck('LIVENESS_PROBE_EXISTS', hasHealthProbe, file, 'CRITICAL');
 });
 
-// Complete verification run with deterministic exit code
-const result = engine.complete();
-console.log(`Passed: ${result.passed}, Score: ${result.score}/100`);
+// Finish verification: prints report and exits with 0 (pass) or 1 (fail)
+verifier.finish();
 ```
 
 ---
 
-## 📂 Project Structure
+## 11. Project Structure
 
 ```text
 ProofForge/
 ├── .agents/skills/               # Synchronized Google Antigravity native skills
 ├── bin/
 │   ├── proofforge.js             # Canonical ProofForge CLI
-│   └── webforge.js               # Autonomous engineering orchestrator CLI
+│   └── webforge.js               # Autonomous engineering CLI & server runner
 ├── skills/                       # 28 Canonical Engineering Skills
 │   ├── [skill-name]/
-│   │   ├── SKILL.md              # Antigravity contract & instructions
-│   │   ├── scripts/              # Real, zero-dependency Node.js verifiers
+│   │   ├── SKILL.md              # Skill contract, identity, rules & instructions
+│   │   ├── scripts/              # Executable, zero-dependency Node.js verifiers
 │   │   ├── examples/             # Concrete reference implementations
-│   │   └── references/           # Technical specifications & playbooks
+│   │   └── references/           # In-depth architectural & security guidelines
 ├── packages/
-│   ├── contracts/                # Verification engine, Antigravity adapter, contracts
-│   ├── security/                 # ASVS L2 controls, CSRF, IDOR, and input sanitation
+│   ├── contracts/                # Verification engine, Antigravity adapter, registries
+│   ├── security/                 # ASVS controls, IDOR guards, and timing-safe crypto
 │   ├── security-governance/      # Threat modeling, attack surface, and supply chain guards
-│   ├── orchestration/            # Evidence graph, rule arbiters, and compliance engines
+│   ├── orchestration/            # Evidence Graph, claim engines, and compliance rules
 │   ├── design-system/            # Design tokens, spatial rhythm, and contrast validators
 │   └── infrastructure/           # Storage adapters and ACID migration runners
 ├── tests/
 │   ├── benchmark/                # Realistic multi-domain scenario benchmarks
-│   ├── fixtures/                 # Broken & vulnerable test fixtures (frontend, backend, DB)
+│   ├── fixtures/                 # Broken & vulnerable test fixtures (negative controls)
 │   └── e2e/                      # Live HTTP integration and security test suites
 ├── docs/                         # Cross-skill workflow and orchestration documentation
 ├── GEMINI.md                     # Project-level rules for Google Antigravity / Gemini
@@ -405,53 +416,61 @@ ProofForge/
 
 ---
 
-## ⚙️ Configuration & Environment
+## 12. Configuration & Environment
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `TARGET_DIR` | `process.cwd()` | Target directory scanned by the verifier engine |
+| `TARGET_DIR` | `process.cwd()` | Root directory scanned by the verifiers |
 | `NODE_ENV` | `development` | Runtime environment (`development`, `test`, `production`) |
-| `PORT` | `3000` | Port used when running `proofforge serve` |
+| `PORT` | `3000` | Port used by the built-in server (`proofforge serve`) |
 | `CI` | `false` | When `true`, enforces strict fail-closed exit codes in pipelines |
 
 ---
 
-## 🧪 Testing & Quality Assurance
+## 13. Testing and Benchmarks
 
-ProofForge maintains zero tolerance for unverified assertions. Every verification engine is tested against positive and negative test cases:
+ProofForge validates its own verification capabilities across four testing tiers:
 
+### 1. Regression & Unit Tests
 ```bash
-# 1. Full Package & E2E Test Suite
 npm test
+```
+Executes all package tests, state machine verifiers, and live HTTP E2E tests against local endpoints.
 
-# 2. Automated Antigravity Skills Benchmark (100% verified target)
+### 2. Structural Skill Quality Benchmark
+```bash
 npm run benchmark:skills
+```
+Audits all 28 skills in `skills/` to confirm:
+* Valid directory structure (`SKILL.md`, `scripts/`, `examples/`, `references/`).
+* Valid YAML frontmatter with `lowercase-hyphenated` names and semantic descriptions.
+* Presence of required sections (Purpose, Methodology, Evidence).
+* Execution of each skill's primary verification script with `--json` returning `exit code 0`.
 
-# 3. Realistic Scenarios Benchmark (Fail-closed defect verification)
+*(Note: This benchmark validates structural and script execution validity; it does not evaluate live LLM reasoning or prompt quality against human benchmarks).*
+
+### 3. Realistic Scenarios Benchmark (Negative Controls)
+```bash
 npm run benchmark:scenarios
 ```
-
-### Realistic Scenario Benchmarks
-
-ProofForge validates its own verification engines against real-world broken fixtures:
-
-1. **Scenario 1 (Broken Frontend):** Verifies that missing `alt` attributes, unlabelled form inputs, and rigid `850px` layout containers are caught with exit code `1`.
-2. **Scenario 2 (Insecure Backend):** Verifies that missing `/healthz` probes, omitted security headers, and missing rate limits fail with exit code `1`.
-3. **Scenario 3 (Flawed Database):** Verifies that missing `tenant_id` isolation keys and non-atomic data updates fail with exit code `1`.
-4. **Scenario 4 (Hardened Golden Project):** Verifies that a fully hardened, ASVS L2-compliant codebase passes all 14 domain verifiers with a composite score of `100/100` and exit code `0`.
+Tests the verification engines against deliberate flaws in `tests/fixtures/` to verify fail-closed behavior:
+1. **Broken Frontend (`tests/fixtures/broken-frontend`):** Confirms that missing `alt` attributes, unlabelled inputs, and rigid `850px` layout containers fail with `exit code 1`.
+2. **Insecure Backend (`tests/fixtures/insecure-backend`):** Confirms that omitted `/healthz` probes, missing security headers, and lack of rate-limits fail with `exit code 1`.
+3. **Flawed Database (`tests/fixtures/flawed-database`):** Confirms that omitted `tenant_id` isolation keys and non-atomic data updates fail with `exit code 1`.
+4. **Hardened Production:** Confirms that a hardened, ASVS L2-compliant project passes all 14 domain verifiers with a composite score of `100/100` and `exit code 0`.
 
 ---
 
-## 🗺️ Roadmap
+## 14. Roadmap
 
-### Completed (v2.0.0 / Current)
+### Completed (v2.1.0)
 - [x] Full restructuring of all 28 canonical Antigravity skills.
 - [x] Canonical `VerifierEngine` with deterministic AST/regex file scanning.
 - [x] Google Antigravity native synchronization (`.agents/skills/`) with differential pruning.
-- [x] 14-domain automated multi-check project audit.
-- [x] Realistic scenario benchmarks (`broken-frontend`, `insecure-backend`, `flawed-database`).
+- [x] 14-domain automated multi-check project audit (`run_audit.js`).
+- [x] Negative-control scenario benchmarks (`broken-frontend`, `insecure-backend`, `flawed-database`).
 - [x] Cross-skill orchestration guide ([`docs/WORKFLOW_COORDINATION.md`](docs/WORKFLOW_COORDINATION.md)).
-- [x] First-class CLI subcommands under `proofforge skills *`.
+- [x] Extended CLI subcommands under `proofforge skills *`.
 
 ### In Progress
 - [ ] Language server protocol (LSP) diagnostic plugin for live editor feedback.
@@ -459,24 +478,31 @@ ProofForge validates its own verification engines against real-world broken fixt
 
 ### Planned
 - [ ] Integration adapters for custom remote agent runners.
-- [ ] Hardware security module (HSM) attestation for cryptographic evidence signing.
+- [ ] Asymmetric cryptographic key signing (ECDSA) for exported evidence packages.
 
 ---
 
-## 🤝 Contributing & Governance
+## 15. Contributing
 
-Contributions to ProofForge are welcome! Please ensure that:
+Contributions to ProofForge are welcome! Before submitting a pull request, please review [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
-1. All new or modified skills conform to the **5-Part Skill Quality Contract**.
-2. Automated verifiers perform **real inspections** and fail-closed (`exit code 1`) on defects.
-3. Code modifications include unit tests and pass `npm test`.
-
-Please read [`CONTRIBUTING.md`](CONTRIBUTING.md) and [`docs/WORKFLOW_COORDINATION.md`](docs/WORKFLOW_COORDINATION.md) before submitting a pull request.
-
-For security vulnerabilities, please refer to [`SECURITY.md`](SECURITY.md) for responsible disclosure procedures.
+All contributions must satisfy:
+1. **The Skill Quality Contract:** Any new skill must include `SKILL.md`, `scripts/`, `examples/`, and `references/`.
+2. **Deterministic Verification:** Verifiers must perform real inspections and exit with code `1` on defects.
+3. **Zero False Claims:** Tests and verifiers must not output hardcoded passes or assumed results.
+4. **Clean Regression:** All changes must pass `npm test` and `npm run benchmark:skills`.
 
 ---
 
-## 📄 License
+## 16. Security Policy
+
+Security is a primary pillar of ProofForge. For responsible disclosure procedures and vulnerability reporting, please see [`SECURITY.md`](SECURITY.md).
+
+* **Supported Versions:** `2.x`, `1.x`
+* **Vulnerability Reporting:** Submit private reports via GitHub Security Advisories (`Security > Vulnerability reporting`).
+
+---
+
+## 17. License
 
 ProofForge is open-source software licensed under the [MIT License](LICENSE).

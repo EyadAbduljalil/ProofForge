@@ -14,6 +14,7 @@ Only the latest active version on the primary branch is currently supported for 
 
 | Version | Supported          |
 | :------ | :----------------- |
+| `2.x`   | :white_check_mark: |
 | `1.x`   | :white_check_mark: |
 | `< 1.0` | :x:                |
 
