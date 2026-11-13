@@ -174,20 +174,22 @@ for (const skill of discoveredSkills) {
 
             // تنفيذ السيناريوهات الإلزامية للمهارة
             for (const scenario of spec.scenarios || []) {
+                const targetCwd = scenario.cwd ? path.resolve(rootDir, scenario.cwd) : rootDir;
                 const res = spawnSync(process.execPath, [scriptFullPath, ...(scenario.args || [])], {
-                    cwd: rootDir,
+                    cwd: targetCwd,
                     encoding: 'utf8',
                     timeout: 10000
                 });
 
-                if (res.status !== (scenario.expectedExitCode || 0)) {
+                const expectedExit = scenario.expectedExitCode !== undefined ? scenario.expectedExitCode : 0;
+                if (res.status !== expectedExit) {
                     if (scenario.isMandatory) allMandatoryPassed = false;
                     functionalPassed = false;
-                    evalResult.failedScenarios.push(`${scenario.id} (${scriptRel}): expected exit code ${scenario.expectedExitCode}, got ${res.status}`);
+                    evalResult.failedScenarios.push(`${scenario.id} (${scriptRel}): expected exit code ${expectedExit}, got ${res.status}`);
                     continue;
                 }
 
-                // فحص تكامل الـ JSON في سيناريو الـ JSON
+                // فحص تكامل الـ JSON والتحقق الصارم من الحالة والأدلة المتوقعة
                 if (scenario.args && scenario.args.includes('--json')) {
                     try {
                         const parsed = JSON.parse(res.stdout.trim());
@@ -196,10 +198,25 @@ for (const skill of discoveredSkills) {
                             integrationPassed = false;
                             evalResult.failedScenarios.push(`${scenario.id}: Malformed JSON schema`);
                         } else {
+                            // التحقق الصارم من مطابقة الحالة الفعلية للحالة المتوقعة (Status Invariant)
+                            if (scenario.expectedStatus && parsed.status !== scenario.expectedStatus) {
+                                if (scenario.isMandatory) allMandatoryPassed = false;
+                                functionalPassed = false;
+                                evalResult.failedScenarios.push(`${scenario.id}: expected status '${scenario.expectedStatus}', got '${parsed.status}'`);
+                            }
+
+                            // التحقق من خلو الفحوصات الناجحة من أي إخفاق
+                            if (scenario.expectedStatus === 'VERIFIED' && parsed.failed_checks > 0) {
+                                if (scenario.isMandatory) allMandatoryPassed = false;
+                                functionalPassed = false;
+                                evalResult.failedScenarios.push(`${scenario.id}: expected 0 failed checks, got ${parsed.failed_checks}`);
+                            }
+
                             evalResult.evidence[scenario.id] = {
                                 verifier: parsed.verifier,
                                 totalChecks: parsed.total_checks,
                                 passedChecks: parsed.passed_checks,
+                                failedChecks: parsed.failed_checks,
                                 status: parsed.status
                             };
                         }
@@ -211,17 +228,37 @@ for (const skill of discoveredSkills) {
                 }
             }
 
-            // تنفيذ سيناريو الأمان ومقاومة المدخلات المشوهة
+            // تنفيذ سيناريوهات السلوك الأمني ورصد العيوب المتخصصة
             for (const negScenario of spec.negativeScenarios || []) {
+                const negCwd = negScenario.cwd ? path.resolve(rootDir, negScenario.cwd) : rootDir;
                 const negRes = spawnSync(process.execPath, [scriptFullPath, ...(negScenario.args || [])], {
-                    cwd: rootDir,
+                    cwd: negCwd,
                     encoding: 'utf8',
                     timeout: 10000
                 });
-                // التأكد من عدم انهيار العملية بـ crash غير معالج (رمز خروج 0 أو 1 وليس استثناء برمجياً غير ملتقط)
-                if (negRes.status !== 0 && negRes.status !== 1) {
+
+                const expectedExit = negScenario.expectedExitCode !== undefined ? negScenario.expectedExitCode : 0;
+                if (negRes.status !== expectedExit) {
                     securityPassed = false;
-                    evalResult.failedScenarios.push(`${negScenario.id}: Process crashed with status ${negRes.status}`);
+                    evalResult.failedScenarios.push(`${negScenario.id}: expected exit code ${expectedExit}, got ${negRes.status}`);
+                    continue;
+                }
+
+                // إذا كان السيناريو السلبي يطلب JSON وفحص حالة الإخفاق
+                if (negScenario.args && negScenario.args.includes('--json')) {
+                    try {
+                        const parsedNeg = JSON.parse(negRes.stdout.trim());
+                        if (negScenario.expectedStatus && parsedNeg.status !== negScenario.expectedStatus) {
+                            securityPassed = false;
+                            evalResult.failedScenarios.push(`${negScenario.id}: expected status '${negScenario.expectedStatus}', got '${parsedNeg.status}'`);
+                        }
+                        if (negScenario.expectedStatus === 'FAILED' && parsedNeg.failed_checks === 0) {
+                            securityPassed = false;
+                            evalResult.failedScenarios.push(`${negScenario.id}: expected failed_checks > 0 for defect detection`);
+                        }
+                    } catch (e) {
+                        // في حال لم يخرج JSON وكان متوقعاً
+                    }
                 }
             }
         }

@@ -32,6 +32,7 @@ const ClaimVerificationEngine = require('./claim-verification-engine');
 const GroundingGate = require('./grounding-gate');
 const OutputVerificationEngine = require('./output-verification-engine');
 const IntelligentSkillRouter = require('./intelligent-skill-router');
+const MultiSkillExecutionEngine = require('./multi-skill-execution-engine');
 const v2 = require('./v2');
 
 module.exports = {
@@ -65,6 +66,7 @@ module.exports = {
     GroundingGate,
     OutputVerificationEngine,
     IntelligentSkillRouter,
+    MultiSkillExecutionEngine,
     v2
 };
 

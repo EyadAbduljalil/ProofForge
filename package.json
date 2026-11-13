@@ -49,9 +49,11 @@
     "sync:skills": "node bin/webforge.js sync-skills",
     "validate:metadata": "node packages/contracts/tests/release-metadata-validator.test.js",
     "test:orchestration": "node tests/orchestration/multi-skill-scenarios.test.js",
+    "test:multi-skill-exec": "node tests/orchestration/multi-skill-execution.test.js",
     "benchmark:skills": "node packages/contracts/tests/skills-benchmark.test.js",
     "benchmark:scenarios": "node tests/benchmark/real-scenarios-benchmark.test.js",
     "benchmark:effectiveness": "node tests/benchmark/agent-effectiveness.test.js",
+    "release:gate": "node bin/release-gate.js",
     "doctor": "node bin/proofforge.js doctor",
     "test:cli": "node tests/cli/cli.test.js",
     "integrity": "node tests/integrity_test.js"

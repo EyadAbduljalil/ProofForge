@@ -34,6 +34,17 @@
         ],
         "isMandatory": false,
         "expectedExitCode": 0
+      },
+      {
+        "id": "DEFECT_DETECTION_BROKEN_A11Y",
+        "name": "Defect Detection in Broken Frontend Fixture",
+        "cwd": "tests/fixtures/broken-frontend",
+        "args": [
+          "--json"
+        ],
+        "isMandatory": true,
+        "expectedExitCode": 1,
+        "expectedStatus": "FAILED"
       }
     ],
     "evidenceRequirements": [
@@ -328,6 +339,17 @@
         ],
         "isMandatory": false,
         "expectedExitCode": 0
+      },
+      {
+        "id": "DEFECT_DETECTION_INSECURE_BACKEND",
+        "name": "Defect Detection in Insecure Backend Fixture",
+        "cwd": "tests/fixtures/insecure-backend",
+        "args": [
+          "--json"
+        ],
+        "isMandatory": true,
+        "expectedExitCode": 1,
+        "expectedStatus": "FAILED"
       }
     ],
     "evidenceRequirements": [
@@ -475,6 +497,17 @@
         ],
         "isMandatory": false,
         "expectedExitCode": 0
+      },
+      {
+        "id": "DEFECT_DETECTION_FLAWED_DB",
+        "name": "Defect Detection in Flawed Database Fixture",
+        "cwd": "tests/fixtures/flawed-database",
+        "args": [
+          "--json"
+        ],
+        "isMandatory": true,
+        "expectedExitCode": 1,
+        "expectedStatus": "FAILED"
       }
     ],
     "evidenceRequirements": [
@@ -1063,6 +1096,17 @@
         ],
         "isMandatory": false,
         "expectedExitCode": 0
+      },
+      {
+        "id": "DEFECT_DETECTION_RIGID_LAYOUT",
+        "name": "Defect Detection in Rigid Layout Fixture",
+        "cwd": "tests/fixtures/broken-frontend",
+        "args": [
+          "--json"
+        ],
+        "isMandatory": true,
+        "expectedExitCode": 1,
+        "expectedStatus": "FAILED"
       }
     ],
     "evidenceRequirements": [

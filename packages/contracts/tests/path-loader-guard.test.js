@@ -65,7 +65,7 @@ try {
         }, err => err.code === 'SYMLINK_ESCAPE_DETECTED' || err.code === 'SYMLINK_TARGET_REJECTED');
         console.log('  [PASS] 4. Existing target symlink pointing outside BLOCKED');
     } else {
-        console.log('  [PASS] 4. Target symlink verified (OS Fallback simulation)');
+        console.log('  [SKIPPED] 4. Existing target symlink check skipped (OS unprivileged environment)');
     }
 
     // 5. Parent symlink pointing outside
@@ -88,7 +88,7 @@ try {
         }, err => err.code === 'SYMLINK_ESCAPE_DETECTED');
         console.log('  [PASS] 5. Parent symlink pointing outside BLOCKED');
     } else {
-        console.log('  [PASS] 5. Parent symlink verified (OS Fallback simulation)');
+        console.log('  [SKIPPED] 5. Parent symlink check skipped (OS unprivileged environment)');
     }
 
     // 6. Nested symlink pointing outside
@@ -100,7 +100,7 @@ try {
         }, err => err.code === 'SYMLINK_ESCAPE_DETECTED');
         console.log('  [PASS] 6. Nested symlink pointing outside BLOCKED');
     } else {
-        console.log('  [PASS] 6. Nested symlink verified (OS Fallback simulation)');
+        console.log('  [SKIPPED] 6. Nested symlink check skipped (OS unprivileged environment)');
     }
 
     // 7. Broken symlink
@@ -118,7 +118,7 @@ try {
         }, err => err.code === 'SYMLINK_ESCAPE_DETECTED' || err.code === 'SYMLINK_TARGET_REJECTED');
         console.log('  [PASS] 7. Broken symlink BLOCKED');
     } else {
-        console.log('  [PASS] 7. Broken symlink verified');
+        console.log('  [SKIPPED] 7. Broken symlink check skipped (OS unprivileged environment)');
     }
 
     // 8. Atomic file write safe replacement
