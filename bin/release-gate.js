@@ -74,7 +74,29 @@ const checks = [
             if (typeof engine.executePlan !== 'function') return false;
             if (typeof engine._createWorkspaceSnapshot !== 'function') return false;
             if (typeof engine._restoreWorkspaceSnapshot !== 'function') return false;
-            return true;
+
+            // اختبار عملي حي للمحرك: تنفيذ خطة مصغرة والتأكد من إنتاج المخرجات المادية والاسترجاع
+            const os = require('os');
+            const sandbox = fs.mkdtempSync(path.join(os.tmpdir(), 'pf-gate03-'));
+            try {
+                const plan = {
+                    scenarioId: 'gate-validation',
+                    scenarioName: 'Gate Mini Validation Scenario',
+                    steps: [
+                        { stepNumber: 1, skillId: 'architecture', dependencies: [], evidenceRequired: ['ADR_DOCUMENT'] }
+                    ]
+                };
+                const res = engine.executePlan(plan, { workspacePath: sandbox, rootDir });
+                if (res.status !== 'SUCCESS' || res.completedStepsCount !== 1) {
+                    throw new Error('MultiSkillExecutionEngine failed live execution test in temporary sandbox');
+                }
+                if (!fs.existsSync(path.join(sandbox, 'ADR-001.md'))) {
+                    throw new Error('MultiSkillExecutionEngine did not write physical ADR artifact to disk');
+                }
+                return true;
+            } finally {
+                try { fs.rmSync(sandbox, { recursive: true, force: true }); } catch (_) {}
+            }
         }
     },
     {
@@ -115,7 +137,7 @@ const checks = [
     },
     {
         id: 'GATE-06',
-        name: 'Final Test Evidence JSON & Commit Parity',
+        name: 'Final Test Evidence JSON & Exact Commit Binding',
         file: 'docs/release/FINAL_TEST_EVIDENCE.json',
         verify: () => {
             const p = path.join(rootDir, 'docs/release/FINAL_TEST_EVIDENCE.json');
@@ -123,45 +145,39 @@ const checks = [
             const data = JSON.parse(fs.readFileSync(p, 'utf8'));
             if (!data || !data.commitSha || !data.suites) return false;
 
-            // التحقق من توافق تجزئة الـ commit إن كان Git متاحاً
-            try {
-                const { execSync } = require('child_process');
-                let head = '';
-                try {
-                    head = execSync('git rev-parse HEAD', { cwd: rootDir, encoding: 'utf8' }).trim();
-                } catch (_) {}
-
-                if (!head && process.env.GITHUB_SHA) {
-                    head = process.env.GITHUB_SHA.trim();
-                }
-
-                if (head && data.commitSha) {
-                    const isDynamicHead = ['CURRENT_GIT_HEAD', 'PENDING_HEAD_COMMIT', 'HEAD'].includes(data.commitSha);
-                    const isDirectMatch = head.startsWith(data.commitSha) || data.commitSha.startsWith(head);
-                    const isPendingCommit = data.commitSha === head;
-                    
-                    let isNearbyCommit = false;
-                    try {
-                        const log = execSync('git log -n 20 --format=%H', { cwd: rootDir, encoding: 'utf8' }).split('\n').map(s => s.trim());
-                        if (log.some(h => h && (h.startsWith(data.commitSha) || data.commitSha.startsWith(h)))) {
-                            isNearbyCommit = true;
-                        }
-                    } catch (_) {}
-
-                    let isKnownTreeSha = false;
-                    try {
-                        execSync(`git cat-file -t ${data.commitSha}`, { cwd: rootDir, stdio: 'pipe' });
-                        isKnownTreeSha = true;
-                    } catch (_) {}
-
-                    if (!isDynamicHead && !isDirectMatch && !isPendingCommit && !isNearbyCommit && !isKnownTreeSha) {
-                        throw new Error(`commitSha mismatch: Evidence has '${data.commitSha}', Git HEAD is '${head}'`);
-                    }
-                }
-            } catch (err) {
-                // إذا كان الخطأ عدم تطابق، نرمي الخطأ ليرسب الفحص
-                if (err.message.includes('commitSha mismatch')) throw err;
+            // 1. حظر أي Placeholder نهائياً وبصورة قاطعة
+            const forbiddenPlaceholders = ['CURRENT_GIT_HEAD', 'PENDING_HEAD_COMMIT', 'HEAD', 'CURRENT_HEAD'];
+            if (forbiddenPlaceholders.includes(data.commitSha)) {
+                throw new Error(`commitSha cannot be a placeholder ('${data.commitSha}'). Must be an exact 40-character hex commit SHA.`);
             }
+
+            // 2. التحقق من أن التجزئة هي تجزئة Git صالحة بطول 40 محرف ست عشري
+            if (!/^[0-9a-f]{40}$/i.test(data.commitSha)) {
+                throw new Error(`commitSha '${data.commitSha}' is not a valid 40-character hex Git commit hash.`);
+            }
+
+            // 3. التحقق الصارم من التطابق مع HEAD الفعلي أو GITHUB_SHA
+            const { execSync } = require('child_process');
+            let currentHead = '';
+            try {
+                currentHead = execSync('git rev-parse HEAD', { cwd: rootDir, encoding: 'utf8' }).trim();
+            } catch (_) {}
+
+            if (!currentHead && process.env.GITHUB_SHA) {
+                currentHead = process.env.GITHUB_SHA.trim();
+            }
+
+            if (currentHead) {
+                if (data.commitSha.toLowerCase() !== currentHead.toLowerCase()) {
+                    throw new Error(`commitSha mismatch: Evidence has '${data.commitSha}', but current repository HEAD is '${currentHead}'. Evidence must be bound to the exact release commit.`);
+                }
+            }
+
+            // 4. التحقق من صحة تاريخ الإنشاء
+            if (!data.generatedAt || isNaN(Date.parse(data.generatedAt))) {
+                throw new Error('generatedAt timestamp in FINAL_TEST_EVIDENCE.json is missing or invalid.');
+            }
+
             return true;
         }
     },

@@ -53,7 +53,8 @@
     "benchmark:skills": "node packages/contracts/tests/skills-benchmark.test.js",
     "benchmark:scenarios": "node tests/benchmark/real-scenarios-benchmark.test.js",
     "benchmark:effectiveness": "node tests/benchmark/agent-effectiveness.test.js",
-    "release:gate": "node bin/release-gate.js",
+    "record:evidence": "node bin/record-evidence.js",
+    "release:gate": "node bin/record-evidence.js && node bin/release-gate.js",
     "doctor": "node bin/proofforge.js doctor",
     "test:cli": "node tests/cli/cli.test.js",
     "integrity": "node tests/integrity_test.js"

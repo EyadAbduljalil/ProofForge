@@ -75,6 +75,9 @@ jobs:
       - name: Agent A/B effectiveness benchmark
         run: npm run benchmark:effectiveness
 
+      - name: Record release evidence for commit
+        run: node bin/record-evidence.js
+
       - name: Deterministic release gate
         run: npm run release:gate
 

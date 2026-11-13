@@ -54,48 +54,107 @@ try {
     console.log('  [PASS] 2. Context Passing: Downstream skills successfully received upstream artifacts');
 
     // ----------------------------------------------------
-    // اختبار 3: التحقق الحقيقي من الاسترجاع المادي عند الفشل (Real Rollback with Hash Comparison)
+    // اختبار 3: التحقق الحقيقي من الاسترجاع المادي عند الفشل بعد إحداث تعديلات فعلية
+    // (Real Rollback after Actual Physical Workspace Mutations)
     // ----------------------------------------------------
     console.log('>>> [3/5] Testing Physical Rollback & Byte-for-Byte State Restoration on Failure...');
     const failWorkspace = path.join(tempSandboxRoot, 'fail-workspace');
     fs.mkdirSync(failWorkspace, { recursive: true });
 
-    // إنشاء ملف موجود مسبقاً قبل بدء التنفيذ
+    // 1. إنشاء ملفات وهيكل أصلي لمساحة العمل قبل بدء التنفيذ
     const existingFilePath = path.join(failWorkspace, 'pre-existing-config.json');
-    const existingContent = JSON.stringify({ version: 1, original: true });
+    const existingContent = JSON.stringify({ version: 1, original: true, author: 'Lead Architect' });
     fs.writeFileSync(existingFilePath, existingContent, 'utf8');
     const initialHash = crypto.createHash('sha256').update(existingContent).digest('hex');
 
-    // تشغيل خطة تبدأ بدون خطوة المعمارية لإحداث فشل حقيقي في تبعيات قاعدة البيانات
-    const defectivePlan = {
-        scenarioId: 'defective-test',
-        scenarioName: 'Defective Plan',
+    const legacyDir = path.join(failWorkspace, 'legacy-module');
+    fs.mkdirSync(legacyDir, { recursive: true });
+    const legacyFile = path.join(legacyDir, 'constants.js');
+    const legacyContent = 'module.exports = { APP_ORIGINAL_CONST: 42 };\n';
+    fs.writeFileSync(legacyFile, legacyContent, 'utf8');
+    const legacyHash = crypto.createHash('sha256').update(legacyContent).digest('hex');
+
+    const emptyDir = path.join(failWorkspace, 'preserved-empty-dir');
+    fs.mkdirSync(emptyDir, { recursive: true });
+
+    // محاولة إنشاء رابط رمزي اختباري إن كان مدعوماً بالنظام
+    let hasSymlink = false;
+    const symlinkPath = path.join(failWorkspace, 'symlink-to-constants');
+    try {
+        fs.symlinkSync(legacyFile, symlinkPath);
+        hasSymlink = true;
+    } catch (_) {
+        // EPERM on non-elevated Windows environments
+    }
+
+    // 2. إعداد خطة متعددة المهارات تنفذ خطوات حقيقية وتكتب ملفات، ثم تفشل في خطوة تالية بعد حدوث التعديلات
+    // الخطوة 1: architecture (تنشئ ADR-001.md بنجاح)
+    // الخطوة 2: database (تنشئ مخططات ومجلدات migrations بنجاح)
+    // الخطوة 3: خطوة تفشل عمداً بعد تشويه الملف الأصلي وإنشاء ملف مؤقت جديد
+    const defectiveMultiStepPlan = {
+        scenarioId: 'multi-step-rollback-test',
+        scenarioName: 'Multi-Step Rollback Test Scenario',
         steps: [
             {
                 stepNumber: 1,
+                skillId: 'architecture',
+                dependencies: [],
+                evidenceRequired: ['ADR_DOCUMENT']
+            },
+            {
+                stepNumber: 2,
                 skillId: 'database',
-                dependencies: ['architecture'], // التبعية غير متوفرة!
+                dependencies: ['architecture'],
                 evidenceRequired: ['MIGRATION_SCRIPTS']
+            },
+            {
+                stepNumber: 3,
+                skillId: 'security',
+                dependencies: ['database'],
+                evidenceRequired: ['UNSATISFIABLE_FAILING_EVIDENCE'],
+                mutateWorkspace: (ws) => {
+                    // تشويه متعمد للملف الأصلي وإنشاء ملف دخيل
+                    fs.writeFileSync(path.join(ws, 'pre-existing-config.json'), '{"corrupted": true, "tampered": true}', 'utf8');
+                    fs.writeFileSync(path.join(ws, 'untracked-dirty-file.tmp'), 'dirty data', 'utf8');
+                }
             }
         ]
     };
 
-    const failedExecResult = MultiSkillExecutionEngine.executePlan(defectivePlan, {
+    const failedExecResult = MultiSkillExecutionEngine.executePlan(defectiveMultiStepPlan, {
         workspacePath: failWorkspace
     });
 
     assert.strictEqual(failedExecResult.status, 'FAILED');
-    assert.strictEqual(failedExecResult.failureDetails.failedStep, 'database');
+    assert.strictEqual(failedExecResult.failureDetails.failedStep, 'security');
     assert.strictEqual(failedExecResult.rollbackExecuted, true);
     assert.strictEqual(failedExecResult.rollbackVerified, true, 'Rollback must be verified byte-for-byte');
 
-    // التأكد من أن الملف الموجود مسبقاً لم يتضرر وتطابقت تجزئته 100%
+    // 3. التحقق الحتمي الصارم من أن الملفات التي أُنشئت في الخطوات السابقة تم حذفها بالكامل
+    assert(!fs.existsSync(path.join(failWorkspace, 'ADR-001.md')), 'ADR-001.md created in step 1 must be deleted');
+    assert(!fs.existsSync(path.join(failWorkspace, 'apps/server/db/migrations/001_initial.sql')), 'Migrations created in step 2 must be deleted');
+    assert(!fs.existsSync(path.join(failWorkspace, 'apps/server/db/storage-adapter.js')), 'Storage adapter created in step 2 must be deleted');
+    assert(!fs.existsSync(path.join(failWorkspace, 'apps/server/db')), 'Nested migrations folder must be removed');
+    assert(!fs.existsSync(path.join(failWorkspace, 'untracked-dirty-file.tmp')), 'Dirty file created in step 3 must be deleted');
+
+    // 4. التحقق من أن الملفات الأصلية تم استعادتها بدقة تامة ومطابقة الـ Hash والصلاحيات
     assert(fs.existsSync(existingFilePath), 'Pre-existing file must be preserved');
     const currentHash = crypto.createHash('sha256').update(fs.readFileSync(existingFilePath, 'utf8')).digest('hex');
-    assert.strictEqual(currentHash, initialHash, 'Pre-existing file content must match initial snapshot exactly');
+    assert.strictEqual(currentHash, initialHash, 'Pre-existing file content must match initial snapshot byte-for-byte');
 
-    // التأكد من عدم بقاء أي ملفات فرعية منسوخة بالخطأ
-    assert(!fs.existsSync(path.join(failWorkspace, 'apps/server/db/migrations/001_initial.sql')), 'Newly created files must be rolled back');
+    assert(fs.existsSync(legacyFile), 'Legacy file must be preserved');
+    const currentLegacyHash = crypto.createHash('sha256').update(fs.readFileSync(legacyFile, 'utf8')).digest('hex');
+    assert.strictEqual(currentLegacyHash, legacyHash, 'Legacy file content must match initial snapshot');
+
+    // 5. التحقق من أن المجلدات الفارغة تم الاحتفاظ بها
+    assert(fs.existsSync(emptyDir), 'Preserved empty directory must still exist');
+
+    // 6. التحقق من بقاء الرابط الرمزي إذا كان مدعوماً
+    if (hasSymlink) {
+        assert(fs.existsSync(symlinkPath), 'Symlink must be preserved');
+        assert.strictEqual(fs.readlinkSync(symlinkPath), legacyFile, 'Symlink target must match exactly');
+    }
+
     console.log('  [PASS] 3. Physical Rollback: Workspace state restored byte-for-byte upon step failure');
 
     // ----------------------------------------------------

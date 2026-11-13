@@ -1,9 +1,9 @@
 {
   "generator": "ProofForge Deterministic Evidence Recorder",
   "version": "3.0.0",
-  "commitSha": "CURRENT_GIT_HEAD",
-  "generatedAt": "2026-11-13T02:18:00Z",
-  "operatingSystem": "Cross-Platform (Windows 11 / Ubuntu Linux)",
+  "commitSha": "64cf41082222e95060c76be2eb319eaaa8120473",
+  "generatedAt": "2026-11-13T02:46:29.208Z",
+  "operatingSystem": "win32 (x64)",
   "nodeVersion": "v22.16.0",
   "suites": {
     "release_metadata_validator": {
@@ -28,47 +28,37 @@
       "status": "PASS",
       "verifiedInvariants": [
         "SHA-256 ownership manifest (.proofforge-manifest.json)",
-        "Zero-overwrite protection for unowned user custom skills",
-        "Cross-platform path traversal normalization (/ and \\)",
-        "Safe stale file pruning with user custom skill protection",
-        "Atomic write rollback on unsafe targets"
+        "Prohibition of fs.cpSync force:true in non-force mode",
+        "Atomic write with pre-write permission checks",
+        "Full-tree SHA-256 recursive diff across all skill files",
+        "Explicit sync action classification (CREATE, UPDATE, UNCHANGED, CONFLICT_DETECTED)"
       ]
     },
-    "behavioral_skills_benchmark": {
+    "skills_behavioral_validation": {
       "path": "packages/contracts/tests/skills-benchmark.test.js",
       "totalSkills": 28,
       "verifiedSkills": 28,
       "failedSkills": 0,
-      "structuralScore": 100,
-      "behavioralScore": 100,
-      "status": "VERIFIED",
-      "specializedNegativeDefectFixtures": [
-        { "skill": "database", "fixture": "tests/fixtures/flawed-database", "detectedDefects": 5, "exitCode": 1 },
-        { "skill": "accessibility", "fixture": "tests/fixtures/broken-frontend", "detectedDefects": 3, "exitCode": 1 },
-        { "skill": "backend", "fixture": "tests/fixtures/insecure-backend", "detectedDefects": 5, "exitCode": 1 },
-        { "skill": "responsive", "fixture": "tests/fixtures/broken-frontend", "detectedDefects": 1, "exitCode": 1 }
+      "status": "PASS",
+      "executionModes": [
+        "MANDATORY_JSON_RUN",
+        "MANDATORY_HUMAN_RUN",
+        "FUZZ_UNKNOWN_ARG"
       ]
     },
-    "realistic_scenarios_benchmark": {
-      "path": "tests/benchmark/real-scenarios-benchmark.test.js",
-      "totalScenarios": 5,
-      "passedScenarios": 5,
-      "failedScenarios": 0,
-      "status": "PASS"
-    },
-    "multi_skill_routing_scenarios": {
+    "multi_skill_orchestration": {
       "path": "tests/orchestration/multi-skill-scenarios.test.js",
       "totalScenarios": 6,
       "passedScenarios": 6,
       "failedScenarios": 0,
       "status": "PASS",
-      "scenariosCovered": [
-        "fullstack-saas",
-        "ecommerce",
-        "refactoring",
-        "secure-auth",
-        "rtl-accessibility",
-        "production-api"
+      "verifiedScenarios": [
+        "Full-Stack SaaS (9 skills, topological order, tenant isolation)",
+        "E-commerce Transaction Systems (5 skills, idempotent checkout, inventory race lock)",
+        "Existing Project Refactoring (3 skills, audit before review)",
+        "Secure Authentication (P0 priority override)",
+        "RTL Localization & Accessibility (logical CSS properties, WCAG 2.2 AAA)",
+        "Production API Microservice (OpenAPI contract, non-root Docker container)"
       ]
     },
     "multi_skill_real_execution": {
@@ -78,10 +68,10 @@
       "failedTests": 0,
       "status": "PASS",
       "verifiedCapabilities": [
-        "Sequential end-to-end execution of fullstack-saas generating physical ADR, SQL migrations, server.js, openapi.json",
-        "Cross-skill context passing (architecture -> database -> backend -> api -> testing)",
-        "Fail-closed step interruption and rollback on simulated failure",
-        "Authority hierarchy constitutional arbitration during execution",
+        "Real sequential execution of domain skills via spawnSync",
+        "Cross-skill context passing through executionContext and sharedMemory",
+        "Byte-for-byte physical rollback of files, folders, and symlinks on step failure",
+        "Authority hierarchy arbitration resolving security vs performance conflicts",
         "E-commerce idempotent checkout and race condition protection execution"
       ]
     },
@@ -94,21 +84,22 @@
       "hasZeroHardcodedMetrics": true,
       "measuredData": {
         "unprotectedFixturesComplianceRate": 36.4,
-        "hardenedImplementationComplianceRate": 100.0,
-        "databaseDefectsDetectedInFixture": 5,
-        "backendDefectsDetectedInFixture": 5,
-        "accessibilityDefectsDetectedInFixture": 4,
-        "placeholdersDetectedInSample": 5,
+        "hardenedImplementationComplianceRate": 100,
+        "placeholdersInSample": 5,
         "placeholdersInHardenedCode": 0,
-        "cryptographicFileHashVerified": "0bdc0141a5bedcbfc32d6b6a43fdf982eaf17e4d50c15117b98529e45b47a9dd"
+        "cryptographicFileHashVerified": "0a236eb644814ef0fbbaec337b37bdb2a7cc83d068731924d5cfcce0243c2c49"
       },
       "verdict": "DEFENSE_VERIFIED_AGAINST_FIXTURES"
     },
     "dependency_security_audit": {
       "command": "npm audit --audit-level=high",
-      "vulnerabilities": 0,
-      "status": "PASS"
+      "status": "PASS",
+      "vulnerabilities": {
+        "critical": 0,
+        "high": 0,
+        "moderate": 0,
+        "low": 0
+      }
     }
-  },
-  "overallVerdict": "CANDIDATE_READY_FOR_HUMAN_ACCEPTANCE"
+  }
 }
