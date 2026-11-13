@@ -1,8 +1,8 @@
 {
   "generator": "ProofForge Deterministic Evidence Recorder",
   "version": "3.0.0",
-  "commitSha": "badaed03b5ec77e505fd785cc9cd4b30de531c95",
-  "generatedAt": "2026-11-13T03:13:54.637Z",
+  "commitSha": "b9a4a2dde319025b2abab0ab076ca56d68dcc931",
+  "generatedAt": "2026-11-13T03:38:43.849Z",
   "operatingSystem": "win32 (x64)",
   "nodeVersion": "v22.16.0",
   "isPurelyEmpirical": true,
@@ -136,8 +136,6 @@
       "status": "PASS",
       "benchmarkType": "AUTOMATED_FIXTURE_DEFENSE_BENCHMARK",
       "description": "قياس تجريبي حقيقي لمعدل رصد ومنع العيوب البرمجية في المثبتات الواقعية",
-      "isPurelyEmpirical": true,
-      "hasZeroHardcodedMetrics": true,
       "measuredData": {
         "unprotectedFixturesComplianceRate": 36.4,
         "hardenedImplementationComplianceRate": 100,
@@ -158,7 +156,15 @@
         "low": 0,
         "info": 0,
         "total": 0
-      }
+      },
+      "policy": {
+        "maxAllowedCritical": 0,
+        "maxAllowedHigh": 0,
+        "maxAllowedModerate": null,
+        "maxAllowedLow": null,
+        "maxAllowedInfo": null
+      },
+      "dependenciesAudited": 0
     }
   }
 }

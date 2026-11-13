@@ -22,6 +22,7 @@ const AuthorityHierarchy = require('./authority-hierarchy');
 const RuleConflictEngine = require('./rule-conflict-engine');
 const EvidenceGraph = require('./evidence-graph');
 const PathLoaderGuard = require('../contracts/path-loader-guard');
+const EvidenceContractValidator = require('../contracts/evidence-contract-validator');
 
 class MultiSkillExecutionEngine {
     /**
@@ -42,8 +43,34 @@ class MultiSkillExecutionEngine {
         // 1. التقاط لقطة حالة متكاملة لمساحة العمل قبل أي تدخل أو تهيئة لضمان استرجاع حقيقي 100%
         const initialSnapshot = this._createWorkspaceSnapshot(workspacePath);
 
-        // 2. تهيئة البيئة الهندسية المعيارية لمساحة العمل المنفصلة لتمكين كافة أدوات المهارات الـ 28
-        this._bootstrapIsolatedWorkspaceEnvironment(workspacePath, rootDir);
+        // 2. تهيئة البيئة الهندسية المعيارية لمساحة العمل المنفصلة لتمكين كافة أدوات المهارات الـ 28 مع استرجاع تعويضي فوري عند الإخفاق
+        try {
+            this._bootstrapIsolatedWorkspaceEnvironment(workspacePath, rootDir);
+        } catch (bootstrapErr) {
+            const rollbackResult = this._restoreWorkspaceSnapshot(workspacePath, initialSnapshot);
+            return {
+                executionId: `EXEC_FAILED_${Date.now()}`,
+                scenarioId: plan.scenarioId,
+                status: 'FAILED',
+                totalDurationMs: 0,
+                completedStepsCount: 0,
+                totalStepsCount: plan.steps.length,
+                failureDetails: {
+                    failedStep: 'BOOTSTRAP',
+                    reason: `Workspace bootstrap failed: ${bootstrapErr.message}`,
+                    code: 'BOOTSTRAP_FAILURE'
+                },
+                rollbackExecuted: true,
+                rollbackVerified: rollbackResult.isRestoredByteForByte,
+                filesRemovedCount: rollbackResult.filesRemoved,
+                filesRestoredCount: rollbackResult.filesRestored,
+                dirsRemovedCount: rollbackResult.dirsRemoved,
+                isStructureAndContentRestored: rollbackResult.isStructureAndContentRestored,
+                restorationGuarantee: rollbackResult.restorationGuarantee,
+                conflictResolutions: [],
+                stepLogs: []
+            };
+        }
 
         const startTime = process.hrtime.bigint();
         const executionId = `EXEC_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
@@ -784,66 +811,40 @@ module.exports = server;
             throw new Error(`حالة فحص المهارة '${skillId}' غير معتمدة: المتوقع VERIFIED، المستلم ${parsedOutput.status}`);
         }
 
-        // تسجيل وربط أدلة المهارة الحتمية: فرض الاقتران الصارم بين الدليل وفحص مؤكد بنتيجة PASS صريحة ومخرج مادي
+        // تسجيل وربط أدلة المهارة الحتمية عبر مدقق العقود الكنسي الصارم لمنع التخمين الجزئي
         for (const req of step.evidenceRequired || []) {
             const existingArtifact = artifacts[req];
-            const matchingCheck = parsedOutput.checks.find(c => {
-                const prop = (c.property || '').toLowerCase();
-                const id = (c.id || '').toLowerCase();
-                const details = (c.details || '').toLowerCase();
-                const normalizedReq = req.toLowerCase().replace(/_/g, ' ');
-                return (
-                    prop.includes(normalizedReq) ||
-                    id.includes(req.toLowerCase()) ||
-                    this._matchesRequirementCheck(skillId, req, c)
-                );
+            const verifiedEvidence = EvidenceContractValidator.validateAndBindEvidence({
+                skillId,
+                requirementId: req,
+                parsedVerifierOutput: parsedOutput,
+                candidateArtifact: existingArtifact,
+                workspacePath
             });
-
-            if (!matchingCheck) {
-                throw new Error(`[Evidence Contract Violation] الدليل المطلوب '${req}' للمهارة '${skillId}' غير مقترن بأي فحص مؤكد في مخرجات الأداة.`);
-            }
-
-            if (matchingCheck.status !== 'PASS' || matchingCheck.passed !== true) {
-                throw new Error(`[Evidence Contract Violation] الفحص المطابق '${matchingCheck.property || matchingCheck.id}' للدليل '${req}' لم ينجح بحالة PASS.`);
-            }
-
-            let physicalArtifactData = null;
-            if (existingArtifact && existingArtifact.path) {
-                if (!fs.existsSync(existingArtifact.path)) {
-                    throw new Error(`[Evidence Contract Violation] المخرج المادي للدليل '${req}' غير موجود على القرص: ${existingArtifact.path}`);
-                }
-                const stat = fs.statSync(existingArtifact.path);
-                if (stat.size === 0) {
-                    throw new Error(`[Evidence Contract Violation] المخرج المادي للدليل '${req}' فارغ تماماً (Zero Bytes): ${existingArtifact.path}`);
-                }
-                const fileBytes = fs.readFileSync(existingArtifact.path);
-                const fileHash = crypto.createHash('sha256').update(fileBytes).digest('hex');
-                physicalArtifactData = {
-                    path: existingArtifact.path,
-                    sizeBytes: stat.size,
-                    sha256: fileHash
-                };
-            }
 
             artifacts[req] = {
                 requirement: req,
                 status: 'VERIFIED',
-                verifiedByTool: skillSpec.primaryScript,
-                checkId: matchingCheck.id || matchingCheck.property,
-                checkProperty: matchingCheck.property || matchingCheck.id,
-                checkSeverity: matchingCheck.severity || 'HIGH',
-                physicalArtifact: physicalArtifactData,
-                executionTimestamp: parsedOutput.executed_at || new Date().toISOString(),
-                checksPassedCount: parsedOutput.passed_checks,
-                totalChecksCount: parsedOutput.total_checks,
-                failedChecksCount: parsedOutput.failed_checks,
+                evidenceId: verifiedEvidence.evidenceId,
+                verifiedByTool: verifiedEvidence.verifierId,
+                checkId: verifiedEvidence.checkId,
+                checkProperty: verifiedEvidence.checkProperty,
+                checkSeverity: verifiedEvidence.verificationResult.checkSeverity,
+                physicalArtifact: verifiedEvidence.artifactPath ? {
+                    path: verifiedEvidence.artifactPath,
+                    sha256: verifiedEvidence.artifactHash
+                } : null,
+                executionTimestamp: verifiedEvidence.createdAt,
+                checksPassedCount: verifiedEvidence.verificationResult.passedChecks,
+                totalChecksCount: verifiedEvidence.verificationResult.totalChecks,
+                failedChecksCount: verifiedEvidence.verificationResult.failedChecks,
                 durationMs: parsedOutput.duration_ms || 0,
                 cryptographicProof: {
-                    boundCheckProperty: matchingCheck.property || matchingCheck.id,
-                    checksSummary: `${parsedOutput.passed_checks}/${parsedOutput.total_checks} PASSED`,
-                    toolName: parsedOutput.verifier || skillSpec.primaryScript,
+                    boundCheckProperty: verifiedEvidence.checkProperty,
+                    checksSummary: `${verifiedEvidence.verificationResult.passedChecks}/${verifiedEvidence.verificationResult.totalChecks} PASSED`,
+                    toolName: verifiedEvidence.verifierId,
                     zeroFailuresEnforced: true,
-                    artifactSha256: physicalArtifactData ? physicalArtifactData.sha256 : null
+                    artifactSha256: verifiedEvidence.artifactHash
                 }
             };
         }

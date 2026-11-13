@@ -214,25 +214,17 @@ const checks = [
             // 3. التحقق الصارم من التطابق مع HEAD الفعلي أو GITHUB_SHA
             const { execSync } = require('child_process');
             let currentHead = '';
-            try {
-                currentHead = execSync('git rev-parse HEAD', { cwd: rootDir, encoding: 'utf8' }).trim();
-            } catch (_) {}
-
-            if (!currentHead && process.env.GITHUB_SHA) {
-                currentHead = process.env.GITHUB_SHA.trim();
+            if (process.env.GITHUB_SHA && /^[0-9a-f]{40}$/i.test(process.env.GITHUB_SHA.trim())) {
+                currentHead = process.env.GITHUB_SHA.trim().toLowerCase();
+            } else {
+                try {
+                    currentHead = execSync('git rev-parse HEAD', { cwd: rootDir, encoding: 'utf8' }).trim().toLowerCase();
+                } catch (_) {}
             }
 
             if (currentHead) {
                 if (data.commitSha.toLowerCase() !== currentHead.toLowerCase()) {
-                    // السماح أيضاً بالـ parent commit إذا كان ملف الأدلة مسجلاً فوراً قبله
-                    let parentHead = '';
-                    try {
-                        parentHead = execSync('git rev-parse HEAD~1', { cwd: rootDir, encoding: 'utf8' }).trim();
-                    } catch (_) {}
-
-                    if (!parentHead || data.commitSha.toLowerCase() !== parentHead.toLowerCase()) {
-                        throw new Error(`commitSha mismatch: Evidence has '${data.commitSha}', but current repository HEAD is '${currentHead}'. Evidence must be bound to the exact release commit.`);
-                    }
+                    throw new Error(`commitSha mismatch: Evidence has '${data.commitSha}', but current repository HEAD is '${currentHead}'. Evidence must be bound to the exact release commit.`);
                 }
             }
 

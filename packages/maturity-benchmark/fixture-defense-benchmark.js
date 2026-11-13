@@ -268,6 +268,11 @@ class FixtureDefenseBenchmark {
                 ? 'DEFENSE_VERIFIED_AGAINST_FIXTURES'
                 : 'VERIFICATION_FAILED',
             status: 'VERIFIED',
+            agentEffectivenessComparison: {
+                status: 'NOT_RUN',
+                reason: 'AGENT_RUNTIME_UNAVAILABLE',
+                note: 'Empirical Agent A/B benchmark requires live Antigravity Agent Runtime'
+            },
             isPurelyEmpirical,
             hasZeroHardcodedMetrics
         };
