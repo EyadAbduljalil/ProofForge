@@ -61,7 +61,7 @@ class AgentEffectivenessBenchmark {
         const runtime = options.agentRuntime || options.dualAgentRuntime || null;
 
         if (!runtime) {
-            return this._buildUnavailableReport(benchmarkId, targetTask, 'AGENT_AB_BENCHMARK_UNAVAILABLE', 'No agent runtime provided. Interactive agent A/B benchmark requires a supported agent runtime.');
+            return this._buildUnavailableReport(benchmarkId, targetTask, 'NOT_RUN', 'No agent runtime provided. Interactive agent A/B benchmark requires a supported agent runtime.');
         }
 
         // التحقق من صلاحية المشغل وتصريحه (تمييز مشغل الاختبار الهيكلي)

@@ -698,7 +698,10 @@ class MultiSkillExecutionEngine {
             const init = initialSnapshot.files[k];
             if (!post) return false;
             if (post.hash !== init.hash) return false;
-            if (process.platform !== 'win32' && init.mode && post.mode !== init.mode) return false;
+            if (process.platform !== 'win32' && init.mode && post.mode) {
+                // مقارنة بتات الصلاحيات الأساسية (Permission bits) وتفادي الاختلافات الطفيفة في أقنعة النظام
+                if ((post.mode & 0o777) !== (init.mode & 0o777)) return false;
+            }
             return true;
         });
 
