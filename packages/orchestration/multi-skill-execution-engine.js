@@ -3,13 +3,19 @@
  * @description محرك التنفيذ الحقيقي متعدد المهارات وإدارة دورة حياة المشاريع في ProofForge
  * (ProofForge Multi-Skill Real Execution & Lifecycle Engine)
  * 
- * يتولى:
- * 1. تشغيل المهارات بالتتابع الفعلي واستدعاء سكربتات وأدوات التحقق لكل مهارة.
- * 2. تمرير المخرجات والسياق بين المهارات (Context Passing).
- * 3. التقاط لقطة حالة لمساحة العمل (Workspace Snapshot) وإجراء استرجاع مادي حقيقي (Physical Rollback).
- * 4. إدارة فشل الخطوات الحقيقي الناتج عن إخفاق أدوات المهارات (Real Tool Defect Fail-Closed).
- * 5. التحكيم الحتمي في تعارضات المخرجات بحسب هرمية السلطة (Authority Hierarchy).
- * 6. التحقق النهائي من عقود الأدلة المادية وربطها بالرسم البياني للأدلة.
+ * يطبق المراحل الهندسية الـ 12 المستقلة:
+ * 1. استكشاف سياق المشروع (Project Context Discovery).
+ * 2. تحليل هيكلية المستودع (Repository Structure Analysis).
+ * 3. اكتشاف مكدس التقنيات (Technology Stack Detection).
+ * 4. استخراج المتطلبات (Requirement Extraction).
+ * 5. مطابقة المتطلبات بالمهارات (Requirement-to-Skill Mapping).
+ * 6. التخطيط للتنفيذ وتتبع التبعيات (Execution Planning & Prerequisite Check).
+ * 7. تحليل التبعيات والمخاطر وهرمية السلطة (Dependency, Risk & Conflict Analysis).
+ * 8. استدعاء مشغل الوكيل الذاتي المعتمد (Agent Runtime Invocation).
+ * 9. إنتاج المخرجات والملفات المادية الحقيقية (Real Artifact Production).
+ * 10. التحقق الدلالي المستقل من المخرجات عبر المدققات التخصصية (Independent Artifact Verification).
+ * 11. تسجيل وبناء رسم الأدلة الموحد (Evidence Graph Recording).
+ * 12. القرار الانتقالي للإصدار أو الاسترجاع المادي الشامل عند الإخفاق (Physical Rollback).
  */
 
 'use strict';
@@ -23,12 +29,14 @@ const RuleConflictEngine = require('./rule-conflict-engine');
 const EvidenceGraph = require('./evidence-graph');
 const PathLoaderGuard = require('../contracts/path-loader-guard');
 const EvidenceContractValidator = require('../contracts/evidence-contract-validator');
+const ProjectContextDiscovery = require('./project-context-discovery');
+const { AgentRuntimeProvider } = require('./agent-runtime-provider');
 
 class MultiSkillExecutionEngine {
     /**
      * تنفيذ خطة عمل متعددة المهارات على مساحة عمل فعلية مع استرجاع حقيقي عند الإخفاق
      * @param {Object} plan خطة التوجيه المعتمدة الصادرة من IntelligentSkillRouter
-     * @param {Object} options خيارات ومساحة عمل التنفيذ
+     * @param {Object} options خيارات ومساحة عمل ومزود تشغيل الوكيل
      * @returns {Object} تقرير التنفيذ النهائي بالأدلة المادية
      */
     static executePlan(plan, options = {}) {
@@ -36,14 +44,14 @@ class MultiSkillExecutionEngine {
             throw new Error('محظور: خطة التنفيذ فارغة أو غير صالحة');
         }
 
-        const rootDir = options.rootDir || path.resolve(__dirname, '../../');
-        const workspacePath = options.workspacePath || path.resolve(process.cwd(), '.webforge/execution-sandbox');
+        const rootDir = path.resolve(options.rootDir || path.resolve(__dirname, '../../'));
+        const workspacePath = path.resolve(options.workspacePath || path.resolve(process.cwd(), '.webforge/execution-sandbox'));
         fs.mkdirSync(workspacePath, { recursive: true });
 
-        // 1. التقاط لقطة حالة متكاملة لمساحة العمل قبل أي تدخل أو تهيئة لضمان استرجاع حقيقي 100%
+        // 1. التقاط لقطة حالة متكاملة لمساحة العمل قبل أي تدخل لضمان استرجاع حقيقي 100%
         const initialSnapshot = this._createWorkspaceSnapshot(workspacePath);
 
-        // 2. تهيئة البيئة الهندسية المعيارية لمساحة العمل المنفصلة لتمكين كافة أدوات المهارات الـ 28 مع استرجاع تعويضي فوري عند الإخفاق
+        // 2. تهيئة البيئة الهندسية المعيارية لمساحة العمل المنفصلة لتمكين أدوات المهارات مع استرجاع تعويضي فوري عند الإخفاق
         try {
             this._bootstrapIsolatedWorkspaceEnvironment(workspacePath, rootDir);
         } catch (bootstrapErr) {
@@ -72,13 +80,45 @@ class MultiSkillExecutionEngine {
             };
         }
 
-        const startTime = process.hrtime.bigint();
         const executionId = `EXEC_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
-        
+
+        // المرحلة 1 و 2 و 3: استكشاف سياق وبيئة المشروع الحقيقية (Project Context Discovery)
+        let projectContext = null;
+        try {
+            projectContext = ProjectContextDiscovery.discoverContext(workspacePath);
+        } catch (ctxErr) {
+            projectContext = { projectRoot: workspacePath, languages: ['javascript'], manifests: [] };
+        }
+
+        // المرحلة 8: استكشاف والتحقق من توفر بيئة تشغيل الوكيل الحي المعتمد (Agent Runtime Resolution)
+        const agentRuntime = AgentRuntimeProvider.resolveProvider(options);
+        if (!agentRuntime) {
+            // في حال عدم توفر بيئة تشغيل وكيل حية وعدم تمرير مزود معتمد، يرفض المحرك تزييف النتائج بقوالب مسبقة
+            return {
+                executionId,
+                scenarioId: plan.scenarioId,
+                status: 'AGENT_RUNTIME_UNAVAILABLE',
+                reason: 'No compatible live agent runtime detected. Refusing to emit unverified mock templates.',
+                totalDurationMs: 0,
+                completedStepsCount: 0,
+                totalStepsCount: plan.steps.length,
+                artifactsCount: 0,
+                emittedArtifacts: {},
+                conflictResolutions: [],
+                stepLogs: [],
+                evidenceGraphSummary: {
+                    totalNodes: 0,
+                    totalEdges: 0
+                }
+            };
+        }
+
+        const startTime = process.hrtime.bigint();
         const evidenceGraph = new EvidenceGraph();
         const executionContext = {
             rootDir,
             workspacePath,
+            projectContext,
             scenarioId: plan.scenarioId,
             scenarioName: plan.scenarioName,
             sharedMemory: {},
@@ -125,8 +165,8 @@ class MultiSkillExecutionEngine {
             }
 
             try {
-                // تنفيذ الخطوة الحقيقية واستدعاء سكربت المهارة
-                const stepArtifacts = this._executeSkillStepWithRealTools(step, workspacePath, executionContext);
+                // تنفيذ الخطوة الحقيقية عبر مشغل الوكيل المعتمد والمدقق المستقل
+                const stepArtifacts = this._executeSkillStepWithRealTools(step, workspacePath, executionContext, agentRuntime);
 
                 // فحص تعارض المخرجات والتحكيم
                 this._checkAndArbitrateConflicts(step, stepArtifacts, executionContext);
@@ -148,20 +188,19 @@ class MultiSkillExecutionEngine {
                             verifiedByTool: art.verifiedByTool || 'ENGINE_VERIFIER',
                             checksPassed: art.checksPassedCount !== undefined ? art.checksPassedCount : null,
                             totalChecks: art.totalChecksCount !== undefined ? art.totalChecksCount : null,
-                            failedChecks: art.failedChecksCount !== undefined ? art.failedChecksCount : 0,
-                            proof: art.cryptographicProof || null
+                            artifactSha256: art.physicalArtifact ? art.physicalArtifact.sha256 : null
                         }
                     });
                     evidenceGraph.addEdge(`PROJECT_${plan.scenarioId}`, evidenceNodeId, 'REQUIRES_EVIDENCE');
                 }
 
-                stepLog.status = 'SUCCESS';
-                stepLog.artifacts = Object.keys(stepArtifacts);
-                executionContext.completedSteps.add(step.skillId);
                 Object.assign(executionContext.emittedArtifacts, stepArtifacts);
+                executionContext.completedSteps.add(step.skillId);
 
                 const stepEndTime = process.hrtime.bigint();
+                stepLog.status = 'SUCCESS';
                 stepLog.durationMs = Number(stepEndTime - stepStartTime) / 1000000;
+                stepLog.artifacts = Object.keys(stepArtifacts);
                 executionContext.stepLogs.push(stepLog);
 
             } catch (err) {
@@ -169,7 +208,7 @@ class MultiSkillExecutionEngine {
                 failureDetails = {
                     failedStep: step.skillId,
                     reason: err.message,
-                    code: 'STEP_EXECUTION_ERROR'
+                    code: 'STEP_EXECUTION_FAILURE'
                 };
                 stepLog.status = 'FAILED';
                 stepLog.errors.push(err.message);
@@ -181,7 +220,7 @@ class MultiSkillExecutionEngine {
         const endTime = process.hrtime.bigint();
         const totalDurationMs = Number(endTime - startTime) / 1000000;
 
-        // في حال حدوث أي إخفاق: تنفيذ الاسترجاع الحقيقي ومقارنة الحالة
+        // في حال حدوث أي إخفاق، تطبيق الاسترجاع المادي الشامل لمساحة العمل (Physical Rollback)
         if (isAborted) {
             const rollbackResult = this._restoreWorkspaceSnapshot(workspacePath, initialSnapshot);
             return {
@@ -223,9 +262,9 @@ class MultiSkillExecutionEngine {
     }
 
     /**
-     * تنفيذ الخطوة التخصصية واستدعاء سكربتات وأدوات المهارة الحقيقية
+     * تنفيذ الخطوة التخصصية واستدعاء سكربتات وأدوات المهارة الحقيقية عبر مشغل الوكيل
      */
-    static _executeSkillStepWithRealTools(step, workspacePath, context) {
+    static _executeSkillStepWithRealTools(step, workspacePath, context, agentRuntime) {
         const artifacts = {};
         const skillId = step.skillId;
         const rootDir = context.rootDir;
@@ -235,508 +274,47 @@ class MultiSkillExecutionEngine {
             step.mutateWorkspace(workspacePath);
         }
 
-        // مهارة الهندسة المعمارية (Architecture)
-        if (skillId === 'architecture') {
-            const adrPath = path.join(workspacePath, 'ADR-001.md');
-            const scenarioTitle = context.scenarioName || 'Autonomous Multi-Tenant Architecture';
-            const adrContent = [
-                `# Architecture Decision Record 001: ${scenarioTitle}`,
-                ``,
-                `**Status**: APPROVED`,
-                `**Scenario ID**: ${context.scenarioId || 'GENERIC'}`,
-                `**Decided At**: ${new Date().toISOString()}`,
-                ``,
-                `## Context`,
-                `The system requires Clean Architecture domain isolation, fault boundaries, and zero-trust security controls.`,
-                ``,
-                `## Decision`,
-                `Adopt Hexagonal Architecture with strict domain boundary isolation:`,
-                `1. Core domain packages (packages/contracts, packages/security) must never depend on application layers (apps/web, apps/server).`,
-                `2. Every API route must be protected by server-side authentication and Anti-IDOR ownership validation.`,
-                `3. Database transactions must enforce tenant isolation policies (RLS).`,
-                ``,
-                `## Consequences`,
-                `- Inward dependency violations are strictly rejected.`,
-                `- State transitions are governed by formal state machine specifications.`,
-                `- Total byte-for-byte workspace state rollback guaranteed upon execution failure.`
-            ].join('\n');
-            PathLoaderGuard.safeAtomicWrite(adrPath, adrContent, { projectRoot: workspacePath });
-            artifacts['ADR_DOCUMENT'] = { path: adrPath, status: 'VERIFIED', scenario: scenarioTitle };
-            artifacts['SYSTEM_DIAGRAM'] = { type: 'MERMAID', status: 'VERIFIED' };
-            artifacts['DOMAIN_INVARIANTS'] = { count: 4, status: 'VERIFIED' };
-            context.sharedMemory['architecture'] = { adrApproved: true, tenantIsolationRequired: true, scenarioTitle };
+        // تحميل التعليمات الحقيقية للمهارة من الدليل الكنسي
+        const skillPath = path.join(rootDir, 'skills', skillId, 'SKILL.md');
+        let skillInstructions = '';
+        if (fs.existsSync(skillPath)) {
+            skillInstructions = fs.readFileSync(skillPath, 'utf8');
         }
 
-        // مهارة الأمان (Security)
-        else if (skillId === 'security') {
-            const threatModelPath = path.join(workspacePath, 'THREAT_MODEL.json');
-            const threatModel = {
-                version: '3.0.0',
-                evaluatedAt: new Date().toISOString(),
-                complianceLevel: 'OWASP_ASVS_L2',
-                status: 'VERIFIED',
-                assets: [
-                    { id: 'ASSET_USER_DATA', name: 'User & Tenant Profiles', sensitivity: 'HIGH' },
-                    { id: 'ASSET_API_KEYS', name: 'Authentication & Session Tokens', sensitivity: 'CRITICAL' },
-                    { id: 'ASSET_FINANCIAL_RECORDS', name: 'Transaction & Order Data', sensitivity: 'CRITICAL' }
-                ],
-                threatActors: ['EXTERNAL_UNAUTHENTICATED', 'MALICIOUS_TENANT_IDOR', 'INJECTION_ATTACKER'],
-                mitigations: {
-                    antiIdor: 'OwnershipGuard validation enforced on all tenant queries',
-                    timingSafeCrypto: 'Constant-time crypto comparisons for passwords and HMAC signatures',
-                    ssrfDefense: 'Private IP and cloud metadata (169.254.169.254) blocking',
-                    rateLimiting: 'Sliding-window IP rate limiting with in-memory/Redis store'
-                }
-            };
-            PathLoaderGuard.safeAtomicWrite(threatModelPath, JSON.stringify(threatModel, null, 2), { projectRoot: workspacePath });
+        const preSnapshot = this._createWorkspaceSnapshot(workspacePath);
 
-            artifacts['THREAT_MODEL'] = { path: threatModelPath, status: 'VERIFIED', level: 'ASVS_L2' };
-            artifacts['AUTH_BOUNDARY_MATRIX'] = { verified: true, zeroTrust: true };
-            artifacts['OWASP_ASVS_CHECKLIST'] = { level: 2, verified: true };
-            context.sharedMemory['security'] = { authRequiredOnEveryRoute: true };
-        }
-
-        // مهارة قواعد البيانات (Database)
-        else if (skillId === 'database') {
-            if (!context.sharedMemory['architecture']) {
-                throw new Error('Database requires approved architecture context');
-            }
-
-            // فحص وجود شفرة قاعدة بيانات معيبة أو غير متوافقة
-            const dbScript = path.join(rootDir, 'skills/database/scripts/verify_database.js');
-            const migrationsDir = path.join(workspacePath, 'apps/server/db/migrations');
-            fs.mkdirSync(migrationsDir, { recursive: true });
-
-            const migration1 = path.join(migrationsDir, '001_initial.sql');
-            const migration2 = path.join(migrationsDir, '002_rls.sql');
-            const storagePath = path.join(workspacePath, 'apps/server/db/storage-adapter.js');
-
-            // كتابة مخطط محصن يحتوي على tenant_id و Foreign Keys و RLS و Transaction Support
-            const sql1 = `
-CREATE TABLE tenants (
-    id VARCHAR(64) PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE orders (
-    id VARCHAR(64) PRIMARY KEY,
-    tenant_id VARCHAR(64) NOT NULL REFERENCES tenants(id),
-    amount NUMERIC(10, 2) NOT NULL,
-    status VARCHAR(32) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-`;
-            const sql2 = `
-ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY tenant_isolation_policy ON orders
-    AS RESTRICTIVE
-    USING (tenant_id = current_setting('app.current_tenant_id', true));
-`;
-            PathLoaderGuard.safeAtomicWrite(migration1, sql1, { projectRoot: workspacePath });
-            PathLoaderGuard.safeAtomicWrite(migration2, sql2, { projectRoot: workspacePath });
-
-            const storageCode = `
-class StorageAdapter {
-    constructor(dbPool) {
-        this.dbPool = dbPool;
-        this.tenantContext = null;
-    }
-
-    setTenantContext(tenantId) {
-        if (!tenantId) throw new Error('Tenant context required');
-        this.tenantContext = tenantId;
-    }
-
-    getTenantContext() {
-        return this.tenantContext;
-    }
-
-    async runInTransaction(callback) {
-        // BEGIN transaction support with rollback
-        const client = await this.dbPool.connect();
-        try {
-            await client.query('BEGIN');
-            if (this.tenantContext) {
-                await client.query("SELECT set_config('app.current_tenant_id', $1, true)", [this.tenantContext]);
-            }
-            const result = await callback(client);
-            await client.query('COMMIT');
-            return result;
-        } catch (err) {
-            await client.query('ROLLBACK');
-            throw err;
-        } finally {
-            client.release();
-        }
-    }
-}
-
-module.exports = StorageAdapter;
-`;
-            PathLoaderGuard.safeAtomicWrite(storagePath, storageCode, { projectRoot: workspacePath });
-
-            artifacts['MIGRATION_SCRIPTS'] = { path: migration1, status: 'VERIFIED' };
-            artifacts['TENANT_ISOLATION_PROOF'] = { tenantColumnPresent: true };
-            artifacts['ACID_TRANSACTION_TESTS'] = { passed: true };
-            context.sharedMemory['database'] = { migrationsApplied: true };
-        }
-
-        // مهارة الخدمات الخلفية (Backend)
-        else if (skillId === 'backend') {
-            const serverDir = path.join(workspacePath, 'apps/server');
-            fs.mkdirSync(serverDir, { recursive: true });
-            const serverPath = path.join(serverDir, 'server.js');
-            const redisPath = path.join(serverDir, 'redis-adapter.js');
-            const errorModelPath = path.join(serverDir, 'error-model.js');
-
-            const errorModelCode = `
-class ApiResponse {
-    static success(res, data) {
-        return res.writeHead(200, { 'Content-Type': 'application/json' }).end(JSON.stringify({ success: true, data }));
-    }
-    static error(res, code, message) {
-        return res.writeHead(500, { 'Content-Type': 'application/json' }).end(JSON.stringify({ success: false, error: { code, message } }));
-    }
-}
-module.exports = { ApiResponse };
-`;
-            PathLoaderGuard.safeAtomicWrite(errorModelPath, errorModelCode, { projectRoot: workspacePath });
-
-            const redisCode = `
-class RedisAdapter {
-    constructor() {}
-    async get(key) { return null; }
-    async set(key, val) { return true; }
-}
-module.exports = RedisAdapter;
-`;
-            PathLoaderGuard.safeAtomicWrite(redisPath, redisCode, { projectRoot: workspacePath });
-
-            const serverCode = `
-const http = require('http');
-const StorageAdapter = require('./db/storage-adapter');
-const RedisAdapter = require('./redis-adapter');
-const { ApiResponse } = require('./error-model');
-
-class RateLimiter {
-    constructor() { this.requests = new Map(); }
-    check(ip) {
-        if (!ip) return false;
-        const count = (this.requests.get(ip) || 0) + 1;
-        this.requests.set(ip, count);
-        return count <= 100;
-    }
-}
-
-class TokenManager {
-    verifyToken(token) {
-        return token && token.startsWith('Bearer ');
-    }
-}
-
-class InputSecurityGuard {
-    static sanitize(payload) {
-        if (!payload || typeof payload !== 'object') return payload;
-        const clean = { ...payload };
-        delete clean['__proto__'];
-        delete clean['constructor'];
-        delete clean['prototype'];
-        return clean;
-    }
-}
-
-class PasswordValidator {
-    static validatePassword(password) {
-        // Enforce Password complexity & validation rules
-        if (!password || password.length < 8) {
-            throw new Error('Password complexity violation: Minimum 8 characters required');
-        }
-        return true;
-    }
-}
-
-const rateLimiter = new RateLimiter();
-const tokenManager = new TokenManager();
-const passwordValidator = new PasswordValidator();
-const storage = new StorageAdapter({ connect: async () => ({ query: async () => {}, release: () => {} }) });
-const redis = new RedisAdapter();
-const secretsScrubber = { scrub: (txt) => (txt ? txt.replace(/(token|secret|password)=([^&]+)/gi, '$1=***') : txt) };
-
-const server = http.createServer((req, res) => {
-    const ip = req.socket.remoteAddress || '127.0.0.1';
-    secretsScrubber.scrub(req.url);
-
-    if (!rateLimiter.check(ip)) {
-        return ApiResponse.error(res, 'RATE_LIMIT_EXCEEDED', 'Too many requests');
-    }
-
-    // Health probes
-    if (req.url === '/healthz') {
-        res.setHeader('Cache-Control', 'no-store');
-        return ApiResponse.success(res, { status: 'HEALTHY' });
-    }
-    if (req.url === '/readyz') {
-        res.setHeader('Cache-Control', 'no-store');
-        return ApiResponse.success(res, { status: 'READY' });
-    }
-
-    // Observability metrics endpoint
-    if (req.url === '/metrics') {
-        res.writeHead(200, { 'Content-Type': 'text/plain' });
-        return res.end('# HELP http_requests_total Total requests\\n# TYPE http_requests_total counter\\nhttp_requests_total 42\\n');
-    }
-
-    // Static assets & caching
-    res.setHeader('Cache-Control', 'public, max-age=3600');
-
-    // Semantic API Route Versioning (/api/v1/) with idempotency & auth check
-    if (req.url && req.url.startsWith('/api/v1/')) {
-        const idempotencyKey = req.headers['idempotency-key'] || req.headers['x-idempotency-key'];
-        const authHeader = req.headers['authorization'];
-
-        if (req.url.startsWith('/api/v1/protected') && !tokenManager.verifyToken(authHeader)) {
-            return ApiResponse.error(res, 'UNAUTHORIZED', 'Invalid or missing authorization token');
-        }
-
-        InputSecurityGuard.sanitize(req.body);
-
-        return ApiResponse.success(res, {
-            route: req.url,
-            idempotencyKeyEnforced: Boolean(idempotencyKey),
-            authenticated: Boolean(authHeader)
+        // استدعاء مشغل الوكيل الذاتي الواعي بسياق المشروع لتنفيذ متطلبات المهارة
+        const taskResult = agentRuntime.submitTask({
+            skillId,
+            skillInstructions,
+            step,
+            context,
+            projectContext: context.projectContext,
+            workspacePath
         });
-    }
 
-    return ApiResponse.error(res, 'NOT_FOUND', 'Endpoint not found');
-});
-
-process.on('SIGTERM', () => {
-    server.close();
-});
-process.on('SIGINT', () => {
-    server.close();
-});
-
-module.exports = server;
-`;
-            PathLoaderGuard.safeAtomicWrite(serverPath, serverCode, { projectRoot: workspacePath });
-
-            artifacts['SERVICE_LAYER_IMPLEMENTATION'] = { path: serverPath, status: 'VERIFIED' };
-            artifacts['RATE_LIMITER_CONFIG'] = { slidingWindowMs: 60000 };
-            artifacts['HEALTH_PROBES'] = { liveness: '/healthz', readiness: '/readyz' };
-            context.sharedMemory['backend'] = { serverCreated: true };
+        if (!taskResult || taskResult.status !== 'EXECUTED') {
+            throw new Error(`أخفق تنفيذ مهمة المهارة '${skillId}' عبر مشغل الوكيل: ${(taskResult && taskResult.error) || 'Unknown runtime error'}`);
         }
 
-        // مهارة الواجهات البرمجية (API)
-        else if (skillId === 'api') {
-            const openApiPath = path.join(workspacePath, 'openapi.json');
-            const apiTitle = `${context.scenarioName || 'Application'} Service API`;
-            const openApiSpec = {
-                openapi: '3.0.0',
-                info: {
-                    title: apiTitle,
-                    version: '1.0.0',
-                    description: 'Contract-first OpenAPI v3 specification with server-side validation and idempotency keys'
-                },
-                paths: {
-                    '/healthz': {
-                        get: { summary: 'Liveness probe', responses: { '200': { description: 'Healthy' } } }
-                    },
-                    '/readyz': {
-                        get: { summary: 'Readiness probe', responses: { '200': { description: 'Ready' } } }
-                    },
-                    '/metrics': {
-                        get: { summary: 'Prometheus metrics stream', responses: { '200': { description: 'Metrics' } } }
-                    },
-                    '/api/v1/orders': {
-                        post: {
-                            summary: 'Create tenant order',
-                            security: [{ bearerAuth: [] }],
-                            parameters: [
-                                { name: 'idempotency-key', in: 'header', required: true, schema: { type: 'string' } }
-                            ],
-                            responses: {
-                                '201': { description: 'Order created successfully' },
-                                '400': { description: 'Invalid schema / missing idempotency key' },
-                                '401': { description: 'Unauthorized' }
-                            }
-                        }
-                    }
-                },
-                components: {
-                    securitySchemes: {
-                        bearerAuth: { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }
-                    }
-                }
-            };
-            PathLoaderGuard.safeAtomicWrite(openApiPath, JSON.stringify(openApiSpec, null, 2), { projectRoot: workspacePath });
-            artifacts['OPENAPI_CONTRACT'] = { path: openApiPath, status: 'VERIFIED', pathsCount: Object.keys(openApiSpec.paths).length };
-            artifacts['IDEMPOTENCY_TESTS'] = { passed: true, headerEnforced: 'idempotency-key' };
-            artifacts['INPUT_VALIDATION_SCHEMA'] = { verified: true, schemaValidation: 'STRICT' };
+        const postSnapshot = this._createWorkspaceSnapshot(workspacePath);
+
+        // التحقق الأمني الحتمي من نطاق التعديلات ومنع الهروب أو التعديل خارج حدود مساحة العمل
+        for (const relPath of Object.keys(postSnapshot.files)) {
+            const absTarget = path.join(workspacePath, relPath);
+            if (!PathLoaderGuard.isInsideRoot(absTarget, workspacePath)) {
+                const secErr = new Error(`[Security Violation] محاولة تعديل ملف خارج حدود مساحة العمل المصرح بها: ${relPath}`);
+                secErr.code = 'UNAUTHORIZED_WORKSPACE_MODIFICATION';
+                throw secErr;
+            }
         }
 
-        // مهارة التجارة الإلكترونية (Ecommerce)
-        else if (skillId === 'ecommerce') {
-            artifacts['IDEMPOTENT_CHECKOUT_PROOF'] = { replayProtected: true };
-            artifacts['INVENTORY_RACE_TESTS'] = { mutexEnforced: true };
-            artifacts['WEBHOOK_HMAC_VERIFICATION'] = { timingSafe: true };
+        const candidateArtifacts = taskResult.emittedArtifacts || {};
+        for (const [key, val] of Object.entries(candidateArtifacts)) {
+            artifacts[key] = val;
         }
 
-        // مهارة نظام التصميم (Design System)
-        else if (skillId === 'design-system') {
-            const tokensPath = path.join(workspacePath, 'tokens.json');
-            PathLoaderGuard.safeAtomicWrite(tokensPath, JSON.stringify({ colors: { primary: '#0f172a' } }, null, 2), { projectRoot: workspacePath });
-            artifacts['DESIGN_TOKENS_JSON'] = { path: tokensPath, status: 'VERIFIED' };
-            artifacts['COLOR_SCALE_MATRIX'] = { wcagAaaContrast: true };
-            artifacts['TYPOGRAPHY_SYSTEM'] = { rhythm: '4px/8px' };
-            context.sharedMemory['design-system'] = { tokensLoaded: true };
-        }
-
-        // مهارة إمكانية الوصول (Accessibility)
-        else if (skillId === 'accessibility') {
-            artifacts['WCAG_2_2_AAA_AUDIT'] = { passed: true };
-            artifacts['KEYBOARD_NAVIGATION_TEST'] = { tabTrapping: true };
-            artifacts['ARIA_LABELS_VERIFICATION'] = { zeroMissingLabels: true };
-        }
-
-        // مهارة دعم العربية (RTL)
-        else if (skillId === 'rtl') {
-            artifacts['LOGICAL_PROPERTIES_AUDIT'] = { logicalPropsOnly: true };
-            artifacts['ICON_MIRRORING_VERIFICATION'] = { directionalMirrored: true };
-            artifacts['BIDIRECTIONAL_PARITY'] = { parity100: true };
-        }
-
-        // مهارة النشر (Deployment)
-        else if (skillId === 'deployment') {
-            const dockerPath = path.join(workspacePath, 'Dockerfile');
-            PathLoaderGuard.safeAtomicWrite(dockerPath, 'FROM node:22-alpine\nUSER node\nCMD ["node", "apps/server/server.js"]', { projectRoot: workspacePath });
-            artifacts['NON_ROOT_DOCKERFILE'] = { path: dockerPath, nonRootUser: 'node' };
-            artifacts['LOCKFILE_REPRODUCIBILITY'] = { packageLockConsistent: true };
-            artifacts['ZERO_SECRET_LEAK_AUDIT'] = { verified: true };
-        }
-
-        // مهارة الجاهزية الإنتاجية (Production Readiness)
-        else if (skillId === 'production-readiness') {
-            artifacts['12_FACTOR_AUDIT'] = { compliant: true };
-            artifacts['HEALTHZ_READYZ_PROBES'] = { probesOperational: true };
-            artifacts['STRUCTURED_JSON_LOGS'] = { jsonLogging: true };
-        }
-
-        // مهارة مكافحة الكسل البرمجي (Anti-Laziness)
-        else if (skillId === 'anti-laziness') {
-            artifacts['ZERO_PLACEHOLDER_PROOF'] = { zeroBannedKeywords: true, verified: true };
-            artifacts['FULL_IMPLEMENTATION_VERIFICATION'] = { zeroTruncation: true, verified: true };
-        }
-
-        // مهارة مكافحة الركاكة البصرية (Anti-Slop)
-        else if (skillId === 'anti-slop') {
-            artifacts['DESIGN_TOKEN_VALIDATION'] = { tokensValidated: true };
-            artifacts['ANTI_SLOP_AUDIT'] = { aestheticQualityGate: 'PASSED' };
-        }
-
-        // مهارة تجربة المستخدم وحالات الواجهة (UI-UX)
-        else if (skillId === 'ui-ux') {
-            artifacts['USER_FLOW_STATE_MACHINE'] = { states: ['IDLE', 'LOADING', 'EMPTY', 'ERROR', 'SUCCESS'] };
-            artifacts['ACTIONABLE_ERROR_STATES'] = { verified: true };
-        }
-
-        // مهارة الواجهة الأمامية (Frontend)
-        else if (skillId === 'frontend') {
-            artifacts['COMPONENT_HIERARCHY'] = { verified: true };
-            artifacts['CLIENT_STATE_BOUNDARIES'] = { contextIsolated: true };
-            artifacts['CHUNK_OPTIMIZATION'] = { lazyLoaded: true };
-        }
-
-        // مهارة النماذج والتحقق (Forms)
-        else if (skillId === 'forms') {
-            artifacts['SCHEMA_VALIDATION_RULES'] = { strictRules: true };
-            artifacts['DOUBLE_SUBMIT_DEFENSE'] = { idempotencyTokenRequired: true };
-            artifacts['INLINE_ERROR_HANDLING'] = { accessibleErrors: true };
-        }
-
-        // مهارة التصميم المتجاوب (Responsive)
-        else if (skillId === 'responsive') {
-            artifacts['VIEWPORT_BREAKPOINTS_TEST'] = { minWidth: '320px', maxWidth: '4K' };
-            artifacts['TOUCH_TARGET_44PX_AUDIT'] = { compliant: true };
-            artifacts['ZERO_HORIZONTAL_SCROLL'] = { verified: true };
-        }
-
-        // مهارة اللمسات الفنية (Taste-Craft)
-        else if (skillId === 'taste-craft') {
-            artifacts['MICRO_INTERACTIONS_SPEC'] = { tactile: true };
-            artifacts['TACTILE_FEEDBACK_AUDIT'] = { verified: true };
-        }
-
-        // مهارة التحريك والحركة (Motion)
-        else if (skillId === 'motion') {
-            artifacts['GPU_60FPS_BUDGET'] = { transformsOnly: true };
-            artifacts['PREFERS_REDUCED_MOTION_DEFENSE'] = { mediaQueryHandled: true };
-        }
-
-        // مهارة لوحات القيادة (Dashboards)
-        else if (skillId === 'dashboards') {
-            artifacts['DATA_VIRTUALIZATION_TEST'] = { virtualized: true };
-            artifacts['REALTIME_SYNC_PROOF'] = { syncVerified: true };
-            artifacts['KPI_CARD_DENSITY'] = { optimized: true };
-        }
-
-        // مهارة تحويل التصاميم (Image-to-Code)
-        else if (skillId === 'image-to-code') {
-            artifacts['DESIGN_TOKEN_CONFORMANCE'] = { tokenMatchRate: 100 };
-            artifacts['ZERO_HALLUCINATION_PROOF'] = { verified: true };
-        }
-
-        // مهارة الربط التكاملي الكامل (Fullstack)
-        else if (skillId === 'fullstack') {
-            artifacts['END_TO_END_LIFECYCLE_TEST'] = { fullstackConnected: true };
-            artifacts['UNIFIED_DATA_CONTRACT'] = { sharedTypes: true };
-        }
-
-        // مهارة هندسة الذكاء الاصطناعي (AI-Engineering)
-        else if (skillId === 'ai-engineering') {
-            artifacts['PROMPT_INJECTION_DEFENSE'] = { sanitizedPrompts: true };
-            artifacts['AI_TOOL_PERMISSION_SANDBOX'] = { leastPrivilege: true };
-            artifacts['GROUNDING_EVIDENCE'] = { groundedResponses: true };
-        }
-
-        // مهارة التدقيق الشامل (Project-Audit)
-        else if (skillId === 'project-audit') {
-            artifacts['DEPENDENCY_VULNERABILITY_SCAN'] = { highVulns: 0, criticalVulns: 0 };
-            artifacts['TECH_DEBT_LEDGER'] = { ledgerMaintained: true };
-            artifacts['REMEDIATION_PLAN'] = { planCreated: true };
-        }
-
-        // مهارة المراجعة البرمجية الصارمة (Code-Review)
-        else if (skillId === 'code-review') {
-            artifacts['ADVERSARIAL_REVIEW_REPORT'] = { bugHuntPassed: true };
-            artifacts['REGRESSION_CHECKLIST'] = { verified: true };
-            artifacts['SIDE_EFFECT_PROOF'] = { isolated: true };
-        }
-
-        // مهارة الاختبارات المؤتمتة (Testing)
-        else if (skillId === 'testing') {
-            artifacts['ZERO_MOCK_VERIFICATION'] = { noMocksInProduction: true };
-            artifacts['EVIDENCE_CONTRACT_VALIDATION'] = { verified: true };
-            artifacts['DETERMINISTIC_PASS_SUITE'] = { passed: true };
-        }
-
-        // مهارة الأداء وتحسين السرعة (Performance)
-        else if (skillId === 'performance') {
-            artifacts['LIGHTHOUSE_90_BUDGET'] = { score: 98, budgetPassed: true };
-            artifacts['CORE_WEB_VITALS_REPORT'] = { lcp: '1.2s', cls: '0.01', inp: '45ms' };
-            artifacts['MEMORY_LEAK_CHECK'] = { zeroLeaksDetected: true };
-        }
-
-        // مهارة السيو والبيانات المنظمة (SEO)
-        else if (skillId === 'seo') {
-            artifacts['JSON_LD_SCHEMA'] = { validSchema: true };
-            artifacts['OPEN_GRAPH_METADATA'] = { ogTagsPresent: true };
-            artifacts['CANONICAL_TAGS'] = { canonicalPresent: true };
-        }
-
-        // استدعاء أداة التحقق التخصصية للمهارة وتطبيق العقد الحتمي (Strict Fail-Closed Tool Execution)
+        // استدعاء أداة التحقق التخصصية للمهارة وتطبيق العقد الحتمي المستقل (Independent Tool Verification)
         const behavioralSpecs = this._loadBehavioralSpecs(rootDir);
         const skillSpec = behavioralSpecs[skillId];
 
@@ -766,15 +344,13 @@ module.exports = server;
             throw new Error(`مخرجات أداة فحص المهارة '${skillId}' مشوهة وليست بتنسيق JSON حتمي صالح`);
         }
 
-        // ========================================================
         // التحقق الصارم من عقد الإثبات الحتمي (Strict Evidence Contract Enforcement)
-        // ========================================================
         if (!parsedOutput || typeof parsedOutput !== 'object') {
             throw new Error(`[Evidence Contract Violation] مخرجات أداة فحص المهارة '${skillId}' مشوهة وليست كائناً صالحاً`);
         }
 
         if (typeof parsedOutput.total_checks !== 'number' || parsedOutput.total_checks <= 0) {
-            throw new Error(`[Evidence Contract Violation] المهارة '${skillId}' سجلت total_checks غير صالح (${parsedOutput.total_checks}). يجب أن يكون عدداً صحيحاً أكبر من صفر.`);
+            throw new Error(`[Evidence Contract Violation] المهارة '${skillId}' سجلت total_checks غير صالح (${parsedOutput.total_checks}).`);
         }
 
         if (typeof parsedOutput.passed_checks !== 'number' || parsedOutput.passed_checks <= 0) {
@@ -782,7 +358,7 @@ module.exports = server;
         }
 
         if (typeof parsedOutput.failed_checks !== 'number' || parsedOutput.failed_checks !== 0) {
-            throw new Error(`[Evidence Contract Violation] المهارة '${skillId}' تحتوي على فحوصات فاشلة (${parsedOutput.failed_checks}). يمنع منعاً باتاً اعتماد المهارة ما لم يكن عدد الفحوصات الفاشلة صفراً.`);
+            throw new Error(`[Evidence Contract Violation] المهارة '${skillId}' تحتوي على فحوصات فاشلة (${parsedOutput.failed_checks}).`);
         }
 
         if (parsedOutput.error_checks && parsedOutput.error_checks !== 0) {
@@ -853,130 +429,6 @@ module.exports = server;
     }
 
     /**
-     * مطابقة متطلبات الأدلة بفحوصات المهارة المعيارية
-     */
-    static _matchesRequirementCheck(skillId, req, check) {
-        const prop = (check.property || check.id || '').toLowerCase();
-        const details = (check.details || '').toLowerCase();
-        const r = req.toLowerCase();
-
-        if (skillId === 'architecture') {
-            if (r === 'adr_document') return prop.includes('architecture') || prop.includes('dependency');
-            if (r === 'system_diagram') return prop.includes('state machine') || prop.includes('formalism');
-            if (r === 'domain_invariants') return prop.includes('invariant') || prop.includes('graph');
-        }
-        if (skillId === 'security') {
-            if (r === 'threat_model') return prop.includes('idor') || prop.includes('ssrf') || prop.includes('security');
-            if (r === 'auth_boundary_matrix') return prop.includes('password') || prop.includes('constant-time');
-            if (r === 'owasp_asvs_checklist') return prop.includes('sanitization') || prop.includes('rate limiter');
-        }
-        if (skillId === 'anti-laziness') {
-            if (r === 'zero_placeholder_proof') return prop.includes('zero') || prop.includes('laziness') || prop.includes('invariant');
-            if (r === 'full_implementation_verification') return prop.includes('production') || prop.includes('source') || prop.includes('discovery') || prop.includes('zero');
-        }
-        if (skillId === 'database') {
-            if (r === 'migration_scripts') return prop.includes('migration');
-            if (r === 'tenant_isolation_proof') return prop.includes('tenant') || prop.includes('isolation');
-            if (r === 'acid_transaction_tests') return prop.includes('transaction') || prop.includes('atomicity');
-        }
-        if (skillId === 'backend') {
-            if (r === 'service_layer_implementation') return prop.includes('storage adapter') || prop.includes('error handling') || prop.includes('server');
-            if (r === 'rate_limiter_config') return prop.includes('rate limiting');
-            if (r === 'health_probes') return prop.includes('liveness') || prop.includes('readiness');
-        }
-        if (skillId === 'api') {
-            if (r === 'openapi_contract') return prop.includes('route versioning') || prop.includes('api');
-            if (r === 'idempotency_tests') return prop.includes('idempotency');
-            if (r === 'input_validation_schema') return prop.includes('sanitization') || prop.includes('body');
-        }
-        if (skillId === 'ecommerce') {
-            if (r === 'idempotent_checkout_proof') return prop.includes('idempotency') || prop.includes('checkout');
-            if (r === 'inventory_race_tests') return prop.includes('inventory') || prop.includes('stock');
-            if (r === 'webhook_hmac_verification') return prop.includes('hmac') || prop.includes('webhook');
-        }
-        if (skillId === 'deployment') {
-            if (r === 'non_root_dockerfile') return prop.includes('non-root') || prop.includes('user');
-            if (r === 'lockfile_reproducibility') return prop.includes('deterministic') || prop.includes('npm ci');
-            if (r === 'zero_secret_leak_audit') return prop.includes('isolation') || prop.includes('build');
-        }
-        if (skillId === 'design-system') {
-            if (r === 'design_tokens_json') return prop.includes('token') || prop.includes('design');
-            if (r === 'color_scale_matrix') return prop.includes('color') || prop.includes('palette');
-            if (r === 'typography_system') return prop.includes('spacing') || prop.includes('typography') || prop.includes('discovery');
-        }
-        if (skillId === 'frontend') {
-            if (r === 'component_hierarchy') return prop.includes('component') || prop.includes('html');
-            if (r === 'client_state_boundaries') return prop.includes('dom') || prop.includes('binding') || prop.includes('state');
-            if (r === 'chunk_optimization') return prop.includes('viewport') || prop.includes('error') || prop.includes('async');
-        }
-        if (skillId === 'accessibility') {
-            if (r === 'wcag_2_2_aaa_audit') return prop.includes('button') || prop.includes('client files') || prop.includes('contrast');
-            if (r === 'keyboard_navigation_test') return prop.includes('keyboard') || prop.includes('focus');
-            if (r === 'aria_labels_verification') return prop.includes('input') || prop.includes('image') || prop.includes('aria');
-        }
-        if (skillId === 'testing') {
-            if (r === 'zero_mock_verification') return prop.includes('mock') || prop.includes('invariant');
-            if (r === 'evidence_contract_validation') return prop.includes('assertion') || prop.includes('density') || prop.includes('evidence');
-            if (r === 'deterministic_pass_suite') return prop.includes('automated') || prop.includes('discovery') || prop.includes('suite');
-        }
-        if (skillId === 'performance') {
-            if (r === 'lighthouse_90_budget') return prop.includes('non-blocking') || prop.includes('script') || prop.includes('performance');
-            if (r === 'core_web_vitals_report') return prop.includes('layout shift') || prop.includes('cls') || prop.includes('vitals');
-            if (r === 'memory_leak_check') return prop.includes('memory') || prop.includes('leak') || prop.includes('cleanup');
-        }
-        if (skillId === 'dashboards') {
-            if (r === 'data_virtualization_test') return prop.includes('grid') || prop.includes('layout') || prop.includes('density');
-            if (r === 'realtime_sync_proof') return prop.includes('telemetry') || prop.includes('stream') || prop.includes('activity');
-            if (r === 'kpi_card_density') return prop.includes('status') || prop.includes('widget') || prop.includes('indicator');
-        }
-        if (skillId === 'production-readiness') {
-            if (r === '12_factor_audit') return prop.includes('termination') || prop.includes('lifecycle') || prop.includes('factor');
-            if (r === 'healthz_readyz_probes') return prop.includes('probe') || prop.includes('health');
-            if (r === 'structured_json_logs') return prop.includes('sanitization') || prop.includes('pii') || prop.includes('log');
-        }
-        if (skillId === 'responsive') {
-            if (r === 'viewport_breakpoints_test') return prop.includes('viewport') || prop.includes('clamp');
-            if (r === 'touch_target_44px_audit') return prop.includes('container') || prop.includes('touch') || prop.includes('flexbox');
-            if (r === 'zero_horizontal_scroll') return prop.includes('pixel') || prop.includes('scroll') || prop.includes('blowout');
-        }
-        if (skillId === 'rtl') {
-            if (r === 'logical_properties_audit') return prop.includes('logical') || prop.includes('properties');
-            if (r === 'icon_mirroring_verification') return prop.includes('locale') || prop.includes('arabic');
-            if (r === 'bidirectional_parity') return prop.includes('direction') || prop.includes('rtl');
-        }
-        if (skillId === 'forms') {
-            if (r === 'schema_validation_rules') return prop.includes('validation') || prop.includes('rule');
-            if (r === 'double_submit_defense') return prop.includes('sanitization') || prop.includes('payload');
-            if (r === 'inline_error_handling') return prop.includes('input') || prop.includes('label');
-        }
-        if (skillId === 'anti-slop') {
-            if (r === 'design_token_validation') return prop.includes('slop') || prop.includes('invariant');
-            if (r === 'anti_slop_audit') return prop.includes('semantic') || prop.includes('html') || prop.includes('architecture');
-        }
-        if (skillId === 'ui-ux') {
-            if (r === 'user_flow_state_machine') return prop.includes('loading') || prop.includes('async') || prop.includes('flow');
-            if (r === 'actionable_error_states') return prop.includes('error') || prop.includes('feedback');
-        }
-        if (skillId === 'taste-craft') {
-            if (r === 'micro_interactions_spec') return prop.includes('hover') || prop.includes('focus');
-            if (r === 'tactile_feedback_audit') return prop.includes('tactile') || prop.includes('pressed') || prop.includes('active');
-        }
-        if (skillId === 'project-audit') {
-            if (r === 'dependency_vulnerability_scan') return prop.includes('security') || prop.includes('asvs');
-            if (r === 'tech_debt_ledger') return prop.includes('laziness') || prop.includes('debt');
-            if (r === 'remediation_plan') return prop.includes('composite') || prop.includes('threshold') || prop.includes('score');
-        }
-        if (skillId === 'code-review') {
-            if (r === 'adversarial_review_report') return prop.includes('discovery') || prop.includes('adversarial');
-            if (r === 'regression_checklist') return prop.includes('critical') || prop.includes('sinks');
-            if (r === 'side_effect_proof') return prop.includes('sinks') || prop.includes('critical');
-        }
-
-        const rWords = r.split('_');
-        return rWords.some(w => w.length > 3 && (prop.includes(w) || details.includes(w)));
-    }
-
-    /**
      * تحميل المواصفات السلوكية للمهارات
      */
     static _loadBehavioralSpecs(rootDir) {
@@ -991,7 +443,6 @@ module.exports = server;
      * تهيئة البيئة الهندسية المعيارية لمساحة العمل المنفصلة
      */
     static _bootstrapIsolatedWorkspaceEnvironment(workspacePath, rootDir) {
-        // إذا كانت مساحة العمل هي ذاتها جذر المشروع، فلا حاجة للنسخ
         if (path.resolve(workspacePath) === path.resolve(rootDir)) {
             return;
         }
@@ -1105,7 +556,6 @@ module.exports = server;
         let filesRestored = 0;
         let dirsRemoved = 0;
 
-        // 1. فحص مساحة العمل الحالية
         const currentFiles = [];
         const currentSymlinks = [];
         const currentDirs = [];
@@ -1136,7 +586,7 @@ module.exports = server;
         };
         scan(dirPath);
 
-        // 2. إزالة الملفات والروابط الرمزية غير الموجودة في اللقطة الأولية
+        // إزالة الملفات والروابط الرمزية غير الموجودة في اللقطة الأولية
         for (const file of currentFiles) {
             if (!initialSnapshot.files[file.relPath]) {
                 try {
@@ -1159,7 +609,7 @@ module.exports = server;
             }
         }
 
-        // 3. إعادة كتابة أو استرجاع الملفات المفقودة أو المعدلة
+        // استرجاع أو كتابة الملفات المحفوظة
         for (const [relPath, snap] of Object.entries(initialSnapshot.files)) {
             const targetPath = path.join(dirPath, relPath);
             let needsRestore = false;
@@ -1188,7 +638,7 @@ module.exports = server;
             }
         }
 
-        // 4. استرجاع الروابط الرمزية إن وجدت
+        // استرجاع الروابط الرمزية
         for (const [relPath, snap] of Object.entries(initialSnapshot.symlinks)) {
             const targetPath = path.join(dirPath, relPath);
             let needsSymlink = false;
@@ -1211,7 +661,7 @@ module.exports = server;
             }
         }
 
-        // 5. إزالة المجلدات الفارغة التي استحدثت ولم تكن موجودة (من الأطول إلى الأقصر)
+        // إزالة المجلدات المستحدثة
         currentDirs.sort((a, b) => b.relPath.length - a.relPath.length);
         for (const dir of currentDirs) {
             if (!initialSnapshot.directories.has(dir.relPath)) {
@@ -1226,7 +676,7 @@ module.exports = server;
             }
         }
 
-        // 5.2 استعادة صلاحيات المجلدات المحفوظة على بيئات POSIX
+        // استعادة صلاحيات المجلدات على بيئات POSIX
         if (process.platform !== 'win32' && initialSnapshot.directoryModes) {
             for (const [dirRel, dMode] of Object.entries(initialSnapshot.directoryModes)) {
                 try {
@@ -1238,7 +688,6 @@ module.exports = server;
             }
         }
 
-        // 6. التحقق الدقيق بعد الاسترجاع للتأكد من مطابقة الحالة بالكامل (Byte-for-Byte & Structure)
         const postSnapshot = this._createWorkspaceSnapshot(dirPath);
 
         const initialFileKeys = Object.keys(initialSnapshot.files).sort();
@@ -1276,7 +725,7 @@ module.exports = server;
             directoryHierarchy: dirsMatch ? "STRUCTURE_EXACT_MATCH" : "MISMATCH",
             symlinkTargets: symlinksMatch ? "TARGET_EXACT_MATCH" : "MISMATCH",
             filePermissions: process.platform === 'win32' ? "WINDOWS_ATTRIBUTES_PRESERVED" : (filesMatch ? "POSIX_MODE_MATCH" : "MISMATCH"),
-            unsupportedMetadataNote: "Cross-platform user-space rollback preserves content hashes, full directory hierarchy, symlink destinations, and POSIX file/folder modes where supported. Kernel-level ACLs and extended attributes (xattr) are out of portable workspace scope."
+            unsupportedMetadataNote: "Cross-platform user-space rollback preserves content hashes, full directory hierarchy, symlink destinations, and POSIX file/folder modes where supported."
         };
 
         return {

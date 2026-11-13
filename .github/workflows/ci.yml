@@ -72,7 +72,7 @@ jobs:
       - name: Multi-skill end-to-end execution
         run: npm run test:multi-skill-exec
 
-      - name: Agent A/B effectiveness benchmark
+      - name: Fixture defense benchmark & Agent effectiveness A/B verification
         run: npm run benchmark:effectiveness
 
       - name: Full regression

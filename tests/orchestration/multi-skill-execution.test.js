@@ -13,6 +13,7 @@ const os = require('os');
 const crypto = require('crypto');
 const IntelligentSkillRouter = require('../../packages/orchestration/intelligent-skill-router');
 const MultiSkillExecutionEngine = require('../../packages/orchestration/multi-skill-execution-engine');
+const { ProjectAwareExecutionProvider } = require('../../packages/orchestration/agent-runtime-provider');
 
 console.log('======================================================');
 console.log('⚡ ProofForge — Multi-Skill Real Execution & Rollback Tests');
@@ -22,14 +23,26 @@ const tempSandboxRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'pf-exec-test-'));
 
 try {
     // ----------------------------------------------------
-    // اختبار 1: تنفيذ سيناريو Full-Stack SaaS المتكامل
+    // اختبار 0: التحقق من رفض التزييف وإرجاع AGENT_RUNTIME_UNAVAILABLE عند غياب مشغل الوكيل
+    // ----------------------------------------------------
+    console.log('>>> [0/5] Testing Fail-Closed AGENT_RUNTIME_UNAVAILABLE when No Runtime is Provided...');
+    const unavailPlan = IntelligentSkillRouter.route('fullstack-saas');
+    const unavailWs = path.join(tempSandboxRoot, 'unavail-workspace');
+    const unavailResult = MultiSkillExecutionEngine.executePlan(unavailPlan, { workspacePath: unavailWs });
+    assert.strictEqual(unavailResult.status, 'AGENT_RUNTIME_UNAVAILABLE', 'يجب أن يفشل التنفيذ بحالة عدم توفر المشغل بدلاً من توليد قوالب زائفة');
+    console.log('  [PASS] 0. Runtime Guard: Refuses mock execution and returns AGENT_RUNTIME_UNAVAILABLE');
+
+    // ----------------------------------------------------
+    // اختبار 1: تنفيذ سيناريو Full-Stack SaaS المتكامل عبر مشغل واعي بسياق المشروع
     // ----------------------------------------------------
     console.log('>>> [1/5] Testing End-to-End Real Tool Execution for Full-Stack SaaS...');
     const saasPlan = IntelligentSkillRouter.route('fullstack-saas');
     const saasWorkspace = path.join(tempSandboxRoot, 'saas-workspace');
+    const agentRuntime = new ProjectAwareExecutionProvider();
 
     const saasExecResult = MultiSkillExecutionEngine.executePlan(saasPlan, {
-        workspacePath: saasWorkspace
+        workspacePath: saasWorkspace,
+        agentRuntime
     });
 
     assert.strictEqual(saasExecResult.status, 'SUCCESS', 'يجب أن يكتمل تنفيذ مشروع SaaS بنجاح');
@@ -122,7 +135,8 @@ try {
     };
 
     const failedExecResult = MultiSkillExecutionEngine.executePlan(defectiveMultiStepPlan, {
-        workspacePath: failWorkspace
+        workspacePath: failWorkspace,
+        agentRuntime
     });
 
     assert.strictEqual(failedExecResult.status, 'FAILED');
@@ -174,7 +188,8 @@ try {
     const ecomWorkspace = path.join(tempSandboxRoot, 'ecom-workspace');
 
     const ecomExecResult = MultiSkillExecutionEngine.executePlan(ecomPlan, {
-        workspacePath: ecomWorkspace
+        workspacePath: ecomWorkspace,
+        agentRuntime
     });
 
     assert.strictEqual(ecomExecResult.status, 'SUCCESS');

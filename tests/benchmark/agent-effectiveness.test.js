@@ -59,11 +59,19 @@ assert.strictEqual(codeData.hardenedFile.placeholderCount, 0, 'Hardened code mus
 console.log('  [PASS] 4. Zero-placeholder anti-laziness policy verified');
 
 // 5. فحص التجزئة المشفرة الحقيقية
-console.log('>>> [5/5] Cryptographic Real File SHA-256 Hash Verification...');
+console.log('>>> [5/6] Cryptographic Real File SHA-256 Hash Verification...');
 assert.strictEqual(report.measuredData.cryptographicEvidence.hasRealFileSha256, true);
 assert(report.measuredData.cryptographicEvidence.verifiedHash.length === 64);
 console.log(`  Real File Hash: ${report.measuredData.cryptographicEvidence.verifiedHash.substring(0, 16)}...`);
 console.log('  [PASS] 5. Real cryptographic hash verified on physical file');
+
+// 6. التحقق من معيار كفاءة الوكلاء A/B الحقيقي (Agent Effectiveness A/B Experiment)
+console.log('>>> [6/6] Real Agent Effectiveness A/B Benchmark State Verification...');
+const AgentEffectivenessBenchmark = require('../../packages/maturity-benchmark/agent-effectiveness-benchmark');
+const abReport = AgentEffectivenessBenchmark.runComparison();
+assert.strictEqual(abReport.agentEffectivenessComparison.status, 'NOT_RUN', 'A/B benchmark must report NOT_RUN when dual-agent runtime is absent');
+assert.strictEqual(abReport.verdict, 'AGENT_AB_EXPERIMENT_PENDING_LIVE_RUNTIME');
+console.log('  [PASS] 6. Real Agent A/B Benchmark accurately reports NOT_RUN without mock fabrication');
 
 console.log('------------------------------------------------------');
 console.log(`📊 Unprotected Fixtures Compliance Rate:   ${report.summary.unprotectedFixturesComplianceRate}%`);
@@ -71,5 +79,5 @@ console.log(`📊 Hardened Implementation Compliance Rate: ${report.summary.hard
 console.log(`⚖️ Verdict: ${report.verdict}`);
 assert.strictEqual(report.verdict, 'DEFENSE_VERIFIED_AGAINST_FIXTURES');
 console.log('======================================================');
-console.log('>>> [SUCCESS] All Fixture Defense Benchmark Tests PASSED 100%.');
+console.log('>>> [SUCCESS] All Fixture Defense & Agent A/B Tests PASSED 100%.');
 console.log('======================================================');

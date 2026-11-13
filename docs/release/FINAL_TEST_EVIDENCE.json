@@ -1,8 +1,8 @@
 {
   "generator": "ProofForge Deterministic Evidence Recorder",
   "version": "3.0.0",
-  "commitSha": "e187836651cc4e2ac48f6c6bfc0863437f07c0d6",
-  "generatedAt": "2026-11-13T03:40:43.283Z",
+  "commitSha": "dc2cd8238d8c2b03013cdb7ee2b721db0c863c3d",
+  "generatedAt": "2026-11-13T04:50:58.132Z",
   "operatingSystem": "win32 (x64)",
   "nodeVersion": "v22.16.0",
   "isPurelyEmpirical": true,
@@ -119,11 +119,12 @@
     },
     "multi_skill_real_execution": {
       "path": "tests/orchestration/multi-skill-execution.test.js",
-      "totalTests": 5,
-      "passedTests": 5,
+      "totalTests": 6,
+      "passedTests": 6,
       "failedTests": 0,
       "status": "PASS",
       "verifiedCapabilities": [
+        "Runtime Guard: Refuses mock execution and returns AGENT_RUNTIME_UNAVAILABLE",
         "Full-Stack SaaS: Real sequential execution & physical artifacts verified",
         "Context Passing: Downstream skills successfully received upstream artifacts",
         "Physical Rollback: Workspace state restored byte-for-byte upon step failure",
@@ -165,6 +166,18 @@
         "maxAllowedInfo": null
       },
       "dependenciesAudited": 0
+    },
+    "agent_effectiveness_ab_benchmark": {
+      "path": "packages/maturity-benchmark/agent-effectiveness-benchmark.js",
+      "status": "NOT_RUN",
+      "benchmarkType": "REAL_AGENT_EFFECTIVENESS_AB_BENCHMARK",
+      "reason": "Dual-agent interactive execution environment required for empirical baseline comparison; unexecuted during automated non-interactive CI.",
+      "trialsCount": 0
+    },
+    "antigravity_human_acceptance": {
+      "path": "MANUAL_ACCEPTANCE_CHECKLIST.md",
+      "status": "NOT_RUN",
+      "reason": "Manual acceptance checklist pending production deployment and live validation in Antigravity IDE environment."
     }
   }
 }

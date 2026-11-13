@@ -24,16 +24,23 @@ console.log('======================================================');
 console.log('📡 ProofForge — Recording Deterministic Release Evidence');
 console.log('======================================================');
 
-// 1. استخراج التجزئة الحقيقية للـ Commit
+// 1. استخراج التجزئة الحقيقية للـ Commit والتحقق الصارم من مطابقتها
 let commitSha = '';
+let localHead = '';
+try {
+    localHead = execSync('git rev-parse HEAD', { cwd: rootDir, encoding: 'utf8' }).trim().toLowerCase();
+} catch (err) {
+    process.stderr.write(`[Git Head Warn] ${err.message}\n`);
+}
+
 if (process.env.GITHUB_SHA && /^[0-9a-f]{40}$/i.test(process.env.GITHUB_SHA.trim())) {
-    commitSha = process.env.GITHUB_SHA.trim().toLowerCase();
-} else {
-    try {
-        commitSha = execSync('git rev-parse HEAD', { cwd: rootDir, encoding: 'utf8' }).trim().toLowerCase();
-    } catch (err) {
-        process.stderr.write(`[Git Head Warn] ${err.message}\n`);
+    const envSha = process.env.GITHUB_SHA.trim().toLowerCase();
+    if (localHead && localHead !== envSha) {
+        throw new Error(`[Evidence Binding Error] تعارض بين GITHUB_SHA (${envSha}) و HEAD المحلي المستكشف (${localHead})`);
     }
+    commitSha = envSha;
+} else {
+    commitSha = localHead;
 }
 
 if (!commitSha || !/^[0-9a-f]{40}$/i.test(commitSha)) {
@@ -190,6 +197,18 @@ const evidenceReport = {
             vulnerabilities: evaluatedAudit.vulnerabilities,
             policy: evaluatedAudit.policy,
             dependenciesAudited: evaluatedAudit.dependenciesAudited
+        },
+        agent_effectiveness_ab_benchmark: {
+            path: "packages/maturity-benchmark/agent-effectiveness-benchmark.js",
+            status: "NOT_RUN",
+            benchmarkType: "REAL_AGENT_EFFECTIVENESS_AB_BENCHMARK",
+            reason: "Dual-agent interactive execution environment required for empirical baseline comparison; unexecuted during automated non-interactive CI.",
+            trialsCount: 0
+        },
+        antigravity_human_acceptance: {
+            path: "MANUAL_ACCEPTANCE_CHECKLIST.md",
+            status: "NOT_RUN",
+            reason: "Manual acceptance checklist pending production deployment and live validation in Antigravity IDE environment."
         }
     }
 };

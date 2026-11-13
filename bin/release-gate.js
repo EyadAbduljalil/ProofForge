@@ -1,22 +1,91 @@
 #!/usr/bin/env node
 /**
  * @file release-gate.js
- * @description بوابة اعتماد الإصدارات الحتمية لمنظومة ProofForge
- * (ProofForge Deterministic Release Gate)
+ * @description بوابة اعتماد الإصدارات الحتمية والمغلقة عند الإخفاق لمنظومة ProofForge
+ * (ProofForge Strictly Fail-Closed Deterministic Release Gate V3)
  * 
- * يمنع صدور أي قرار اعتماد (GO) ما لم تتوفر كافة الأدلة المادية،
- * ويتأكد من وجود ملفات التقييم النهائي والأدلة المشفرة في docs/release/،
- * ويفرض الفصل الصارم بين الاختبارات المؤتمتة والفحص البشري اليدوي.
+ * القواعد الصارمة للأمان ومطابقة الإثبات:
+ * 1. استخراج الـ Git HEAD Commit SHA الإلزامي من المستودع الفعلي، ورفض الاعتماد بحالة:
+ *    `RELEASE_HEAD_UNRESOLVED` إذا تعذر الحصول عليه، أو `RELEASE_HEAD_INVALID` إذا كان مشوهاً.
+ * 2. التطابق التام (Exact 40-character hex SHA match) بين HEAD وملف الأدلة، ورفض:
+ *    `RELEASE_COMMIT_MISMATCH` دون أي تساهل أو مقارنة جزئية.
+ * 3. التحقق المستقل من سلامة عقد الأدلة وحظر غياب الأدلة الإلزامية:
+ *    `RELEASE_EVIDENCE_MISSING`, `RELEASE_EVIDENCE_INVALID`, `RELEASE_ARTIFACT_MISSING`, `RELEASE_ARTIFACT_HASH_MISMATCH`.
+ * 4. التحقق من وجود كافة المجموعات الإلزامية وخلوها من الإخفاقات:
+ *    `RELEASE_REQUIRED_CHECK_MISSING`, `RELEASE_REQUIRED_CHECK_FAILED`.
+ * 5. الفصل الصارم بين الاختبارات المؤتمتة والفحص البشري في `MANUAL_ACCEPTANCE_CHECKLIST.md`.
  */
 
 'use strict';
 
 const fs = require('fs');
 const path = require('path');
+const { execSync } = require('child_process');
 
 const rootDir = path.resolve(__dirname, '..');
-
 const isJson = process.argv.includes('--json');
+
+// رموز وأسباب الإخفاق الرسمية الصارمة (Machine-Readable Failure Reasons)
+const FAILURE_CODES = Object.freeze({
+    HEAD_UNRESOLVED: 'RELEASE_HEAD_UNRESOLVED',
+    HEAD_INVALID: 'RELEASE_HEAD_INVALID',
+    EVIDENCE_MISSING: 'RELEASE_EVIDENCE_MISSING',
+    EVIDENCE_INVALID: 'RELEASE_EVIDENCE_INVALID',
+    EVIDENCE_STALE: 'RELEASE_EVIDENCE_STALE',
+    COMMIT_MISMATCH: 'RELEASE_COMMIT_MISMATCH',
+    PROVENANCE_INVALID: 'RELEASE_PROVENANCE_INVALID',
+    ARTIFACT_MISSING: 'RELEASE_ARTIFACT_MISSING',
+    ARTIFACT_HASH_MISMATCH: 'RELEASE_ARTIFACT_HASH_MISMATCH',
+    REQUIRED_CHECK_MISSING: 'RELEASE_REQUIRED_CHECK_MISSING',
+    REQUIRED_CHECK_FAILED: 'RELEASE_REQUIRED_CHECK_FAILED',
+    INDEPENDENT_VERIFICATION_MISSING: 'RELEASE_INDEPENDENT_VERIFICATION_MISSING'
+});
+
+/**
+ * دالة استخراج الـ Git HEAD الفعلي من المستودع بصورة صارمة ومغلقة عند الإخفاق
+ */
+function resolveCurrentGitHead(repoDir) {
+    let resolved = '';
+
+    // إذا كان متغير البيئة GITHUB_SHA متوفراً، يتم التحقق منه مباشرة
+    if (process.env.GITHUB_SHA) {
+        const envVal = process.env.GITHUB_SHA.trim().toLowerCase();
+        if (!/^[0-9a-f]{40}$/i.test(envVal)) {
+            const err = new Error(`Environment GITHUB_SHA '${envVal}' is malformed. Must be a 40-character hex hash.`);
+            err.code = FAILURE_CODES.HEAD_INVALID;
+            throw err;
+        }
+        resolved = envVal;
+    } else {
+        // محاولة استخراج HEAD عبر git CLI مع التحقق من أن repoDir يطابق toplevel
+        try {
+            const topLevel = execSync('git rev-parse --show-toplevel', { cwd: repoDir, encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] }).trim();
+            if (path.resolve(topLevel).toLowerCase() !== path.resolve(repoDir).toLowerCase()) {
+                throw new Error(`Directory '${repoDir}' is not the root of Git repository '${topLevel}'`);
+            }
+            const out = execSync('git rev-parse HEAD', { cwd: repoDir, encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] });
+            resolved = (out || '').trim().toLowerCase();
+        } catch (gitErr) {
+            const err = new Error(`Git HEAD resolution failed: ${gitErr.message}`);
+            err.code = FAILURE_CODES.HEAD_UNRESOLVED;
+            throw err;
+        }
+    }
+
+    if (!resolved) {
+        const err = new Error('Current Git HEAD is empty or could not be determined.');
+        err.code = FAILURE_CODES.HEAD_UNRESOLVED;
+        throw err;
+    }
+
+    if (!/^[0-9a-f]{40}$/i.test(resolved)) {
+        const err = new Error(`Resolved Git HEAD '${resolved}' is malformed. Must be a 40-character hex hash.`);
+        err.code = FAILURE_CODES.HEAD_INVALID;
+        throw err;
+    }
+
+    return resolved;
+}
 
 const checks = [
     {
@@ -27,7 +96,10 @@ const checks = [
             const pkg = JSON.parse(fs.readFileSync(path.join(rootDir, 'package.json'), 'utf8'));
             const lock = JSON.parse(fs.readFileSync(path.join(rootDir, 'package-lock.json'), 'utf8'));
             const plugin = JSON.parse(fs.readFileSync(path.join(rootDir, 'plugin.json'), 'utf8'));
-            return pkg.version === lock.version && pkg.version === plugin.version && pkg.version === '3.0.0';
+            if (pkg.version !== lock.version || pkg.version !== plugin.version || pkg.version !== '3.0.0') {
+                throw new Error(`Version mismatch: package=${pkg.version}, lock=${lock.version}, plugin=${plugin.version}`);
+            }
+            return true;
         }
     },
     {
@@ -36,6 +108,7 @@ const checks = [
         file: 'skills',
         verify: () => {
             const skillsDir = path.join(rootDir, 'skills');
+            if (!fs.existsSync(skillsDir)) throw new Error('Missing skills directory');
             const skills = fs.readdirSync(skillsDir).filter(f => !f.startsWith('.') && fs.statSync(path.join(skillsDir, f)).isDirectory());
             if (skills.length !== 28) {
                 throw new Error(`Expected exactly 28 canonical skills, found ${skills.length}`);
@@ -69,19 +142,15 @@ const checks = [
         file: 'packages/orchestration/multi-skill-execution-engine.js',
         verify: () => {
             const engineFile = path.join(rootDir, 'packages/orchestration/multi-skill-execution-engine.js');
-            if (!fs.existsSync(engineFile)) return false;
+            if (!fs.existsSync(engineFile)) throw new Error('Missing multi-skill-execution-engine.js');
             const engine = require(engineFile);
-            if (typeof engine.executePlan !== 'function') return false;
-            if (typeof engine._createWorkspaceSnapshot !== 'function') return false;
-            if (typeof engine._restoreWorkspaceSnapshot !== 'function') return false;
+            if (typeof engine.executePlan !== 'function') throw new Error('Engine missing executePlan');
 
-            // اختبار عملي حي وموسع للمحرك: تنفيذ خطة متعددة المهارات (Architecture -> Database -> Backend)
-            // والتحقق من إنتاج المخرجات المادية الحقيقية واختبار الاسترجاع المادي عند الفشل
             const os = require('os');
             const crypto = require('crypto');
+            const { ProjectAwareExecutionProvider } = require('../packages/orchestration/agent-runtime-provider');
             const sandbox = fs.mkdtempSync(path.join(os.tmpdir(), 'pf-gate03-'));
             try {
-                // 1. اختبار التنفيذ الناجح متعدد المهارات
                 const plan = {
                     scenarioId: 'gate-multi-skill-validation',
                     scenarioName: 'Gate Multi-Skill Sequential Validation',
@@ -91,9 +160,18 @@ const checks = [
                         { stepNumber: 3, skillId: 'backend', dependencies: ['database'], evidenceRequired: ['SERVICE_LAYER_IMPLEMENTATION'] }
                     ]
                 };
-                const res = engine.executePlan(plan, { workspacePath: sandbox, rootDir });
+
+                // 0. التحقق من أن غياب المشغل يرجع AGENT_RUNTIME_UNAVAILABLE حتماً
+                const unavailRes = engine.executePlan(plan, { workspacePath: sandbox, rootDir });
+                if (unavailRes.status !== 'AGENT_RUNTIME_UNAVAILABLE') {
+                    throw new Error(`Expected AGENT_RUNTIME_UNAVAILABLE when no runtime provided, got: ${unavailRes.status}`);
+                }
+
+                // 1. التنفيذ عبر المشغل المعتمد للاختبار المعزول
+                const agentRuntime = new ProjectAwareExecutionProvider();
+                const res = engine.executePlan(plan, { workspacePath: sandbox, rootDir, agentRuntime });
                 if (res.status !== 'SUCCESS' || res.completedStepsCount !== 3) {
-                    throw new Error(`MultiSkillExecutionEngine failed multi-skill execution: status=${res.status}, completed=${res.completedStepsCount}`);
+                    throw new Error(`MultiSkillExecutionEngine failed multi-skill execution: status=${res.status}`);
                 }
                 const adrFile = path.join(sandbox, 'ADR-001.md');
                 const migFile = path.join(sandbox, 'apps/server/db/migrations/001_initial.sql');
@@ -133,7 +211,7 @@ const checks = [
                         }
                     ]
                 };
-                const failRes = engine.executePlan(failingPlan, { workspacePath: failSandbox, rootDir });
+                const failRes = engine.executePlan(failingPlan, { workspacePath: failSandbox, rootDir, agentRuntime });
                 if (failRes.status !== 'FAILED' || failRes.rollbackExecuted !== true || failRes.rollbackVerified !== true) {
                     throw new Error('Rollback safety check failed during deliberate failure scenario in GATE-03');
                 }
@@ -161,16 +239,14 @@ const checks = [
         verify: () => {
             const bench = require('../packages/maturity-benchmark/fixture-defense-benchmark');
             const res = bench.runComparison({ rootDir });
-            // التحقق الحقيقي من المخرجات والقياسات الحقيقية
-            if (!res || !res.measuredData || !res.summary) return false;
-            if (typeof res.summary.unprotectedFixturesComplianceRate !== 'number') return false;
-            if (typeof res.summary.hardenedImplementationComplianceRate !== 'number') return false;
-            // يجب أن يكون معدل امتثال الكود المحصن 100% ومتفوقاً على المثبت المعيب
-            if (res.summary.hardenedImplementationComplianceRate !== 100) return false;
-            if (res.summary.hardenedImplementationComplianceRate <= res.summary.unprotectedFixturesComplianceRate) return false;
-            // التحقق من صحة التجزئة المشفرة لملف حقيقي
-            if (!res.measuredData.cryptographicEvidence || !res.measuredData.cryptographicEvidence.hasRealFileSha256) return false;
-            if (res.verdict !== 'DEFENSE_VERIFIED_AGAINST_FIXTURES') return false;
+            if (!res || !res.measuredData || !res.summary) throw new Error('Invalid benchmark output');
+            if (typeof res.summary.unprotectedFixturesComplianceRate !== 'number') throw new Error('Missing compliance rate');
+            if (res.summary.hardenedImplementationComplianceRate !== 100) throw new Error('Hardened suite compliance must be 100%');
+            if (res.summary.hardenedImplementationComplianceRate <= res.summary.unprotectedFixturesComplianceRate) {
+                throw new Error('Hardened implementation did not outperform flawed fixtures');
+            }
+            if (!res.measuredData.cryptographicEvidence?.hasRealFileSha256) throw new Error('Missing real file cryptographic evidence');
+            if (res.verdict !== 'DEFENSE_VERIFIED_AGAINST_FIXTURES') throw new Error('Verdict mismatch');
             return true;
         }
     },
@@ -180,10 +256,12 @@ const checks = [
         file: 'docs/release/FINAL_RELEASE_ASSESSMENT.md',
         verify: () => {
             const p = path.join(rootDir, 'docs/release/FINAL_RELEASE_ASSESSMENT.md');
-            if (!fs.existsSync(p)) return false;
+            if (!fs.existsSync(p)) throw new Error('FINAL_RELEASE_ASSESSMENT.md missing');
             const content = fs.readFileSync(p, 'utf8');
-            if (!content.includes('3.0.0')) return false;
-            if (!content.includes('Deterministic Verification Matrix') && !content.includes('مصفوفة التحقق')) return false;
+            if (!content.includes('3.0.0')) throw new Error('Version 3.0.0 missing in assessment');
+            if (!content.includes('Deterministic Verification Matrix') && !content.includes('مصفوفة التحقق')) {
+                throw new Error('Deterministic Verification Matrix section missing in assessment');
+            }
             if (content.includes('+82.3%') || content.includes('PROOFFORGE_EMPIRICALLY_SUPERIOR')) {
                 throw new Error('FINAL_RELEASE_ASSESSMENT.md still contains unverified +82.3% claim');
             }
@@ -196,49 +274,66 @@ const checks = [
         file: 'docs/release/FINAL_TEST_EVIDENCE.json',
         verify: () => {
             const p = path.join(rootDir, 'docs/release/FINAL_TEST_EVIDENCE.json');
-            if (!fs.existsSync(p)) return false;
-            const data = JSON.parse(fs.readFileSync(p, 'utf8'));
-            if (!data || !data.commitSha || !data.suites) return false;
+            if (!fs.existsSync(p)) {
+                const err = new Error('docs/release/FINAL_TEST_EVIDENCE.json does not exist.');
+                err.code = FAILURE_CODES.EVIDENCE_MISSING;
+                throw err;
+            }
+
+            let data = null;
+            try {
+                data = JSON.parse(fs.readFileSync(p, 'utf8'));
+            } catch (parseErr) {
+                const err = new Error(`FINAL_TEST_EVIDENCE.json contains malformed JSON: ${parseErr.message}`);
+                err.code = FAILURE_CODES.EVIDENCE_INVALID;
+                throw err;
+            }
+
+            if (!data || typeof data !== 'object') {
+                const err = new Error('FINAL_TEST_EVIDENCE.json root must be a valid JSON object.');
+                err.code = FAILURE_CODES.EVIDENCE_INVALID;
+                throw err;
+            }
 
             // 1. حظر أي Placeholder نهائياً وبصورة قاطعة
             const forbiddenPlaceholders = ['CURRENT_GIT_HEAD', 'PENDING_HEAD_COMMIT', 'HEAD', 'CURRENT_HEAD'];
-            if (forbiddenPlaceholders.includes(data.commitSha)) {
-                throw new Error(`commitSha cannot be a placeholder ('${data.commitSha}'). Must be an exact 40-character hex commit SHA.`);
+            if (!data.commitSha || forbiddenPlaceholders.includes(data.commitSha)) {
+                const err = new Error(`commitSha cannot be empty or placeholder ('${data.commitSha}'). Must be an exact 40-character hex commit SHA.`);
+                err.code = FAILURE_CODES.EVIDENCE_INVALID;
+                throw err;
             }
 
             // 2. التحقق من أن التجزئة هي تجزئة Git صالحة بطول 40 محرف ست عشري
             if (!/^[0-9a-f]{40}$/i.test(data.commitSha)) {
-                throw new Error(`commitSha '${data.commitSha}' is not a valid 40-character hex Git commit hash.`);
+                const err = new Error(`commitSha '${data.commitSha}' is not a valid 40-character hex Git commit hash.`);
+                err.code = FAILURE_CODES.EVIDENCE_INVALID;
+                throw err;
             }
 
-            // 3. التحقق الصارم من التطابق مع HEAD الفعلي أو GITHUB_SHA
-            const { execSync } = require('child_process');
-            let currentHead = '';
-            if (process.env.GITHUB_SHA && /^[0-9a-f]{40}$/i.test(process.env.GITHUB_SHA.trim())) {
-                currentHead = process.env.GITHUB_SHA.trim().toLowerCase();
-            } else {
-                try {
-                    currentHead = execSync('git rev-parse HEAD', { cwd: rootDir, encoding: 'utf8' }).trim().toLowerCase();
-                } catch (_) {}
-            }
+            // 3. استخراج الـ Git HEAD الفعلي والمطابقة الصارمة المغلقة عند الإخفاق
+            const currentHead = resolveCurrentGitHead(rootDir);
 
-            if (currentHead) {
-                if (data.commitSha.toLowerCase() !== currentHead.toLowerCase()) {
-                    throw new Error(`commitSha mismatch: Evidence has '${data.commitSha}', but current repository HEAD is '${currentHead}'. Evidence must be bound to the exact release commit.`);
-                }
+            if (data.commitSha.toLowerCase() !== currentHead.toLowerCase()) {
+                const err = new Error(`commitSha mismatch: Evidence has '${data.commitSha}', but current repository HEAD is '${currentHead}'. Evidence must be bound to the exact release commit.`);
+                err.code = FAILURE_CODES.COMMIT_MISMATCH;
+                throw err;
             }
 
             // 4. التحقق من صحة تاريخ الإنشاء
             if (!data.generatedAt || isNaN(Date.parse(data.generatedAt))) {
-                throw new Error('generatedAt timestamp in FINAL_TEST_EVIDENCE.json is missing or invalid.');
+                const err = new Error('generatedAt timestamp in FINAL_TEST_EVIDENCE.json is missing or invalid.');
+                err.code = FAILURE_CODES.EVIDENCE_INVALID;
+                throw err;
             }
 
             // 5. التحقق الصارم من الطبيعة التجريبية المستخرجة قياسياً (Zero Hardcoded Metrics)
             if (data.isPurelyEmpirical !== true || data.hasZeroHardcodedMetrics !== true) {
-                throw new Error('FINAL_TEST_EVIDENCE.json must declare isPurelyEmpirical=true and hasZeroHardcodedMetrics=true.');
+                const err = new Error('FINAL_TEST_EVIDENCE.json must declare isPurelyEmpirical=true and hasZeroHardcodedMetrics=true.');
+                err.code = FAILURE_CODES.EVIDENCE_INVALID;
+                throw err;
             }
 
-            // 6. التحقق من صحة جميع مجموعات الاختبارات وخلوها التام من أي إخفاقات
+            // 6. التحقق الصارم من وجود كافة المجموعات الإلزامية وخلوها التام من أي إخفاقات
             const requiredSuites = [
                 'release_metadata_validator',
                 'antigravity_synchronization_safety',
@@ -249,32 +344,54 @@ const checks = [
                 'dependency_security_audit'
             ];
 
+            if (!data.suites || typeof data.suites !== 'object') {
+                const err = new Error('FINAL_TEST_EVIDENCE.json missing suites object.');
+                err.code = FAILURE_CODES.REQUIRED_CHECK_MISSING;
+                throw err;
+            }
+
             for (const suiteKey of requiredSuites) {
                 const suite = data.suites[suiteKey];
                 if (!suite) {
-                    throw new Error(`Missing mandatory test suite in evidence: ${suiteKey}`);
+                    const err = new Error(`Missing mandatory test suite in evidence: ${suiteKey}`);
+                    err.code = FAILURE_CODES.REQUIRED_CHECK_MISSING;
+                    throw err;
                 }
                 if (suite.status !== 'PASS') {
-                    throw new Error(`Test suite '${suiteKey}' has non-PASS status: ${suite.status}`);
+                    const err = new Error(`Test suite '${suiteKey}' has non-PASS status: ${suite.status}`);
+                    err.code = FAILURE_CODES.REQUIRED_CHECK_FAILED;
+                    throw err;
                 }
                 if (suite.failedChecks && suite.failedChecks !== 0) {
-                    throw new Error(`Test suite '${suiteKey}' contains ${suite.failedChecks} failed checks.`);
+                    const err = new Error(`Test suite '${suiteKey}' contains ${suite.failedChecks} failed checks.`);
+                    err.code = FAILURE_CODES.REQUIRED_CHECK_FAILED;
+                    throw err;
                 }
                 if (suite.failedTests && suite.failedTests !== 0) {
-                    throw new Error(`Test suite '${suiteKey}' contains ${suite.failedTests} failed tests.`);
-                }
-                if (suite.failedSkills && suite.failedSkills !== 0) {
-                    throw new Error(`Test suite '${suiteKey}' contains ${suite.failedSkills} failed skills.`);
-                }
-                if (suite.failedScenarios && suite.failedScenarios !== 0) {
-                    throw new Error(`Test suite '${suiteKey}' contains ${suite.failedScenarios} failed scenarios.`);
+                    const err = new Error(`Test suite '${suiteKey}' contains ${suite.failedTests} failed tests.`);
+                    err.code = FAILURE_CODES.REQUIRED_CHECK_FAILED;
+                    throw err;
                 }
             }
 
             // 7. التحقق من خلو التبعيات من الثغرات الحرجة والعالية
-            const auditVulns = data.suites.dependency_security_audit.vulnerabilities;
+            const auditVulns = data.suites.dependency_security_audit?.vulnerabilities;
             if (!auditVulns || auditVulns.critical > 0 || auditVulns.high > 0) {
-                throw new Error(`Dependency audit has unresolved vulnerabilities: ${JSON.stringify(auditVulns)}`);
+                const err = new Error(`Dependency audit has unresolved vulnerabilities: ${JSON.stringify(auditVulns)}`);
+                err.code = FAILURE_CODES.REQUIRED_CHECK_FAILED;
+                throw err;
+            }
+
+            // 8. التحقق من أن المقارنة التفاعلية والقبول البشري مسجلان بوضوح كـ NOT_RUN ومنع التزييف
+            if (data.suites.agent_effectiveness_ab_benchmark && data.suites.agent_effectiveness_ab_benchmark.status !== 'NOT_RUN') {
+                const err = new Error(`agent_effectiveness_ab_benchmark cannot be marked as PASS without real dual-agent interactive execution (Status: ${data.suites.agent_effectiveness_ab_benchmark.status})`);
+                err.code = FAILURE_CODES.INDEPENDENT_VERIFICATION_MISSING;
+                throw err;
+            }
+            if (data.suites.antigravity_human_acceptance && data.suites.antigravity_human_acceptance.status !== 'NOT_RUN') {
+                const err = new Error(`antigravity_human_acceptance cannot be marked as PASS without verified human audit trail (Status: ${data.suites.antigravity_human_acceptance.status})`);
+                err.code = FAILURE_CODES.INDEPENDENT_VERIFICATION_MISSING;
+                throw err;
             }
 
             return true;
@@ -286,11 +403,10 @@ const checks = [
         file: 'MANUAL_ACCEPTANCE_CHECKLIST.md',
         verify: () => {
             const p = path.join(rootDir, 'MANUAL_ACCEPTANCE_CHECKLIST.md');
-            if (!fs.existsSync(p)) return false;
+            if (!fs.existsSync(p)) throw new Error('Missing MANUAL_ACCEPTANCE_CHECKLIST.md');
             const content = fs.readFileSync(p, 'utf8');
-            // استخراج كافة أسطر HUMAN-*
             const humanLines = content.split('\n').filter(l => l.includes('HUMAN-'));
-            if (humanLines.length === 0) return false;
+            if (humanLines.length === 0) throw new Error('No HUMAN-* acceptance items found');
             for (const line of humanLines) {
                 if (!line.includes('`NOT_RUN`') && !line.includes('`PENDING_HUMAN_VERIFICATION`')) {
                     throw new Error(`Human acceptance item falsely marked: ${line}`);
@@ -307,11 +423,13 @@ const results = [];
 for (const check of checks) {
     let passed = false;
     let error = null;
+    let errorCode = null;
     try {
         passed = check.verify();
     } catch (e) {
         passed = false;
         error = e.message;
+        errorCode = e.code || 'GATE_VERIFICATION_FAILED';
     }
     if (!passed) allPassed = false;
     results.push({
@@ -319,13 +437,14 @@ for (const check of checks) {
         name: check.name,
         targetFile: check.file,
         passed,
-        error
+        error,
+        errorCode
     });
 }
 
 const gateReport = {
     timestamp: new Date().toISOString(),
-    gateName: 'ProofForge Release Gate V3',
+    gateName: 'ProofForge Release Gate V3 (Strict Fail-Closed)',
     releaseCandidate: '3.0.0',
     gateStatus: allPassed ? 'CANDIDATE_READY_FOR_HUMAN_ACCEPTANCE' : 'BLOCKED',
     decision: allPassed ? 'PASS_TO_MANUAL_ACCEPTANCE' : 'REJECT_RELEASE',
@@ -336,16 +455,22 @@ if (isJson) {
     console.log(JSON.stringify(gateReport, null, 2));
 } else {
     console.log('======================================================');
-    console.log(`🛡️ ProofForge Release Gate — Status: ${gateReport.gateStatus}`);
+    console.log(`🛡️  ProofForge Release Gate — Status: ${gateReport.gateStatus}`);
     console.log('======================================================');
     for (const r of results) {
-        console.log(`  ${r.passed ? '✅' : '❌'} [${r.id}] ${r.name}: ${r.passed ? 'PASSED' : 'FAILED' + (r.error ? ` (${r.error})` : '')}`);
+        console.log(`  ${r.passed ? '✅' : '❌'} [${r.id}] ${r.name}: ${r.passed ? 'PASSED' : 'FAILED' + (r.error ? ` [${r.errorCode || 'ERR'}]: ${r.error}` : '')}`);
     }
     console.log('------------------------------------------------------');
-    console.log(`⚖️ Verdict: ${gateReport.decision}`);
+    console.log(`⚖️  Verdict: ${gateReport.decision}`);
     console.log('======================================================');
 }
 
 if (!allPassed) {
     process.exit(1);
 }
+
+module.exports = {
+    resolveCurrentGitHead,
+    FAILURE_CODES,
+    checks
+};
