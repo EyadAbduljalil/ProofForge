@@ -1,8 +1,8 @@
 {
   "generator": "ProofForge Deterministic Evidence Recorder",
   "version": "3.0.0",
-  "commitSha": "9524b8524c8b15d3e811e37477e15030ea6181a6",
-  "generatedAt": "2026-11-13T06:15:56.451Z",
+  "commitSha": "df0a217d592c5cbb85f5e9a52a5e58f60be68344",
+  "generatedAt": "2026-11-13T06:19:26.758Z",
   "operatingSystem": "win32 (x64)",
   "nodeVersion": "v22.16.0",
   "isPurelyEmpirical": true,
@@ -125,7 +125,7 @@
       "status": "PASS",
       "verifiedCapabilities": [
         "Runtime Guard: Refuses mock execution and returns AGENT_RUNTIME_UNAVAILABLE",
-        "Full-Stack SaaS: Real sequential execution & physical artifacts verified",
+        "Full-Stack SaaS: Sequential state machine flow & physical artifacts verified via Test Harness",
         "Context Passing: Downstream skills successfully received upstream artifacts",
         "Physical Rollback: Workspace state restored byte-for-byte upon step failure",
         "Authority Hierarchy: Constitutional arbitration strictly resolved output conflict",
