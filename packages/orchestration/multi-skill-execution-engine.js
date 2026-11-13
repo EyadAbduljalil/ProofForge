@@ -716,7 +716,10 @@ class MultiSkillExecutionEngine {
             initialSymlinkKeys.every(k => {
                 const post = postSnapshot.symlinks[k];
                 const init = initialSnapshot.symlinks[k];
-                return post && init && post.target === init.target;
+                if (!post || !init) return false;
+                const normPost = (post.target || '').replace(/\\/g, '/');
+                const normInit = (init.target || '').replace(/\\/g, '/');
+                return normPost === normInit;
             });
 
         const isRestoredByteForByte = Boolean(filesMatch && symlinksMatch && dirsMatch);

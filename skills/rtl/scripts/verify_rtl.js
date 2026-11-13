@@ -15,7 +15,7 @@ const cssFiles = engine.findFiles('packages/design-system', ['.css']);
 
 for (const htmlFile of htmlFiles) {
     const html = fs.readFileSync(htmlFile, 'utf8');
-    const rel = path.relative(engine.rootDir, htmlFile);
+    const rel = path.relative(engine.rootDir, htmlFile).replace(/\\/g, '/');
 
     // 1. Root dir attribute
     const hasRtlDir = /<html[^>]+dir=["']rtl["']/i.test(html) || /dir=["']rtl["']/i.test(html);

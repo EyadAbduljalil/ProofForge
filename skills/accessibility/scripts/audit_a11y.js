@@ -23,7 +23,7 @@ engine.recordCheck(
 
 for (const htmlFile of htmlFiles) {
     const content = fs.readFileSync(htmlFile, 'utf8');
-    const relative = path.relative(engine.rootDir, htmlFile);
+    const relative = path.relative(engine.rootDir, htmlFile).replace(/\\/g, '/');
 
     // 1. Language specification
     const hasLang = /<html[^>]+lang=["'][a-zA-Z0-9_-]+["']/i.test(content);

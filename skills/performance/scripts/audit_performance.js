@@ -16,7 +16,7 @@ const serverFile = path.join(engine.rootDir, 'apps/server/server.js');
 
 for (const htmlFile of htmlFiles) {
     const html = fs.readFileSync(htmlFile, 'utf8');
-    const relative = path.relative(engine.rootDir, htmlFile);
+    const relative = path.relative(engine.rootDir, htmlFile).replace(/\\/g, '/');
 
     // 1. Check for synchronous render-blocking scripts in <head>
     const headMatch = html.match(/<head[\s\S]*?<\/head>/i);

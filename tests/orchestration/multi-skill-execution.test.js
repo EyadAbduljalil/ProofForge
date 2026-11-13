@@ -45,7 +45,11 @@ try {
         agentRuntime
     });
 
-    assert.strictEqual(saasExecResult.status, 'SUCCESS', 'يجب أن يكتمل تنفيذ مشروع SaaS بنجاح');
+    assert.strictEqual(
+        saasExecResult.status,
+        'SUCCESS',
+        `يجب أن يكتمل تنفيذ مشروع SaaS بنجاح: ${JSON.stringify(saasExecResult.failureDetails || {})}`
+    );
     assert.strictEqual(saasExecResult.completedStepsCount, saasPlan.steps.length);
     assert(saasExecResult.artifactsCount >= 10, 'يجب توليد كافة عقود الأدلة للمشروع');
 

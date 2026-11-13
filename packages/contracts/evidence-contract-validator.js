@@ -235,7 +235,7 @@ class EvidenceContractValidator {
 
         // 11. مهارة إمكانية الوصول (Accessibility)
         'accessibility:WCAG_2_2_AAA_AUDIT': {
-            requiredCheckId: 'Button Accessible Names (apps\\web\\index.html)',
+            requiredCheckId: 'Button Accessible Names (apps/web/index.html)',
             requiresFileArtifact: false,
             expectedArtifact: null,
             verifierScript: 'skills/accessibility/scripts/audit_a11y.js'
@@ -247,7 +247,7 @@ class EvidenceContractValidator {
             verifierScript: 'skills/accessibility/scripts/audit_a11y.js'
         },
         'accessibility:ARIA_LABELS_VERIFICATION': {
-            requiredCheckId: 'Form Input Accessibility (apps\\web\\index.html)',
+            requiredCheckId: 'Form Input Accessibility (apps/web/index.html)',
             requiresFileArtifact: false,
             expectedArtifact: null,
             verifierScript: 'skills/accessibility/scripts/audit_a11y.js'
@@ -275,13 +275,13 @@ class EvidenceContractValidator {
 
         // 13. مهارة الأداء (Performance)
         'performance:LIGHTHOUSE_90_BUDGET': {
-            requiredCheckId: 'Non-Blocking Head Scripts (apps\\web\\index.html)',
+            requiredCheckId: 'Non-Blocking Head Scripts (apps/web/index.html)',
             requiresFileArtifact: false,
             expectedArtifact: null,
             verifierScript: 'skills/performance/scripts/audit_performance.js'
         },
         'performance:CORE_WEB_VITALS_REPORT': {
-            requiredCheckId: 'Cumulative Layout Shift (CLS) Image Attributes (apps\\web\\index.html)',
+            requiredCheckId: 'Cumulative Layout Shift (CLS) Image Attributes (apps/web/index.html)',
             requiresFileArtifact: false,
             expectedArtifact: null,
             verifierScript: 'skills/performance/scripts/audit_performance.js'
@@ -361,13 +361,13 @@ class EvidenceContractValidator {
             verifierScript: 'skills/rtl/scripts/verify_rtl.js'
         },
         'rtl:ICON_MIRRORING_VERIFICATION': {
-            requiredCheckId: 'Arabic Locale Declaration (apps\\web\\index.html)',
+            requiredCheckId: 'Arabic Locale Declaration (apps/web/index.html)',
             requiresFileArtifact: false,
             expectedArtifact: null,
             verifierScript: 'skills/rtl/scripts/verify_rtl.js'
         },
         'rtl:BIDIRECTIONAL_PARITY': {
-            requiredCheckId: 'Root RTL Direction Declaration (apps\\web\\index.html)',
+            requiredCheckId: 'Root RTL Direction Declaration (apps/web/index.html)',
             requiresFileArtifact: false,
             expectedArtifact: null,
             verifierScript: 'skills/rtl/scripts/verify_rtl.js'
@@ -527,11 +527,13 @@ class EvidenceContractValidator {
             throw new Error(`[FAIL-CLOSED] مخرجات المدقق للمهارة '${skillId}' تفتقر إلى مصفوفة الفحوصات المفصلة.`);
         }
 
-        // 4. البحث الدقيق والمطابقة التامة لمُعرف الفحص (Exact Check ID Matching - No Prefix/Substring Guessing)
+        // 4. البحث الدقيق والمطابقة التامة لمُعرف الفحص (Exact Check ID Matching - Normalized Separators)
+        const normalizeCheckId = (id) => (id || '').trim().replace(/\\/g, '/');
+        const canonicalTargetId = normalizeCheckId(canonicalSpec.requiredCheckId);
         const targetCheck = parsedVerifierOutput.checks.find(c => {
-            const prop = (c.property || c.id || '').trim();
-            // مطابقة تامة صريحة
-            return prop === canonicalSpec.requiredCheckId;
+            const prop = normalizeCheckId(c.property || c.id);
+            // مطابقة تامة صريحة مع معالجة فواصل المسارات بين المنصات
+            return prop === canonicalTargetId;
         });
 
         if (!targetCheck) {
