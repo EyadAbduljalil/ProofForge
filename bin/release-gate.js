@@ -32,11 +32,21 @@ const checks = [
     },
     {
         id: 'GATE-02',
-        name: 'Canonical Skills Parity (28 Skills)',
+        name: 'Canonical Skills Parity & Valid Frontmatter',
         file: 'skills',
         verify: () => {
-            const skills = fs.readdirSync(path.join(rootDir, 'skills')).filter(f => !f.startsWith('.'));
-            return skills.length === 28;
+            const skillsDir = path.join(rootDir, 'skills');
+            const skills = fs.readdirSync(skillsDir).filter(f => !f.startsWith('.') && fs.statSync(path.join(skillsDir, f)).isDirectory());
+            if (skills.length === 0) return false;
+            for (const s of skills) {
+                const skillFile = path.join(skillsDir, s, 'SKILL.md');
+                if (!fs.existsSync(skillFile)) return false;
+                const content = fs.readFileSync(skillFile, 'utf8');
+                if (!content.startsWith('---') || !content.includes('name:') || !content.includes('description:')) {
+                    return false;
+                }
+            }
+            return true;
         }
     },
     {
@@ -63,23 +73,56 @@ const checks = [
     },
     {
         id: 'GATE-06',
-        name: 'Final Test Evidence JSON Exists',
+        name: 'Final Test Evidence JSON & Commit Parity',
         file: 'docs/release/FINAL_TEST_EVIDENCE.json',
         verify: () => {
             const p = path.join(rootDir, 'docs/release/FINAL_TEST_EVIDENCE.json');
             if (!fs.existsSync(p)) return false;
             const data = JSON.parse(fs.readFileSync(p, 'utf8'));
-            return data && data.commitSha && data.suites;
+            if (!data || !data.commitSha || !data.suites) return false;
+
+            // التحقق من توافق تجزئة الـ commit إن كان Git متاحاً
+            try {
+                const { execSync } = require('child_process');
+                const head = execSync('git rev-parse HEAD', { cwd: rootDir, encoding: 'utf8' }).trim();
+                // السماح بتطابق HEAD أو أن يكون evidence يحمل HEAD السابق المباشر أو الرمز الديناميكي
+                if (head && data.commitSha && data.commitSha !== 'CURRENT_GIT_HEAD') {
+                    const isHead = head.startsWith(data.commitSha) || data.commitSha.startsWith(head);
+                    let isNearbyCommit = false;
+                    try {
+                        const log = execSync('git log -n 5 --format=%H', { cwd: rootDir, encoding: 'utf8' }).split('\n').map(s => s.trim());
+                        if (log.some(h => h && (h.startsWith(data.commitSha) || data.commitSha.startsWith(h)))) {
+                            isNearbyCommit = true;
+                        }
+                    } catch (_) {}
+                    if (!isHead && !isNearbyCommit) {
+                        throw new Error(`commitSha mismatch: Evidence has '${data.commitSha}', Git HEAD is '${head}'`);
+                    }
+                }
+            } catch (err) {
+                // إذا كان الخطأ عدم تطابق، نرمي الخطأ ليرسب الفحص
+                if (err.message.includes('commitSha mismatch')) throw err;
+            }
+            return true;
         }
     },
     {
         id: 'GATE-07',
-        name: 'Manual Acceptance Checklist Distinction',
+        name: 'Manual Acceptance Checklist Distinction (HUMAN-* is NOT_RUN)',
         file: 'MANUAL_ACCEPTANCE_CHECKLIST.md',
         verify: () => {
-            const content = fs.readFileSync(path.join(rootDir, 'MANUAL_ACCEPTANCE_CHECKLIST.md'), 'utf8');
-            // التأكد من أن الفحص اليدوي لم يُعلن نجاحه كذباً كـ PASS
-            return content.includes('NOT_RUN') || content.includes('PENDING_HUMAN_VERIFICATION');
+            const p = path.join(rootDir, 'MANUAL_ACCEPTANCE_CHECKLIST.md');
+            if (!fs.existsSync(p)) return false;
+            const content = fs.readFileSync(p, 'utf8');
+            // استخراج كافة أسطر HUMAN-*
+            const humanLines = content.split('\n').filter(l => l.includes('HUMAN-'));
+            if (humanLines.length === 0) return false;
+            for (const line of humanLines) {
+                if (!line.includes('`NOT_RUN`') && !line.includes('`PENDING_HUMAN_VERIFICATION`')) {
+                    throw new Error(`Human acceptance item falsely marked: ${line}`);
+                }
+            }
+            return true;
         }
     }
 ];

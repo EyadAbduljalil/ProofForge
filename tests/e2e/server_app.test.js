@@ -23,7 +23,19 @@ describe('WebForge OS — E2E Live Integration & Security Test Suite', () => {
             if (typeof server.closeAllConnections === 'function') {
                 server.closeAllConnections();
             }
-            await new Promise(res => server.close(res));
+            if (typeof server.closeIdleConnections === 'function') {
+                server.closeIdleConnections();
+            }
+            if (typeof server.unref === 'function') {
+                server.unref();
+            }
+            await new Promise(res => {
+                const timer = setTimeout(res, 300);
+                server.close(() => {
+                    clearTimeout(timer);
+                    res();
+                });
+            });
         }
     });
 

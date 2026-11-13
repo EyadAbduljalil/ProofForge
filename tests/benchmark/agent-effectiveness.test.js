@@ -1,61 +1,75 @@
 /**
  * @file agent-effectiveness.test.js
- * @description اختبار تشغيل معيار المقارنة التجريبية الحقيقية A/B لفعالية الوكلاء الأذكياء
- * (ProofForge Empirical Agent A/B Benchmark Test Suite)
+ * @description اختبار تشغيل معيار القياس التجريبي الحقيقي ضد المثبتات الواقعية
+ * (ProofForge Automated Fixture Defense Benchmark Test Suite)
  */
 
 'use strict';
 
 const assert = require('assert');
 const path = require('path');
-const AgentEffectivenessBenchmark = require('../../packages/maturity-benchmark/agent-effectiveness-benchmark');
+const FixtureDefenseBenchmark = require('../../packages/maturity-benchmark/fixture-defense-benchmark');
 
 console.log('======================================================');
-console.log('📊 ProofForge — Empirical Agent A/B Effectiveness Benchmark');
+console.log('📊 ProofForge — Automated Fixture Defense Benchmark');
 console.log('======================================================');
 
-const report = AgentEffectivenessBenchmark.runComparison({
+const report = FixtureDefenseBenchmark.runComparison({
     rootDir: path.resolve(__dirname, '../../')
 });
 
 console.log(`>>> Benchmark ID: ${report.benchmarkId}`);
-console.log(`>>> Empirical Mode: ${report.isPurelyEmpirical ? '100% Measured' : 'Mocked'}`);
-console.log(`>>> Zero Hardcoded Metrics: ${report.hasZeroHardcodedMetrics ? 'Verified' : 'False'}`);
+console.log(`>>> Benchmark Type: ${report.benchmarkType}`);
+console.log(`>>> Description: ${report.description}`);
 
-assert.strictEqual(report.isPurelyEmpirical, true);
-assert.strictEqual(report.hasZeroHardcodedMetrics, true);
+// 1. فحص قاعدة البيانات
+console.log('>>> [1/5] Database Defense Verification...');
+const dbData = report.measuredData.databaseSecurity;
+console.log(`  Unprotected Fixture Passed: ${dbData.unprotectedFixture.passed}/${dbData.unprotectedFixture.total} (Failed: ${dbData.unprotectedFixture.failed})`);
+console.log(`  Hardened Suite Passed:      ${dbData.hardenedSuite.passed}/${dbData.hardenedSuite.total} (Failed: ${dbData.hardenedSuite.failed})`);
+assert(dbData.unprotectedFixture.failed > 0, 'Unprotected fixture must fail invariant checks');
+assert.strictEqual(dbData.hardenedSuite.failed, 0, 'Hardened database must have 0 failed checks');
+console.log('  [PASS] 1. Database multi-tenant defect detection verified');
 
-console.log('>>> [1/4] Comparing Vulnerability Prevention...');
-console.log(`  Baseline:   ${report.baseline.metrics.vulnerabilityPreventionRate}%`);
-console.log(`  ProofForge: ${report.proofforge.metrics.vulnerabilityPreventionRate}%`);
-assert(report.proofforge.metrics.vulnerabilityPreventionRate > report.baseline.metrics.vulnerabilityPreventionRate);
-console.log('  [PASS] 1. Empirical security superiority verified');
+// 2. فحص الباك إند
+console.log('>>> [2/5] Backend API Security Verification...');
+const beData = report.measuredData.backendSecurity;
+console.log(`  Unprotected Fixture Passed: ${beData.unprotectedFixture.passed}/${beData.unprotectedFixture.total} (Failed: ${beData.unprotectedFixture.failed})`);
+console.log(`  Hardened Suite Passed:      ${beData.hardenedSuite.passed}/${beData.hardenedSuite.total} (Failed: ${beData.hardenedSuite.failed})`);
+assert(beData.unprotectedFixture.failed > 0, 'Insecure backend fixture must fail checks');
+assert.strictEqual(beData.hardenedSuite.failed, 0, 'Hardened backend must pass all checks');
+console.log('  [PASS] 2. Backend rate-limiting and security defect detection verified');
 
-console.log('>>> [2/4] Comparing Code Completeness & Anti-Laziness...');
-console.log(`  Baseline Placeholders: ${report.rawMeasurements.codeQuality.baselinePlaceholders}`);
-console.log(`  ProofForge Placeholders: ${report.rawMeasurements.codeQuality.proofforgePlaceholders}`);
-console.log(`  Baseline Score:   ${report.baseline.metrics.zeroPlaceholderRate}%`);
-console.log(`  ProofForge Score: ${report.proofforge.metrics.zeroPlaceholderRate}%`);
-assert.strictEqual(report.rawMeasurements.codeQuality.proofforgePlaceholders, 0);
-assert(report.proofforge.metrics.zeroPlaceholderRate > report.baseline.metrics.zeroPlaceholderRate);
-console.log('  [PASS] 2. Empirical anti-laziness & code completeness verified');
+// 3. فحص إمكانية الوصول
+console.log('>>> [3/5] Accessibility & Responsive Layout Verification...');
+const a11yData = report.measuredData.accessibility;
+console.log(`  Unprotected Fixture Passed: ${a11yData.unprotectedFixture.passed}/${a11yData.unprotectedFixture.total} (Failed: ${a11yData.unprotectedFixture.failed})`);
+console.log(`  Hardened Suite Passed:      ${a11yData.hardenedSuite.passed}/${a11yData.hardenedSuite.total} (Failed: ${a11yData.hardenedSuite.failed})`);
+assert(a11yData.unprotectedFixture.failed > 0, 'Broken layout must fail accessibility checks');
+assert.strictEqual(a11yData.hardenedSuite.failed, 0, 'Hardened layout must pass all checks');
+console.log('  [PASS] 3. Accessibility defect detection verified');
 
-console.log('>>> [3/4] Comparing Accessibility Compliance...');
-console.log(`  Baseline:   ${report.baseline.metrics.accessibilityComplianceRate}%`);
-console.log(`  ProofForge: ${report.proofforge.metrics.accessibilityComplianceRate}%`);
-assert(report.proofforge.metrics.accessibilityComplianceRate > report.baseline.metrics.accessibilityComplianceRate);
-console.log('  [PASS] 3. Empirical accessibility compliance verified');
+// 4. فحص مكافحة الكسل وحظر العناصر الوهمية
+console.log('>>> [4/5] Code Completeness & Anti-Laziness Verification...');
+const codeData = report.measuredData.codeCompleteness;
+console.log(`  Sample Placeholders:   ${codeData.sampleWithPlaceholders.placeholderCount}`);
+console.log(`  Hardened Placeholders: ${codeData.hardenedFile.placeholderCount}`);
+assert(codeData.sampleWithPlaceholders.placeholderCount > 0, 'Sample must contain detected placeholders');
+assert.strictEqual(codeData.hardenedFile.placeholderCount, 0, 'Hardened code must have 0 placeholders');
+console.log('  [PASS] 4. Zero-placeholder anti-laziness policy verified');
 
-console.log('>>> [4/4] Comparing Deterministic Evidence...');
-console.log(`  Baseline:   ${report.baseline.metrics.deterministicEvidenceRate}%`);
-console.log(`  ProofForge: ${report.proofforge.metrics.deterministicEvidenceRate}%`);
-assert.strictEqual(report.proofforge.metrics.deterministicEvidenceRate, 100.0);
-console.log('  [PASS] 4. Empirical evidence graph verified');
+// 5. فحص التجزئة المشفرة الحقيقية
+console.log('>>> [5/5] Cryptographic Real File SHA-256 Hash Verification...');
+assert.strictEqual(report.measuredData.cryptographicEvidence.hasRealFileSha256, true);
+assert(report.measuredData.cryptographicEvidence.verifiedHash.length === 64);
+console.log(`  Real File Hash: ${report.measuredData.cryptographicEvidence.verifiedHash.substring(0, 16)}...`);
+console.log('  [PASS] 5. Real cryptographic hash verified on physical file');
 
 console.log('------------------------------------------------------');
-console.log(`🏆 Measured Advantage: +${report.measuredAdvantage.percentageDelta}%`);
+console.log(`📊 Unprotected Fixtures Compliance Rate:   ${report.summary.unprotectedFixturesComplianceRate}%`);
+console.log(`📊 Hardened Implementation Compliance Rate: ${report.summary.hardenedImplementationComplianceRate}%`);
 console.log(`⚖️ Verdict: ${report.verdict}`);
-assert.strictEqual(report.verdict, 'PROOFFORGE_EMPIRICALLY_SUPERIOR');
+assert.strictEqual(report.verdict, 'DEFENSE_VERIFIED_AGAINST_FIXTURES');
 console.log('======================================================');
-console.log('>>> [SUCCESS] All Empirical Agent A/B Benchmark Tests PASSED 100%.');
+console.log('>>> [SUCCESS] All Fixture Defense Benchmark Tests PASSED 100%.');
 console.log('======================================================');

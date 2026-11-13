@@ -1,14 +1,7 @@
 /**
  * @file multi-skill-execution.test.js
- * @description اختبارات التحقق من التنفيذ الحقيقي للمشاريع متعددة المهارات وتمرير السياق
- * (ProofForge Multi-Skill Real Execution & Lifecycle Test Suite)
- * 
- * يختبر:
- * 1. التنفيذ التتابعي الفعلي للمهارات على مساحة عمل معزولة.
- * 2. تمرير المخرجات والسياق بين المهارات (Context Passing).
- * 3. التحقق الحتمي من عقود الأدلة المادية.
- * 4. إدارة فشل الخطوات والتوقف الآمن (Fail-Closed).
- * 5. التحكيم الحتمي في تعارضات المخرجات بحسب هرمية السلطة.
+ * @description اختبارات التحقق من التنفيذ الحقيقي للمشاريع متعددة المهارات وتمرير السياق والاسترجاع الفعلي
+ * (ProofForge Multi-Skill Real Execution & Physical Rollback Test Suite)
  */
 
 'use strict';
@@ -17,11 +10,12 @@ const assert = require('assert');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
+const crypto = require('crypto');
 const IntelligentSkillRouter = require('../../packages/orchestration/intelligent-skill-router');
 const MultiSkillExecutionEngine = require('../../packages/orchestration/multi-skill-execution-engine');
 
 console.log('======================================================');
-console.log('⚡ ProofForge — Multi-Skill Real Execution Engine Tests');
+console.log('⚡ ProofForge — Multi-Skill Real Execution & Rollback Tests');
 console.log('======================================================');
 
 const tempSandboxRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'pf-exec-test-'));
@@ -30,7 +24,7 @@ try {
     // ----------------------------------------------------
     // اختبار 1: تنفيذ سيناريو Full-Stack SaaS المتكامل
     // ----------------------------------------------------
-    console.log('>>> [1/5] Testing End-to-End Execution of Full-Stack SaaS Plan...');
+    console.log('>>> [1/5] Testing End-to-End Real Tool Execution for Full-Stack SaaS...');
     const saasPlan = IntelligentSkillRouter.route('fullstack-saas');
     const saasWorkspace = path.join(tempSandboxRoot, 'saas-workspace');
 
@@ -44,10 +38,10 @@ try {
 
     // التحقق من إنشاء الملفات المادية الفعلية على القرص
     assert(fs.existsSync(path.join(saasWorkspace, 'ADR-001.md')), 'ADR file must exist physically');
-    assert(fs.existsSync(path.join(saasWorkspace, '001_initial.sql')), 'Database migration file must exist physically');
-    assert(fs.existsSync(path.join(saasWorkspace, 'server.js')), 'Backend server file must exist physically');
+    assert(fs.existsSync(path.join(saasWorkspace, 'apps/server/db/migrations/001_initial.sql')), 'Database migration file must exist physically');
+    assert(fs.existsSync(path.join(saasWorkspace, 'apps/server/server.js')), 'Backend server file must exist physically');
     assert(fs.existsSync(path.join(saasWorkspace, 'openapi.json')), 'OpenAPI specification must exist physically');
-    console.log('  [PASS] 1. Full-Stack SaaS: Sequential execution & physical artifacts verified');
+    console.log('  [PASS] 1. Full-Stack SaaS: Real sequential execution & physical artifacts verified');
 
     // ----------------------------------------------------
     // اختبار 2: التحقق من تمرير السياق والمخرجات (Context Passing)
@@ -60,21 +54,49 @@ try {
     console.log('  [PASS] 2. Context Passing: Downstream skills successfully received upstream artifacts');
 
     // ----------------------------------------------------
-    // اختبار 3: إدارة الفشل والتراجع الآمن (Fail-Closed Step Failure)
+    // اختبار 3: التحقق الحقيقي من الاسترجاع المادي عند الفشل (Real Rollback with Hash Comparison)
     // ----------------------------------------------------
-    console.log('>>> [3/5] Testing Fail-Closed Resilience on Step Failure...');
+    console.log('>>> [3/5] Testing Physical Rollback & Byte-for-Byte State Restoration on Failure...');
     const failWorkspace = path.join(tempSandboxRoot, 'fail-workspace');
-    const failedExecResult = MultiSkillExecutionEngine.executePlan(saasPlan, {
-        workspacePath: failWorkspace,
-        simulateFailureAtStep: 'database' // حقن فشل في خطوة قاعدة البيانات
+    fs.mkdirSync(failWorkspace, { recursive: true });
+
+    // إنشاء ملف موجود مسبقاً قبل بدء التنفيذ
+    const existingFilePath = path.join(failWorkspace, 'pre-existing-config.json');
+    const existingContent = JSON.stringify({ version: 1, original: true });
+    fs.writeFileSync(existingFilePath, existingContent, 'utf8');
+    const initialHash = crypto.createHash('sha256').update(existingContent).digest('hex');
+
+    // تشغيل خطة تبدأ بدون خطوة المعمارية لإحداث فشل حقيقي في تبعيات قاعدة البيانات
+    const defectivePlan = {
+        scenarioId: 'defective-test',
+        scenarioName: 'Defective Plan',
+        steps: [
+            {
+                stepNumber: 1,
+                skillId: 'database',
+                dependencies: ['architecture'], // التبعية غير متوفرة!
+                evidenceRequired: ['MIGRATION_SCRIPTS']
+            }
+        ]
+    };
+
+    const failedExecResult = MultiSkillExecutionEngine.executePlan(defectivePlan, {
+        workspacePath: failWorkspace
     });
 
     assert.strictEqual(failedExecResult.status, 'FAILED');
     assert.strictEqual(failedExecResult.failureDetails.failedStep, 'database');
     assert.strictEqual(failedExecResult.rollbackExecuted, true);
-    // التأكد من عدم تنفيذ الخطوات اللاحقة لقاعدة البيانات (مثل backend, frontend, testing)
-    assert(!failedExecResult.stepLogs.some(log => log.skillId === 'backend' && log.status === 'SUCCESS'));
-    console.log('  [PASS] 3. Fail-Closed Resilience: Execution immediately halted upon step failure');
+    assert.strictEqual(failedExecResult.rollbackVerified, true, 'Rollback must be verified byte-for-byte');
+
+    // التأكد من أن الملف الموجود مسبقاً لم يتضرر وتطابقت تجزئته 100%
+    assert(fs.existsSync(existingFilePath), 'Pre-existing file must be preserved');
+    const currentHash = crypto.createHash('sha256').update(fs.readFileSync(existingFilePath, 'utf8')).digest('hex');
+    assert.strictEqual(currentHash, initialHash, 'Pre-existing file content must match initial snapshot exactly');
+
+    // التأكد من عدم بقاء أي ملفات فرعية منسوخة بالخطأ
+    assert(!fs.existsSync(path.join(failWorkspace, 'apps/server/db/migrations/001_initial.sql')), 'Newly created files must be rolled back');
+    console.log('  [PASS] 3. Physical Rollback: Workspace state restored byte-for-byte upon step failure');
 
     // ----------------------------------------------------
     // اختبار 4: التحكيم في تعارضات المخرجات بحسب هرمية السلطة
@@ -103,7 +125,7 @@ try {
     console.log('  [PASS] 5. E-commerce: Real transaction safety & HMAC verification executed successfully');
 
     console.log('======================================================');
-    console.log('>>> [SUCCESS] All Multi-Skill Execution Engine Tests PASSED 100%.');
+    console.log('>>> [SUCCESS] All Multi-Skill Execution & Real Rollback Tests PASSED 100%.');
     console.log('======================================================');
 } finally {
     try {

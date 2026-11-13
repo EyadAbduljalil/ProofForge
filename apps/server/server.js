@@ -79,7 +79,7 @@ class WebForgeServer {
     }
 
     start(callback) {
-        this.server.listen(this.port, () => {
+        this.server.listen(this.port, '127.0.0.1', () => {
             if (callback) callback(this.port);
         });
     }
