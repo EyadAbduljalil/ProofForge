@@ -154,7 +154,17 @@ class PathLoaderGuard {
             throw err;
         }
 
-        const resolvedTarget = path.resolve(projectRoot, trimmed);
+        // تطهير وتوحيد الفواصل لمنع ثغرات القفز عبر الأنظمة المتعددة (Cross-Platform Traversal Defense)
+        const normalized = trimmed.replace(/\\/g, '/');
+
+        // كشف وحظر المسارات المطلقة بحرف محرك الأقراص على أنظمة POSIX (Linux/macOS)
+        if (/^[a-zA-Z]:/.test(trimmed) && process.platform !== 'win32') {
+            const err = new Error(`محظور: مسار مطلق لنظام Windows غير مصرح به: '${trimmed}'`);
+            err.code = 'PATH_TRAVERSAL_DETECTED';
+            throw err;
+        }
+
+        const resolvedTarget = path.isAbsolute(normalized) ? path.resolve(normalized) : path.resolve(projectRoot, normalized);
         const resolvedRoot = path.resolve(projectRoot);
 
         // 1. التحقق المعجمي من الاحتواء داخل الجذر

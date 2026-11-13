@@ -1,8 +1,8 @@
 {
   "name": "proofforge",
   "displayName": "ProofForge — AI Engineering Verification Framework",
-  "version": "1.1.0",
-  "description": "Deterministic, evidence-driven verification and governance framework for AI-assisted software development. Enforces P0 security, Clean Architecture, anti-slop visual craft, and rigorous testing across 26 specialized skills.",
+  "version": "3.0.0",
+  "description": "Deterministic, evidence-driven verification and governance framework for AI-assisted software development. Enforces P0 security, Clean Architecture, anti-slop visual craft, and rigorous testing across 28 specialized skills.",
   "author": {
     "name": "Eyad Abduljalil",
     "url": "https://github.com/EyadAbduljalil"

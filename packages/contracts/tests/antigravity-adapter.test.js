@@ -300,12 +300,18 @@ try {
     });
     console.log('  [PASS] 19. Atomic write rejects unsafe target');
 
-    // 20. Symlink escape attempts
-    console.log('>>> [Task1: 20/23] Testing Symlink Escape Defense in Adapter...');
+    // 20. Symlink & Cross-Platform Traversal escape attempts
+    console.log('>>> [Task1: 20/23] Testing Cross-Platform Traversal & Symlink Escape Defense...');
     assert.throws(() => {
-        PathLoaderGuard.validateSafeWritePath(path.join(targetDest, '..\\..\\evil.md'), { projectRoot: targetDest });
+        PathLoaderGuard.validateSafeWritePath(path.join(targetDest, '..', '..', 'evil.md'), { projectRoot: targetDest });
     }, err => err.code === 'PATH_TRAVERSAL_DETECTED');
-    console.log('  [PASS] 20. Symlink and traversal escape attempts blocked');
+    assert.throws(() => {
+        PathLoaderGuard.validateSafeWritePath(targetDest + '/../../evil.md', { projectRoot: targetDest });
+    }, err => err.code === 'PATH_TRAVERSAL_DETECTED');
+    assert.throws(() => {
+        PathLoaderGuard.validateSafeWritePath(targetDest + '\\..\\..\\evil.md', { projectRoot: targetDest });
+    }, err => err.code === 'PATH_TRAVERSAL_DETECTED');
+    console.log('  [PASS] 20. Symlink and traversal escape attempts blocked cross-platform');
 
     // 21. Manifest corruption recovery
     console.log('>>> [Task1: 21/23] Testing Manifest Corruption Safe Recovery...');

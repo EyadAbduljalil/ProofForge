@@ -60,5 +60,14 @@ jobs:
       - name: Realistic scenarios benchmark
         run: npm run benchmark:scenarios
 
+      - name: Release metadata parity
+        run: npm run validate:metadata
+
+      - name: Multi-skill orchestration scenarios
+        run: npm run test:orchestration
+
+      - name: Agent A/B effectiveness benchmark
+        run: npm run benchmark:effectiveness
+
       - name: Full regression
         run: npm test
