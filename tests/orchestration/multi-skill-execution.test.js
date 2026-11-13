@@ -201,8 +201,13 @@ try {
     console.log('======================================================');
     console.log('>>> [SUCCESS] All Multi-Skill Execution & Real Rollback Tests PASSED 100%.');
     console.log('======================================================');
+} catch (testError) {
+    console.error('>>> [TEST EXCEPTION IN MULTI-SKILL-EXEC]:', testError.stack || testError.message);
+    throw testError;
 } finally {
     try {
         fs.rmSync(tempSandboxRoot, { recursive: true, force: true });
-    } catch (e) {}
+    } catch (e) {
+        process.stderr.write(`[Cleanup Notice] ${e.message}\n`);
+    }
 }
