@@ -7,10 +7,16 @@
 const path = require('path');
 const fs = require('fs');
 const { spawnSync } = require('child_process');
+const VerifierEngine = require('../../../packages/contracts/verifier-engine');
 
-console.log('======================================================');
-console.log('📋 [ProofForge Project Audit] Executing Real Multi-Domain Diagnostic Suite');
-console.log('======================================================');
+const engine = new VerifierEngine('Project Audit & Diagnostic Engine');
+const isJson = process.argv.includes('--json');
+
+if (!isJson) {
+    console.log('======================================================');
+    console.log('📋 [ProofForge Project Audit] Executing Real Multi-Domain Diagnostic Suite');
+    console.log('======================================================');
+}
 
 const root = path.resolve(__dirname, '../../../');
 
@@ -33,57 +39,48 @@ const verifiers = [
 
 let earnedWeight = 0;
 let totalWeight = 0;
-let criticalFailures = 0;
-const results = [];
 
 for (const v of verifiers) {
     totalWeight += v.weight;
     const scriptPath = path.join(root, v.script);
 
     if (!fs.existsSync(scriptPath)) {
-        results.push({ name: v.name, status: 'MISSING', passed: false, weight: v.weight });
-        if (v.critical) criticalFailures++;
+        engine.recordCheck(v.name, false, `Verifier script not found: ${v.script}`, v.critical ? 'CRITICAL' : 'HIGH');
         continue;
     }
 
     const res = spawnSync(process.execPath, [scriptPath, '--json'], {
         cwd: root,
-        encoding: 'utf8'
+        encoding: 'utf8',
+        timeout: 10000
     });
 
-    let passed = false;
-    let details = '';
-
-    if (res.status === 0) {
-        passed = true;
+    const passed = (res.status === 0);
+    if (passed) {
         earnedWeight += v.weight;
-        details = 'PASSED';
-    } else {
-        if (v.critical) criticalFailures++;
-        details = `FAILED (Exit code: ${res.status})`;
     }
 
-    results.push({
-        name: v.name,
+    engine.recordCheck(
+        v.name,
         passed,
-        details,
-        weight: v.weight
-    });
-
-    console.log(`  ${passed ? '✅' : '❌'} [${v.name.padEnd(35)}] -> ${passed ? 'VERIFIED' : 'FAILED'}`);
+        passed ? 'Sub-verifier completed successfully' : `Sub-verifier failed with exit code ${res.status}`,
+        v.critical ? 'CRITICAL' : 'HIGH'
+    );
 }
 
 const compositeScore = Math.round((earnedWeight / totalWeight) * 100);
 
-console.log('======================================================');
-console.log(`📊 Composite Diagnostic Score: ${compositeScore} / 100`);
-console.log(`Critical Failures: ${criticalFailures}`);
-console.log('======================================================');
-
-if (criticalFailures > 0 || compositeScore < 90) {
-    console.error('❌ [ProofForge Project Audit] Audit failed due to unresolved issues or critical failures.');
-    process.exit(1);
-} else {
-    console.log('✅ [ProofForge Project Audit] Project satisfies all verified production standards.');
-    process.exit(0);
+if (!isJson) {
+    console.log('======================================================');
+    console.log(`📊 Composite Diagnostic Score: ${compositeScore} / 100`);
+    console.log('======================================================');
 }
+
+engine.recordCheck(
+    'Composite Quality Score Threshold (>= 90%)',
+    compositeScore >= 90,
+    `Calculated composite diagnostic score: ${compositeScore}% (required >= 90%)`,
+    'CRITICAL'
+);
+
+engine.finish();

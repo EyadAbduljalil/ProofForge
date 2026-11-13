@@ -257,11 +257,11 @@ async function run() {
 
     if (command === 'list') {
         logBanner();
-        console.log('📋 سرد المهارات الهندسية الكنسية في المنظومة:');
         const result = AntigravityAdapter.listSkills(CANONICAL_SKILLS_DIR);
         if (isJson) {
             console.log(JSON.stringify(result, null, 2));
         } else {
+            console.log('📋 سرد المهارات الهندسية الكنسية في المنظومة:');
             result.skills.forEach((s, idx) => {
                 const status = s.isValid ? '✓ [VERIFIED]' : `✗ [INVALID: ${s.issues.join(', ')}]`;
                 console.log(`  ${String(idx + 1).padStart(2, '0')}. ${s.slug.padEnd(28)} ${status}`);
@@ -333,11 +333,11 @@ async function run() {
         switch (action) {
             case 'list': {
                 logBanner();
-                console.log('📋 سرد المهارات الهندسية الكنسية في المنظومة:');
                 const result = AntigravityAdapter.listSkills(CANONICAL_SKILLS_DIR);
                 if (isJson) {
                     console.log(JSON.stringify(result, null, 2));
                 } else {
+                    console.log('📋 سرد المهارات الهندسية الكنسية في المنظومة:');
                     result.skills.forEach((s, idx) => {
                         const status = s.isValid ? '✓ [VERIFIED]' : `✗ [INVALID: ${s.issues.join(', ')}]`;
                         console.log(`  ${String(idx + 1).padStart(2, '0')}. ${s.slug.padEnd(28)} ${status}`);

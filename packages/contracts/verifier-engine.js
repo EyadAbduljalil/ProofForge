@@ -1,21 +1,27 @@
 /**
  * @file verifier-engine.js
- * @description محرك التحقق المعياري الصارم لنظام ProofForge V3
+ * @description محرك التحقق المعياري الصارم لنظام ProofForge V3 (Hardened Verifier Engine)
  * يوفر أدوات الفحص الحقيقي للملفات، تحليل الشفرة المصدرية، التحقق من العقود، وحساب النتائج دون أي تزييف أو مخرجات صورية.
  * 
  * المبادئ الحاكمة:
  * 1. لا نتائج نجاح صورية أو معلبة (No Hardcoded Passes).
  * 2. لا نسب مئوية وهمية أو ملفقة (No Fabricated Percentages).
- * 3. خروج بكود خطأ غير صفري (Exit Code 1) عند وجود أي خرق أو عيب برمجي.
+ * 3. خروج بكود خطأ غير صفري (Exit Code 1) عند وجود أي خرق أو عيب برمجي أو تجاوز.
  * 4. دعم المخرجات الآلية المهيكلة (Machine-Readable JSON).
- * 5. التمييز الصارم بين حالات الفحص: PASS, FAIL, WARN, SKIPPED, ERROR.
+ * 5. التمييز الصارم بين حالات الفحص: PASS, FAIL, WARN, SKIPPED, ERROR, BLOCKED, NOT_RUN.
  * 6. الفصل المنهجي بين: الفحص الهيكلي، التحليل الساكن، التحقق أثناء التشغيل، وفحص التكامل.
+ * 7. حماية تامة ضد التلاعب بالأنواع (No Boolean Coercion Vulnerabilities).
+ * 8. قياس زمني دقيق عبر ساعة رتيبة (Monotonic Clock via process.hrtime.bigint).
  */
 
 'use strict';
 
 const fs = require('fs');
 const path = require('path');
+
+const VALID_STATUSES = Object.freeze(['PASS', 'FAIL', 'WARN', 'SKIPPED', 'ERROR', 'BLOCKED', 'NOT_RUN']);
+const VALID_SEVERITIES = Object.freeze(['CRITICAL', 'HIGH', 'MEDIUM', 'LOW', 'INFO']);
+const VALID_CATEGORIES = Object.freeze(['STRUCTURAL', 'STATIC_ANALYSIS', 'RUNTIME', 'INTEGRATION', 'BEHAVIORAL']);
 
 class VerifierEngine {
     constructor(verifierName, options = {}) {
@@ -24,49 +30,118 @@ class VerifierEngine {
         this.isJson = process.argv.includes('--json') || Boolean(options.json);
         this.verbose = process.argv.includes('--verbose') || Boolean(options.verbose);
         this.quiet = process.argv.includes('--quiet') || Boolean(options.quiet);
-        this.startTime = Date.now();
+        this.startHrTime = process.hrtime.bigint();
         this.findings = [];
         this.checks = [];
+        this.checkIds = new Set();
     }
 
     /**
-     * تسجيل نتيجة فحص محدد
-     * يدعم الشكل التقليدي (property, passed, details, severity)
-     * أو كائن فحص مفصل { id, description, passed, status, details, severity, category, duration_ms }
+     * تحويل وتقييم القيمة المنطقية بأمان لمنع ثغرات التحويل القسري (Anti-Boolean Coercion)
+     * تمنع اعتبار نصوص مثل "false" أو أرقام صفرية كقيمة true.
+     * @param {*} val 
+     * @returns {boolean}
      */
-    recordCheck(propertyOrObj, passed, details = '', severity = 'HIGH') {
+    static safeBoolean(val) {
+        if (typeof val === 'boolean') return val;
+        if (val === 'false' || val === '0' || val === 0 || val === null || val === undefined) return false;
+        if (val === 'true' || val === '1' || val === 1) return true;
+        throw new TypeError(`Invalid boolean specification: received ${typeof val} (${JSON.stringify(val)})`);
+    }
+
+    /**
+     * تسجيل نتيجة فحص محدد بدقة تامة
+     * يدعم الشكل التقليدي (property, passed, details, severity)
+     * أو كائن فحص مفصل { id, description, passed, status, details, severity, category, duration_ms, evidence_ref }
+     */
+    recordCheck(propertyOrObj, passedArg, detailsArg = '', severityArg = 'HIGH') {
+        const checkStartHr = process.hrtime.bigint();
         const now = new Date().toISOString();
         let check;
 
         if (typeof propertyOrObj === 'object' && propertyOrObj !== null) {
             const obj = propertyOrObj;
-            const isPass = obj.passed !== undefined ? Boolean(obj.passed) : (obj.status === 'PASS');
-            const status = obj.status || (isPass ? 'PASS' : 'FAIL');
+            let isPass = false;
+
+            if (obj.passed !== undefined) {
+                isPass = VerifierEngine.safeBoolean(obj.passed);
+            } else if (obj.status) {
+                isPass = obj.status === 'PASS';
+            }
+
+            let status = obj.status;
+            if (!status) {
+                status = isPass ? 'PASS' : 'FAIL';
+            } else {
+                status = String(status).toUpperCase();
+                if (!VALID_STATUSES.includes(status)) {
+                    throw new Error(`Invalid check status '${status}'. Must be one of: ${VALID_STATUSES.join(', ')}`);
+                }
+            }
+
+            // فحص التناقض الصريح بين الحالة والقيمة المنطقية
+            if ((status === 'PASS' && !isPass) || (status === 'FAIL' && isPass)) {
+                throw new Error(`Contradiction detected: status '${status}' does not match passed=${isPass}`);
+            }
+
+            let severity = String(obj.severity || severityArg || 'HIGH').toUpperCase();
+            if (!VALID_SEVERITIES.includes(severity)) {
+                severity = 'HIGH';
+            }
+
+            let category = String(obj.category || 'STATIC_ANALYSIS').toUpperCase();
+            if (!VALID_CATEGORIES.includes(category)) {
+                category = 'STATIC_ANALYSIS';
+            }
+
+            const id = String(obj.id || obj.property || `CHK-${this.checks.length + 1}`).trim();
+            if (this.checkIds.has(id)) {
+                throw new Error(`Duplicate check identifier rejected: '${id}'`);
+            }
+            this.checkIds.add(id);
+
+            const duration_ms = obj.duration_ms !== undefined
+                ? Number(obj.duration_ms)
+                : Number(process.hrtime.bigint() - checkStartHr) / 1e6;
+
             check = {
-                id: obj.id || obj.property || `CHK-${this.checks.length + 1}`,
-                property: obj.property || obj.id || `check-${this.checks.length + 1}`,
-                description: obj.description || obj.property || '',
+                id,
+                property: String(obj.property || obj.id || id),
+                description: String(obj.description || obj.property || ''),
                 status,
                 passed: isPass,
-                details: obj.details || details,
-                severity: obj.severity || severity,
-                category: obj.category || 'STATIC_ANALYSIS',
-                duration_ms: obj.duration_ms || 0,
+                details: String(obj.details || detailsArg || ''),
+                severity,
+                category,
+                duration_ms: Math.round(duration_ms * 100) / 100,
                 evidence_ref: obj.evidence_ref || null,
                 timestamp: now
             };
         } else {
-            const isPass = Boolean(passed);
+            const isPass = VerifierEngine.safeBoolean(passedArg);
+            const id = `CHK-${this.checks.length + 1}`;
+            if (this.checkIds.has(id)) {
+                throw new Error(`Duplicate check identifier rejected: '${id}'`);
+            }
+            this.checkIds.add(id);
+
+            let severity = String(severityArg || 'HIGH').toUpperCase();
+            if (!VALID_SEVERITIES.includes(severity)) {
+                severity = 'HIGH';
+            }
+
+            const duration_ms = Number(process.hrtime.bigint() - checkStartHr) / 1e6;
+
             check = {
-                id: `CHK-${this.checks.length + 1}`,
+                id,
                 property: String(propertyOrObj),
                 description: String(propertyOrObj),
                 status: isPass ? 'PASS' : 'FAIL',
                 passed: isPass,
-                details: String(details),
-                severity: String(severity).toUpperCase(),
+                details: String(detailsArg || ''),
+                severity,
                 category: 'STATIC_ANALYSIS',
-                duration_ms: 0,
+                duration_ms: Math.round(duration_ms * 100) / 100,
                 evidence_ref: null,
                 timestamp: now
             };
@@ -74,13 +149,14 @@ class VerifierEngine {
 
         this.checks.push(check);
 
-        if (check.status === 'FAIL' || check.status === 'ERROR') {
+        if (check.status === 'FAIL' || check.status === 'ERROR' || check.status === 'BLOCKED') {
             this.findings.push({
                 id: check.id,
                 property: check.property,
                 details: check.details,
                 severity: check.severity,
-                status: check.status
+                status: check.status,
+                evidence_ref: check.evidence_ref
             });
         }
 
@@ -99,9 +175,18 @@ class VerifierEngine {
         }
 
         const walk = (current) => {
-            const entries = fs.readdirSync(current, { withFileTypes: true });
+            let entries;
+            try {
+                entries = fs.readdirSync(current, { withFileTypes: true });
+            } catch (e) {
+                return;
+            }
+
             for (const entry of entries) {
                 if (ignore.includes(entry.name)) continue;
+                // تجنب تتبع الروابط الرمزية (Avoid Following Symlinks)
+                if (entry.isSymbolicLink()) continue;
+
                 const fullPath = path.join(current, entry.name);
                 if (entry.isDirectory()) {
                     walk(fullPath);
@@ -133,18 +218,19 @@ class VerifierEngine {
      * فحص وقراءة آمنة لملف وتمرير محتواه لدالة فحص
      */
     inspectFile(relativePath, validatorFn) {
-        const start = Date.now();
+        const startHr = process.hrtime.bigint();
         const fullPath = path.isAbsolute(relativePath) ? relativePath : path.join(this.rootDir, relativePath);
+
         if (!fs.existsSync(fullPath)) {
             this.recordCheck({
-                id: `FILE-EXISTS-${path.basename(relativePath)}`,
+                id: `FILE-EXISTS-${path.basename(relativePath)}-${this.checks.length + 1}`,
                 property: relativePath,
                 passed: false,
                 status: 'FAIL',
                 details: `الملف غير موجود: ${relativePath}`,
                 severity: 'CRITICAL',
                 category: 'STRUCTURAL',
-                duration_ms: Date.now() - start
+                duration_ms: Number(process.hrtime.bigint() - startHr) / 1e6
             });
             return false;
         }
@@ -155,14 +241,14 @@ class VerifierEngine {
             return true;
         } catch (err) {
             this.recordCheck({
-                id: `FILE-INSPECT-ERROR-${path.basename(relativePath)}`,
+                id: `FILE-INSPECT-ERROR-${path.basename(relativePath)}-${this.checks.length + 1}`,
                 property: relativePath,
                 passed: false,
                 status: 'ERROR',
                 details: `خطأ أثناء فحص الملف: ${err.message}`,
                 severity: 'CRITICAL',
                 category: 'STATIC_ANALYSIS',
-                duration_ms: Date.now() - start
+                duration_ms: Number(process.hrtime.bigint() - startHr) / 1e6
             });
             return false;
         }
@@ -212,27 +298,46 @@ class VerifierEngine {
     }
 
     /**
-     * حساب التقرير النهائي دون إنهاء المعالجة (مناسب للمكتبات والاختبارات البرمجية)
+     * حساب التقرير النهائي وفق آلة الحالات الحتمية الصارمة (Strict State Machine)
      */
     evaluate() {
-        const duration_ms = Date.now() - this.startTime;
+        const duration_ms = Math.round(Number(process.hrtime.bigint() - this.startHrTime) / 1e6 * 100) / 100;
         const total = this.checks.length;
-        const failedChecks = this.checks.filter(c => c.status === 'FAIL' || c.status === 'ERROR');
+
+        const failedChecks = this.checks.filter(c => c.status === 'FAIL');
+        const errorChecks = this.checks.filter(c => c.status === 'ERROR');
+        const blockedChecks = this.checks.filter(c => c.status === 'BLOCKED');
         const warningChecks = this.checks.filter(c => c.status === 'WARN');
-        const passedChecks = this.checks.filter(c => c.status === 'PASS');
         const skippedChecks = this.checks.filter(c => c.status === 'SKIPPED');
+        const notRunChecks = this.checks.filter(c => c.status === 'NOT_RUN');
+        const passedChecks = this.checks.filter(c => c.status === 'PASS');
 
         let status = 'VERIFIED';
         let exitCode = 0;
 
+        // قواعد آلة الحالات الصارمة
         if (total === 0) {
-            status = 'NOT_TESTED';
+            status = 'NOT_RUN';
+            exitCode = 1;
+        } else if (errorChecks.length > 0) {
+            status = 'ERROR';
             exitCode = 1;
         } else if (failedChecks.length > 0) {
             status = 'FAILED';
             exitCode = 1;
-        } else if (warningChecks.length > 0 && passedChecks.length === 0) {
-            status = 'WARN';
+        } else if (blockedChecks.length > 0) {
+            status = 'BLOCKED';
+            exitCode = 1;
+        } else if (passedChecks.length === 0) {
+            // إذا كانت كافة الفحوصات SKIPPED أو NOT_RUN، يُحظر إعطاء VERIFIED
+            if (skippedChecks.length > 0) {
+                status = 'SKIPPED';
+            } else {
+                status = 'NOT_RUN';
+            }
+            exitCode = 1;
+        } else if (warningChecks.length > 0) {
+            status = 'VERIFIED_WITH_WARNINGS';
             exitCode = 0;
         }
 
@@ -242,8 +347,11 @@ class VerifierEngine {
             total_checks: total,
             passed_checks: passedChecks.length,
             failed_checks: failedChecks.length,
+            error_checks: errorChecks.length,
+            blocked_checks: blockedChecks.length,
             warning_checks: warningChecks.length,
             skipped_checks: skippedChecks.length,
+            not_run_checks: notRunChecks.length,
             findings: this.findings,
             checks: this.checks,
             duration_ms,
@@ -253,7 +361,7 @@ class VerifierEngine {
     }
 
     /**
-     * إنهاء الفحص، طباعة التقرير، والخروج برمز الحالة المناسب
+     * إنهاء الفحص، طباعة التقرير، والخروج برمز الحالة الحتمي
      */
     finish() {
         const report = this.evaluate();
@@ -264,7 +372,7 @@ class VerifierEngine {
             console.log(`\n======================================================`);
             console.log(`🔍 [ProofForge Verifier] ${this.name}`);
             console.log(`======================================================`);
-            console.log(`الحالة النهائية: ${report.status === 'VERIFIED' ? '✅ VERIFIED' : (report.status === 'NOT_TESTED' ? '⚠️ NOT_TESTED' : '❌ FAILED')}`);
+            console.log(`الحالة النهائية: ${report.status.startsWith('VERIFIED') ? '✅ ' + report.status : '❌ ' + report.status}`);
             console.log(`الفحوصات المنجزة: ${report.passed_checks} / ${report.total_checks} ناجح (الوقت: ${report.duration_ms}ms)`);
 
             if (this.findings.length > 0) {
@@ -274,10 +382,10 @@ class VerifierEngine {
                 });
             }
 
-            if (report.status === 'VERIFIED') {
+            if (report.status.startsWith('VERIFIED')) {
                 console.log(`\n>>> تم إثبات كافة الخصائص البرمجية بالأدلة المادية.`);
-            } else if (report.status === 'NOT_TESTED') {
-                console.log(`\n>>> تنبيه: لم يتم العثور على أصول كافية لإجراء الفحص الآلي.`);
+            } else if (report.status === 'SKIPPED' || report.status === 'NOT_RUN') {
+                console.log(`\n>>> تنبيه: لم يتم تنفيذ أي فحص فعلي (فشل مغلق).`);
             } else {
                 console.log(`\n>>> فشل التحقق: تم رصد مخالفات حقيقية تستوجب الإصلاح الفوري.`);
             }

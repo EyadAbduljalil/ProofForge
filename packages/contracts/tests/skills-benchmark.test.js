@@ -86,18 +86,41 @@ for (const skill of skillDirs) {
         }
     }
 
-    // Execution of verifier script if present
+    // Execution of verifier scripts if present
     if (evaluation.hasScripts) {
         const scripts = fs.readdirSync(scriptsDir).filter(f => f.endsWith('.js'));
         if (scripts.length > 0) {
-            const primaryScript = path.join(scriptsDir, scripts[0]);
-            const res = spawnSync(process.execPath, [primaryScript, '--json'], {
-                cwd: rootDir,
-                encoding: 'utf8',
-                timeout: 5000
-            });
+            let allScriptsPassed = true;
+            for (const scriptFile of scripts) {
+                const scriptFullPath = path.join(scriptsDir, scriptFile);
+                const res = spawnSync(process.execPath, [scriptFullPath, '--json'], {
+                    cwd: rootDir,
+                    encoding: 'utf8',
+                    timeout: 10000
+                });
 
-            if (res.status === 0) {
+                if (res.status !== 0) {
+                    allScriptsPassed = false;
+                    console.error(`    ⚠️ Script ${scriptFile} exited with status ${res.status}`);
+                    break;
+                }
+
+                // Verify stdout is valid JSON and contains required contract properties
+                try {
+                    const parsed = JSON.parse(res.stdout.trim());
+                    if (!parsed || typeof parsed !== 'object' || typeof parsed.total_checks !== 'number') {
+                        allScriptsPassed = false;
+                        console.error(`    ⚠️ Script ${scriptFile} produced invalid schema payload`);
+                        break;
+                    }
+                } catch (e) {
+                    allScriptsPassed = false;
+                    console.error(`    ⚠️ Script ${scriptFile} output is not valid JSON: ${e.message}`);
+                    break;
+                }
+            }
+
+            if (allScriptsPassed) {
                 evaluation.scriptExecutionStatus = 'PASSED';
             } else {
                 evaluation.scriptExecutionStatus = 'FAILED';

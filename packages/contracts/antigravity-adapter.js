@@ -408,6 +408,11 @@ class AntigravityAdapter {
         }
 
         const entries = fs.readdirSync(canonicalSkillsDir, { withFileTypes: true });
+        const manifest = this.readManifest(targetDir);
+        manifest.version = '2.0.0';
+        manifest.updatedAt = new Date().toISOString();
+        manifest.managedBy = 'ProofForge AntigravityAdapter';
+        if (!manifest.skills) manifest.skills = {};
 
         for (const entry of entries) {
             if (!entry.isDirectory()) continue;
@@ -425,13 +430,15 @@ class AntigravityAdapter {
             const targetSkillDir = path.join(targetDir, sanitizedSlug);
 
             try {
+                const fileInventory = {};
+
                 if (!dryRun) {
                     if (!fs.existsSync(targetSkillDir)) {
                         fs.mkdirSync(targetSkillDir, { recursive: true });
                     }
 
-                    // نسخ الملفات الداعمة
-                    const subdirs = ['scripts', 'examples', 'references'];
+                    // نسخ الملفات الداعمة الشاملة (scripts, examples, references, assets, tests)
+                    const subdirs = ['scripts', 'examples', 'references', 'assets', 'tests'];
                     for (const sub of subdirs) {
                         const srcSub = path.join(sourcePath, sub);
                         const dstSub = path.join(targetSkillDir, sub);
@@ -440,14 +447,28 @@ class AntigravityAdapter {
                         }
                     }
 
-                    // قراءة وتحديث ترويسة SKILL.md
+                    // قراءة وكتابة محتوى SKILL.md
                     let skillMdContent = fs.readFileSync(sourceSkillMd, 'utf8');
                     fs.writeFileSync(path.join(targetSkillDir, 'SKILL.md'), skillMdContent, 'utf8');
+                    fileInventory['SKILL.md'] = AntigravityAdapter.computeHash(skillMdContent);
                 }
+
+                manifest.skills[sanitizedSlug] = {
+                    canonicalSource: `skills/${skillName}`,
+                    destination: path.relative(process.cwd(), targetSkillDir).replace(/\\/g, '/'),
+                    syncedAt: new Date().toISOString(),
+                    version: '2.0.0',
+                    files: fileInventory
+                };
+
                 report.synced.push(sanitizedSlug);
             } catch (err) {
                 report.errors.push(`${skillName}: ${err.message}`);
             }
+        }
+
+        if (!dryRun && fs.existsSync(targetDir)) {
+            this.writeManifest(targetDir, manifest);
         }
 
         return report;
@@ -561,7 +582,45 @@ class AntigravityAdapter {
     }
 
     /**
-     * مقارنة الفروق بين المصدر الكنسي والمجلد المثبت في مساحة العمل
+     * حساب تجزئة SHA-256 للمحتوى لضمان نزاهة الملكية
+     */
+    static computeHash(content) {
+        const crypto = require('crypto');
+        return crypto.createHash('sha256').update(content).digest('hex');
+    }
+
+    /**
+     * مسار ملف بيان الملكية المعتمد للمهارات في مساحة العمل
+     */
+    static getManifestPath(targetDir) {
+        return path.join(targetDir, '.proofforge-manifest.json');
+    }
+
+    /**
+     * قراءة بيان ملكية المهارات المعتمد (Ownership Manifest)
+     */
+    static readManifest(targetDir) {
+        const manifestPath = this.getManifestPath(targetDir);
+        if (fs.existsSync(manifestPath)) {
+            try {
+                return JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+            } catch (e) {
+                return { version: '2.0.0', skills: {} };
+            }
+        }
+        return { version: '2.0.0', skills: {} };
+    }
+
+    /**
+     * كتابة وتحديث بيان الملكية المعتمد
+     */
+    static writeManifest(targetDir, manifest) {
+        const manifestPath = this.getManifestPath(targetDir);
+        fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2), 'utf8');
+    }
+
+    /**
+     * مقارنة الفروق بين المصدر الكنسي والمجلد المثبت في مساحة العمل بنموذج الملكية الحتمي
      * @param {string} canonicalSkillsDir 
      * @param {string} targetDir 
      * @returns {Object}
@@ -576,8 +635,13 @@ class AntigravityAdapter {
             .map(e => e.name);
 
         const targetEntries = fs.existsSync(targetDir)
-            ? fs.readdirSync(targetDir, { withFileTypes: true }).filter(e => e.isDirectory()).map(e => e.name)
+            ? fs.readdirSync(targetDir, { withFileTypes: true })
+                .filter(e => e.isDirectory() && !e.name.startsWith('.'))
+                .map(e => e.name)
             : [];
+
+        const manifest = this.readManifest(targetDir);
+        const manifestSkills = manifest.skills || {};
 
         const diffReport = {
             identical: [],
@@ -606,19 +670,25 @@ class AntigravityAdapter {
 
         for (const targetSkill of targetEntries) {
             if (!canonicalEntries.includes(targetSkill)) {
-                const tarSkillMd = path.join(targetDir, targetSkill, 'SKILL.md');
-                let isProofForge = false;
-                if (fs.existsSync(tarSkillMd)) {
-                    const content = fs.readFileSync(tarSkillMd, 'utf8');
-                    if (content.includes('ProofForge') || content.includes('pf-skill')) {
-                        isProofForge = true;
-                    }
-                }
-
-                if (isProofForge) {
+                // التحقق الحتمي من الملكية عبر بيان الملكية أولاً
+                if (manifestSkills[targetSkill]) {
                     diffReport.staleProofForge.push(targetSkill);
                 } else {
-                    diffReport.userCustom.push(targetSkill);
+                    // فحص احتياطي للترويسة في حال تم التثبيت قبل تفعيل نظام البيان أو وجود علامات كنسية
+                    const tarSkillMd = path.join(targetDir, targetSkill, 'SKILL.md');
+                    let isProofForgeOwned = false;
+                    if (fs.existsSync(tarSkillMd)) {
+                        const content = fs.readFileSync(tarSkillMd, 'utf8');
+                        if (content.includes('ProofForge') || content.includes('pf-skill')) {
+                            isProofForgeOwned = true;
+                        }
+                    }
+
+                    if (isProofForgeOwned) {
+                        diffReport.staleProofForge.push(targetSkill);
+                    } else {
+                        diffReport.userCustom.push(targetSkill);
+                    }
                 }
             }
         }
@@ -627,7 +697,7 @@ class AntigravityAdapter {
     }
 
     /**
-     * تشذيب وتنظيف المهارات المتقادمة مع حماية مهارات المستخدم المخصصة
+     * تشذيب وتنظيف المهارات المتقادمة مع حماية مهارات المستخدم المخصصة ونظام الملفات
      * @param {string} canonicalSkillsDir 
      * @param {string} targetDir 
      * @param {Object} [options]
@@ -644,14 +714,28 @@ class AntigravityAdapter {
             skippedDryRun: []
         };
 
+        const manifest = this.readManifest(targetDir);
+
         for (const stale of diff.staleProofForge) {
             const staleDir = path.join(targetDir, stale);
             if (dryRun || !force) {
                 report.skippedDryRun.push(stale);
             } else {
-                fs.rmSync(staleDir, { recursive: true, force: true });
-                report.pruned.push(stale);
+                // التأكد الصارم من المسار لمنع القفز
+                const resolvedTargetDir = path.resolve(targetDir);
+                const resolvedStaleDir = path.resolve(staleDir);
+                if (resolvedStaleDir.startsWith(resolvedTargetDir + path.sep)) {
+                    fs.rmSync(resolvedStaleDir, { recursive: true, force: true });
+                    report.pruned.push(stale);
+                    if (manifest.skills && manifest.skills[stale]) {
+                        delete manifest.skills[stale];
+                    }
+                }
             }
+        }
+
+        if (!dryRun && force && fs.existsSync(targetDir)) {
+            this.writeManifest(targetDir, manifest);
         }
 
         return report;
