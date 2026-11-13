@@ -6,16 +6,16 @@ const http = require('node:http');
 describe('WebForge OS — E2E Live Integration & Security Test Suite', () => {
     let server;
     let baseUrl;
-    const testPort = 49152 + Math.floor(Math.random() * 5000);
 
     before(async () => {
         server = await createServerInstance({
-            port: testPort,
+            port: 0,
             useInMemoryStorage: true,
             useInMemoryCache: true,
             rateLimitMax: 1000
         });
-        baseUrl = `http://127.0.0.1:${testPort}`;
+        const assignedPort = server.address().port;
+        baseUrl = `http://127.0.0.1:${assignedPort}`;
     });
 
     after(async () => {

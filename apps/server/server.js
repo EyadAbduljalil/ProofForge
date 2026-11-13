@@ -80,6 +80,10 @@ class WebForgeServer {
 
     start(callback) {
         this.server.listen(this.port, '127.0.0.1', () => {
+            const addr = this.server.address();
+            if (addr && addr.port) {
+                this.port = addr.port;
+            }
             if (callback) callback(this.port);
         });
     }
